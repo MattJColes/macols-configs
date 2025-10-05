@@ -63,7 +63,7 @@ brew install --cask amazon-q
 
 # Install Claude Code
 echo "Installing Claude Code..."
-brew install anthropics/claude/claude
+npm install -g @anthropic-ai/claude-code
 
 # Install Ollama
 echo "Installing Ollama..."

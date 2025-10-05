@@ -86,8 +86,7 @@ rm /tmp/amazon-q.deb
 
 # Install Claude Code
 echo "Installing Claude Code..."
-curl -fsSL https://deb.anthropic.com/setup.sh | sudo -E bash -
-sudo apt-get install -y claude
+npm install -g @anthropic-ai/claude-code
 
 # Install Ollama
 echo "Installing Ollama..."
