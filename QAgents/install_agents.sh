@@ -82,3 +82,37 @@ echo "  Reinstall:               bash $0"
 
 echo -e "\n${GREEN}Done! 🎉${NC}"
 echo -e "${BLUE}Tip: Amazon Q will automatically suggest relevant agents based on your task${NC}"
+
+# Optional MCP installation
+echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}MCP Server Installation (Optional)${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+
+echo "Would you like to install Model Context Protocol (MCP) servers?"
+echo "MCPs enable agents to interact with external tools (GitHub, AWS, databases, etc.)"
+echo ""
+
+# Auto-skip if SKIP_MCP_PROMPT is set or stdin is not a terminal
+if [[ -n "${SKIP_MCP_PROMPT:-}" ]] || [[ ! -t 0 ]]; then
+    echo -e "${YELLOW}Skipping MCP installation (non-interactive mode).${NC}"
+    REPLY="n"
+else
+    read -p "Install MCP servers now? (y/n) " -n 1 -r
+    echo
+fi
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if [[ -f "$SCRIPT_DIR/install_mcps.sh" ]]; then
+        echo -e "\n${GREEN}Running MCP installer...${NC}\n"
+        bash "$SCRIPT_DIR/install_mcps.sh"
+    else
+        echo -e "${RED}Error: install_mcps.sh not found in $SCRIPT_DIR${NC}"
+        echo "You can install MCPs later by running: bash $SCRIPT_DIR/install_mcps.sh"
+    fi
+else
+    echo -e "\n${YELLOW}Skipping MCP installation.${NC}"
+    echo "You can install MCPs later by running:"
+    echo "  bash $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/install_mcps.sh"
+fi
