@@ -131,8 +131,7 @@ sleep 3
 # Ollama model configuration
 echo ""
 echo "=== Ollama Model Setup ==="
-read -p "Pull an Ollama model now? [y/N]: " -n 1 -r
-echo
+read -p "Pull an Ollama model now? [y/N]: " -r REPLY
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
     echo "Popular models:"

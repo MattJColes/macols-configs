@@ -55,11 +55,11 @@ nvm alias default 22
 
 # Install TypeScript globally
 echo "Installing TypeScript..."
-sudo npm install -g typescript
+npm install -g typescript
 
 # Install AWS CDK
 echo "Installing AWS CDK..."
-sudo npm install -g aws-cdk
+npm install -g aws-cdk
 
 # Install LazyVim dependencies
 echo "Installing LazyVim dependencies..."
@@ -141,8 +141,7 @@ aws configure
 # Ollama model configuration
 echo ""
 echo "=== Ollama Model Setup ==="
-read -p "Pull an Ollama model now? [y/N]: " -n 1 -r
-echo
+read -p "Pull an Ollama model now? [y/N]: " -r REPLY
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
     echo "Popular models:"
