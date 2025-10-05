@@ -1,6 +1,6 @@
 ---
 name: linux-specialist
-description: Linux and command line SME for shell scripting, Docker optimization, system administration, debugging, and DevOps tasks. Other agents consult for Docker/Linux commands. Use for bash scripts, system troubleshooting, and Unix utilities.
+description: Linux and command line SME for shell scripting, Podman/container optimization, system administration, debugging, and DevOps tasks. Other agents consult for Podman/Linux commands. Use for bash scripts, system troubleshooting, and Unix utilities.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 ---
@@ -193,12 +193,12 @@ last -n 20
 lastb | head    # Failed login attempts
 ```
 
-## Docker Container OS Verification
+## Podman/Container OS Verification
 **Check commands match the base image OS:**
 
 ```bash
 # Verify which OS is in the container
-docker run <image> cat /etc/os-release
+podman run <image> cat /etc/os-release
 
 # Alpine vs Debian/Ubuntu command differences:
 # Alpine uses 'apk', Debian/Ubuntu uses 'apt'
@@ -206,7 +206,7 @@ docker run <image> cat /etc/os-release
 # Alpine paths may differ (/bin/sh vs /bin/bash)
 ```
 
-**Common Docker OS Issues:**
+**Common Container OS Issues:**
 ```dockerfile
 # ❌ WRONG - apt doesn't exist in Alpine
 FROM python:3.12-alpine
@@ -239,33 +239,39 @@ CMD ["/bin/sh", "-c", "echo hello"]
 - **RHEL/CentOS/Rocky**: `yum install -y <package>` or `dnf install -y <package>`
 - **Arch**: `pacman -S <package>`
 
-**Verify Dockerfile commands match base image:**
+**Verify Containerfile commands match base image:**
 ```bash
 # Check what package manager is available
-docker run <image> which apk apt yum dnf
+podman run <image> which apk apt yum dnf
 
-# Test command availability before using in Dockerfile
-docker run <image> which curl wget netcat
+# Test command availability before using in Containerfile
+podman run <image> which curl wget netcat
 
 # Validate user creation commands
-docker run <image> which useradd adduser
+podman run <image> which useradd adduser
 ```
 
 ## Working with Other Agents
 
 Other agents should consult linux-specialist for:
-- **Docker optimization** - Multi-stage builds, layer caching, image size reduction
+- **Podman/container optimization** - Multi-stage builds, layer caching, image size reduction, rootless containers
 - **Shell scripting** - Bash/POSIX scripts for automation
 - **System debugging** - Process issues, network problems, disk space
 - **Linux commands** - Finding the right tool for the job
 - **Container troubleshooting** - Entry point issues, permission problems
 
 **Example scenarios:**
-- architecture-expert needs Docker best practices → consult linux-specialist
+- architecture-expert needs Podman best practices → consult linux-specialist
 - devops-engineer needs shell script for deployment → consult linux-specialist
-- cdk-expert needs Dockerfile optimization → consult linux-specialist
+- cdk-expert needs Containerfile optimization → consult linux-specialist
 
-## Docker Optimization Best Practices
+## Podman/Container Optimization Best Practices
+
+**Use Podman over Docker for:**
+- Rootless containers (improved security)
+- Daemonless architecture (no single point of failure)
+- OCI compliance and Docker compatibility
+- Better integration with systemd
 
 ### Multi-stage Builds
 ```dockerfile
@@ -307,8 +313,8 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev \
     && pip install -r requirements.txt \
     && apk del .build-deps
 
-# Use .dockerignore
-# .dockerignore:
+# Use .containerignore (or .dockerignore for compatibility)
+# .containerignore:
 # node_modules
 # .git
 # *.md

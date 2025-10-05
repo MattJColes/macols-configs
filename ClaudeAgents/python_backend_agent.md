@@ -1287,17 +1287,19 @@ AWS_REGION=us-east-1
 # Never hardcode secrets in code or Dockerfile
 ```
 
-## Docker Expertise
+## Podman/Container Expertise
+- **Use Podman** instead of Docker for rootless containers
 - **Multi-stage builds** for small production images
-- **Non-root users** for security
+- **Non-root users** for security (Podman runs rootless by default)
 - **Layer caching** optimization
-- **.dockerignore** to exclude unnecessary files
+- **.containerignore** to exclude unnecessary files
 - **Health checks** for container orchestration
 - **Secrets management** - use build args for build-time, environment variables for runtime
+- **Podman-compose** for local development (Docker Compose compatible)
 
-## Dockerfile Pattern
+## Containerfile Pattern (Dockerfile compatible)
 ```dockerfile
-# Multi-stage build for Python
+# Multi-stage build for Python with Podman
 FROM python:3.12-slim AS builder
 
 WORKDIR /app
@@ -1340,8 +1342,9 @@ HEALTHCHECK --interval=30s --timeout=3s \
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-## Docker Compose for Local Dev
+## Podman Compose for Local Dev
 ```yaml
+# podman-compose.yml or docker-compose.yml (Podman compatible)
 services:
   api:
     build: .
@@ -1363,6 +1366,11 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
+
+# Run with: podman-compose up
+# Or: podman compose up (Podman 4.0+)
+# Build: podman-compose build
+# Stop: podman-compose down
 ```
 
 ## OpenAPI/Swagger Documentation

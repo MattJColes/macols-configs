@@ -89,8 +89,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Build Docker image
-        run: docker build -t myapp:${{ github.sha }} .
+      - name: Build container image with Podman
+        run: podman build -t myapp:${{ github.sha }} .
       
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -100,8 +100,8 @@ jobs:
       
       - name: Push to ECR
         run: |
-          aws ecr get-login-password | docker login --username AWS --password-stdin $ECR_REGISTRY
-          docker push $ECR_REGISTRY/myapp:${{ github.sha }}
+          aws ecr get-login-password | podman login --username AWS --password-stdin $ECR_REGISTRY
+          podman push $ECR_REGISTRY/myapp:${{ github.sha }}
 
   deploy-dev:
     runs-on: ubuntu-latest
@@ -238,16 +238,14 @@ test:
 
 build:
   stage: build
-  image: docker:24
-  services:
-    - docker:24-dind
+  image: quay.io/podman/stable
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
+    - podman build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
     # Container scanning
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+    - podman run --rm \
         aquasec/trivy:latest image --severity HIGH,CRITICAL \
         $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
 
 deploy-dev:
   stage: deploy
@@ -662,8 +660,8 @@ canary-playwright:
 > 4. SNS topic for alerts"
 
 ### Work with linux-specialist for:
-- Docker optimization for Playwright images
-- Debugging container issues
+- Podman optimization for Playwright images
+- Debugging container issues (rootless Podman)
 - Shell scripts for test orchestration
 
 ## Web Search for CI/CD Best Practices
@@ -700,7 +698,7 @@ canary-playwright:
 # Search: "playwright-action v4 setup"
 
 # For GitLab CI
-# Search: "gitlab ci docker:dind latest version"
+# Search: "gitlab ci podman rootless container build"
 ```
 
 **Official sources priority:**
@@ -740,7 +738,7 @@ canary-playwright:
 ```
 "GitHub Actions cache strategies 2025"
 "GitLab CI parallel job optimization"
-"Docker layer caching CI best practices"
+"Podman layer caching CI best practices"
 "npm ci vs npm install CI performance"
 ```
 
