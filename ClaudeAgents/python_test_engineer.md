@@ -64,14 +64,14 @@ def test_create_user_integration(api_client, dynamodb_table):
         'name': 'Test User',
         'email': 'test@example.com'
     })
-    
+
     assert response.status_code == 201
     user_id = response.json()['id']
-    
+
     # Verify in real DynamoDB
     item = dynamodb_table.get_item(Key={'id': user_id})
     assert item['Item']['name'] == 'Test User'
-    
+
     # Cleanup
     dynamodb_table.delete_item(Key={'id': user_id})
 ```
@@ -91,6 +91,227 @@ def test_create_user_integration(api_client, dynamodb_table):
 # - Production resources
 # - Rate-limited APIs
 ```
+
+## cURL Scripts for API Testing
+
+### Create Maintainable cURL Test Scripts
+**Location:** `tests/curls/`
+
+Test engineers create executable cURL scripts that:
+1. Test API endpoints manually during development
+2. Provide examples for documentation
+3. Serve as basis for CloudWatch Synthetic Canaries (CDK expert deploys these)
+
+```bash
+# tests/curls/users.sh
+#!/bin/bash
+# User API endpoint tests
+set -e
+
+API_BASE_URL="${API_BASE_URL:-http://localhost:8000}"
+TOKEN="${AUTH_TOKEN:-}"
+
+# Prompt for token if not set
+if [ -z "$TOKEN" ]; then
+  echo "AUTH_TOKEN not set. Enter token (or press Enter to skip auth):"
+  read -r TOKEN
+fi
+
+# Test health endpoint
+echo "Testing health endpoint..."
+curl -X GET "$API_BASE_URL/health" -w "\nHTTP Status: %{http_code}\n"
+
+# Test create user
+echo "Testing create user..."
+USER_ID=$(curl -X POST "$API_BASE_URL/api/users" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"name": "Test User", "email": "test@example.com"}' \
+  -s | jq -r '.id')
+
+echo "Created user: $USER_ID"
+
+# Test get user
+echo "Testing get user..."
+curl -X GET "$API_BASE_URL/api/users/$USER_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -w "\nHTTP Status: %{http_code}\n"
+
+# Cleanup
+curl -X DELETE "$API_BASE_URL/api/users/$USER_ID" \
+  -H "Authorization: Bearer $TOKEN" -s
+
+echo "Tests completed successfully!"
+```
+
+### Generate cURL from OpenAPI
+```python
+# tests/curls/generate_curl.py
+"""Generate cURL scripts from OpenAPI/Swagger spec."""
+import requests
+import json
+
+def generate_curl_from_openapi(endpoint: str, method: str) -> str:
+    """
+    Generate cURL command from OpenAPI spec.
+
+    When parameters are unclear, the script will:
+    1. Show expected parameters from OpenAPI
+    2. Provide example values
+    3. Prompt user for required inputs
+    """
+    # Fetch OpenAPI spec from running FastAPI app
+    spec = requests.get("http://localhost:8000/openapi.json").json()
+
+    path_spec = spec["paths"][endpoint][method.lower()]
+    request_body = path_spec.get("requestBody", {})
+
+    # Extract example from Pydantic model
+    example = request_body.get("content", {}).get("application/json", {}).get("example", {})
+
+    curl_cmd = f"""curl -X {method.upper()} "$API_BASE_URL{endpoint}" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $TOKEN" \\
+  -d '{json.dumps(example, indent=2)}'"""
+
+    return curl_cmd
+
+# Usage: python generate_curl.py /api/users POST > tests/curls/create_user.sh
+```
+
+## CloudWatch Synthetic Canaries
+
+### Canary Test Scripts
+**Location:** `tests/canaries/`
+
+Convert cURL scripts to Python canaries that CDK expert will deploy:
+
+```python
+# tests/canaries/api_health_canary.py
+"""
+CloudWatch Synthetic Canary for API health monitoring.
+CDK expert deploys this to run every 5 minutes in production.
+"""
+import json
+import os
+from aws_synthetics.selenium import synthetics_webdriver as syn_webdriver
+from aws_synthetics.common import synthetics_logger as logger
+import requests
+
+def handler(event, context):
+    """
+    Canary handler - tests critical API flows.
+
+    This runs in production and alerts on failures.
+    Keep canaries focused on critical paths only.
+    """
+    api_base_url = os.environ.get('API_BASE_URL', 'https://api.example.com')
+
+    # Test 1: Health check (most basic test)
+    logger.info("Testing /health endpoint")
+    response = requests.get(f"{api_base_url}/health", timeout=10)
+    assert response.status_code == 200, f"Health check failed: {response.status_code}"
+    logger.info("Health check passed")
+
+    # Test 2: Authentication flow
+    logger.info("Testing authentication")
+    token = get_canary_auth_token()
+    assert token, "Failed to get auth token"
+    logger.info("Authentication successful")
+
+    # Test 3: Critical user flow (create, read, delete)
+    logger.info("Testing user creation flow")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {token}"
+    }
+
+    # Create user with unique email per run
+    test_email = f"canary-{context.request_id}@example.com"
+    response = requests.post(
+        f"{api_base_url}/api/users",
+        json={"name": "Canary Test", "email": test_email},
+        headers=headers,
+        timeout=10
+    )
+    assert response.status_code == 201, f"User creation failed: {response.status_code}"
+
+    user_id = response.json()["id"]
+    logger.info(f"Created user: {user_id}")
+
+    # Read user
+    response = requests.get(f"{api_base_url}/api/users/{user_id}", headers=headers, timeout=10)
+    assert response.status_code == 200, f"User read failed: {response.status_code}"
+
+    # Cleanup: Delete user
+    response = requests.delete(f"{api_base_url}/api/users/{user_id}", headers=headers, timeout=10)
+    assert response.status_code in [200, 204], f"User deletion failed: {response.status_code}"
+
+    logger.info("All canary tests passed!")
+    return {"statusCode": 200, "body": "Canary successful"}
+
+def get_canary_auth_token() -> str:
+    """Get auth token from Secrets Manager for canary testing."""
+    import boto3
+
+    secrets_client = boto3.client('secretsmanager')
+    secret = secrets_client.get_secret_value(SecretId='canary/api-credentials')
+    credentials = json.loads(secret['SecretString'])
+
+    # Authenticate with test service account
+    # Implementation depends on your auth system (Cognito, etc.)
+    return credentials['test_token']
+```
+
+### Canary Best Practices
+
+**What to test in canaries:**
+- ✅ Health endpoints
+- ✅ Authentication flows
+- ✅ Critical user paths (signup, checkout, core features)
+- ✅ Database connectivity
+- ✅ Third-party integrations (payment, email)
+
+**What NOT to test in canaries:**
+- ❌ Edge cases (use pytest for these)
+- ❌ Complex business logic (use integration tests)
+- ❌ UI interactions (use RUM monitoring instead)
+- ❌ Every single endpoint (canaries should be focused)
+
+**Canary testing workflow:**
+1. Test engineer writes canary script in `tests/canaries/`
+2. Test locally: `python tests/canaries/api_health_canary.py`
+3. Coordinate with CDK expert to deploy canary
+4. CDK expert creates CloudWatch Synthetics canary from script
+5. Monitor canary results in CloudWatch dashboard
+
+### Canary File Structure
+```
+tests/
+├── canaries/
+│   ├── api_health_canary.py       # Basic health checks
+│   ├── user_flow_canary.py        # User registration/login
+│   ├── payment_flow_canary.py     # Payment processing
+│   ├── README.md                   # Canary documentation
+│   └── requirements.txt            # Dependencies for canaries
+└── curls/
+    ├── users.sh                    # Manual API tests
+    ├── orders.sh
+    └── README.md
+```
+
+### Coordinate with CDK Expert
+
+When creating canaries:
+1. **Test engineer**: Write canary in `tests/canaries/`
+2. **Test engineer**: Test canary locally
+3. **Ask CDK expert** to deploy canary with:
+   - Canary name
+   - Run frequency (e.g., every 5 minutes)
+   - Alert threshold (e.g., 2 consecutive failures)
+   - Required secrets (stored in Secrets Manager)
+4. **CDK expert**: Creates CloudWatch Synthetics canary
+5. **Test engineer**: Verify canary runs successfully in AWS Console
 
 ## Code Quality & Formatting
 **Always run before committing:**

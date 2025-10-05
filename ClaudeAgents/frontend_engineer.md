@@ -426,6 +426,361 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 // 5. Implement CSRF protection for state-changing operations
 ```
 
+## CloudWatch RUM (Real User Monitoring)
+
+### Setup CloudWatch RUM
+```typescript
+// src/utils/monitoring.ts
+import { AwsRum, AwsRumConfig } from 'aws-rum-web';
+
+let rumInstance: AwsRum | null = null;
+
+export function initializeCloudWatchRUM(): void {
+  if (rumInstance || process.env.NODE_ENV !== 'production') {
+    return; // Already initialized or not in production
+  }
+
+  try {
+    const config: AwsRumConfig = {
+      sessionSampleRate: 1, // Sample 100% of sessions in production
+      identityPoolId: process.env.REACT_APP_RUM_IDENTITY_POOL_ID!,
+      endpoint: 'https://dataplane.rum.us-east-1.amazonaws.com',
+      telemetries: ['performance', 'errors', 'http'],
+      allowCookies: true,
+      enableXRay: true, // Enable AWS X-Ray integration
+    };
+
+    const APPLICATION_ID = process.env.REACT_APP_RUM_APP_ID!;
+    const APPLICATION_VERSION = process.env.REACT_APP_VERSION || '1.0.0';
+    const APPLICATION_REGION = process.env.REACT_APP_AWS_REGION || 'us-east-1';
+
+    rumInstance = new AwsRum(
+      APPLICATION_ID,
+      APPLICATION_VERSION,
+      APPLICATION_REGION,
+      config
+    );
+  } catch (error) {
+    console.error('Failed to initialize CloudWatch RUM:', error);
+  }
+}
+
+export function getRUMInstance(): AwsRum | null {
+  return rumInstance;
+}
+
+// Record custom events
+export function recordCustomEvent(eventType: string, metadata: Record<string, unknown>): void {
+  if (!rumInstance) return;
+
+  rumInstance.recordEvent(eventType, metadata);
+}
+
+// Record page views
+export function recordPageView(pageName: string): void {
+  if (!rumInstance) return;
+
+  rumInstance.recordPageView(pageName);
+}
+
+// Record errors
+export function recordError(error: Error, metadata?: Record<string, unknown>): void {
+  if (!rumInstance) return;
+
+  rumInstance.recordError(error, metadata);
+}
+```
+
+### Initialize RUM in App
+```typescript
+// src/App.tsx
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { initializeCloudWatchRUM, recordPageView } from './utils/monitoring';
+
+function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Initialize RUM on app mount
+    initializeCloudWatchRUM();
+  }, []);
+
+  useEffect(() => {
+    // Track page views on route changes
+    recordPageView(location.pathname);
+  }, [location]);
+
+  return (
+    // Your app components
+  );
+}
+```
+
+### Track User Actions
+```typescript
+// Track button clicks and user interactions
+import { recordCustomEvent } from '@/utils/monitoring';
+
+function CheckoutButton() {
+  const handleCheckout = async () => {
+    const startTime = performance.now();
+
+    try {
+      await processCheckout();
+
+      // Record successful checkout
+      recordCustomEvent('checkout_completed', {
+        duration_ms: performance.now() - startTime,
+        success: true,
+      });
+    } catch (error) {
+      // Record checkout failure
+      recordCustomEvent('checkout_failed', {
+        duration_ms: performance.now() - startTime,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+
+      recordError(error as Error, {
+        context: 'checkout_process',
+      });
+    }
+  };
+
+  return <button onClick={handleCheckout}>Complete Purchase</button>;
+}
+```
+
+### Track API Performance
+```typescript
+// src/utils/api.ts - Enhanced with RUM tracking
+import { recordCustomEvent, recordError } from './monitoring';
+
+export async function fetchWithAuth<T>(
+  url: string,
+  options?: RequestInit
+): Promise<T> {
+  const startTime = performance.now();
+  const endpoint = url.split('?')[0]; // Remove query params for grouping
+
+  try {
+    const token = await getIdToken();
+
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options?.headers,
+      },
+    });
+
+    const duration = performance.now() - startTime;
+
+    // Record API call metrics
+    recordCustomEvent('api_call', {
+      endpoint,
+      method: options?.method || 'GET',
+      status: response.status,
+      duration_ms: duration,
+      success: response.ok,
+    });
+
+    if (response.status === 401) {
+      window.location.href = '/login';
+      throw new Error('Unauthorized');
+    }
+
+    if (!response.ok) {
+      const error = new Error(`API error: ${response.statusText}`);
+      recordError(error, {
+        endpoint,
+        status: response.status,
+        duration_ms: duration,
+      });
+      throw error;
+    }
+
+    return response.json();
+  } catch (error) {
+    const duration = performance.now() - startTime;
+
+    recordCustomEvent('api_error', {
+      endpoint,
+      error_message: error instanceof Error ? error.message : 'Unknown',
+      duration_ms: duration,
+    });
+
+    recordError(error as Error, {
+      endpoint,
+      context: 'api_fetch',
+    });
+
+    throw error;
+  }
+}
+```
+
+### Global Error Boundary with RUM
+```typescript
+// src/components/ErrorBoundary.tsx
+import { Component, ReactNode } from 'react';
+import { recordError } from '@/utils/monitoring';
+
+interface Props {
+  children: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    // Log error to CloudWatch RUM
+    recordError(error, {
+      componentStack: errorInfo.componentStack,
+      context: 'react_error_boundary',
+    });
+
+    // Also log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error caught by boundary:', error, errorInfo);
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-page">
+          <h1>Something went wrong</h1>
+          <p>We've been notified and are working on a fix.</p>
+          <button onClick={() => window.location.reload()}>
+            Reload Page
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Wrap your app with ErrorBoundary
+// <ErrorBoundary><App /></ErrorBoundary>
+```
+
+### Performance Monitoring
+```typescript
+// src/hooks/usePerformanceMonitoring.ts
+import { useEffect } from 'react';
+import { recordCustomEvent } from '@/utils/monitoring';
+
+export function usePerformanceMonitoring(componentName: string): void {
+  useEffect(() => {
+    const startTime = performance.now();
+
+    return () => {
+      const duration = performance.now() - startTime;
+
+      // Record component mount time
+      if (duration > 100) {
+        // Only log slow components
+        recordCustomEvent('component_slow_render', {
+          component: componentName,
+          duration_ms: duration,
+        });
+      }
+    };
+  }, [componentName]);
+}
+
+// Usage
+function Dashboard() {
+  usePerformanceMonitoring('Dashboard');
+
+  // ... component code
+}
+```
+
+### Web Vitals Tracking
+```typescript
+// src/utils/webVitals.ts
+import { onCLS, onFID, onFCP, onLCP, onTTFB } from 'web-vitals';
+import { recordCustomEvent } from './monitoring';
+
+export function reportWebVitals(): void {
+  onCLS((metric) => {
+    recordCustomEvent('web_vital_cls', {
+      value: metric.value,
+      rating: metric.rating,
+    });
+  });
+
+  onFID((metric) => {
+    recordCustomEvent('web_vital_fid', {
+      value: metric.value,
+      rating: metric.rating,
+    });
+  });
+
+  onFCP((metric) => {
+    recordCustomEvent('web_vital_fcp', {
+      value: metric.value,
+      rating: metric.rating,
+    });
+  });
+
+  onLCP((metric) => {
+    recordCustomEvent('web_vital_lcp', {
+      value: metric.value,
+      rating: metric.rating,
+    });
+  });
+
+  onTTFB((metric) => {
+    recordCustomEvent('web_vital_ttfb', {
+      value: metric.value,
+      rating: metric.rating,
+    });
+  });
+}
+
+// Initialize in index.tsx
+// reportWebVitals();
+```
+
+### Environment Variables
+```bash
+# .env.production
+REACT_APP_RUM_APP_ID=your-rum-app-id
+REACT_APP_RUM_IDENTITY_POOL_ID=your-identity-pool-id
+REACT_APP_AWS_REGION=us-east-1
+REACT_APP_VERSION=1.0.0
+
+# .env.development (RUM disabled in dev)
+# RUM variables not needed - monitoring skipped in development
+```
+
+### CDK Integration
+```typescript
+// The cdk-expert will set up the RUM app monitor:
+// - CloudWatch RUM App Monitor
+// - Cognito Identity Pool for RUM
+// - IAM roles for RUM data ingestion
+// Frontend engineer uses the generated IDs in environment variables
+```
+
 ## Web Search for Latest Documentation
 
 **ALWAYS search for latest docs when:**

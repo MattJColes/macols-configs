@@ -694,12 +694,291 @@ async def get_user(
     return await get_user_profile(user_id)
 ```
 
+## CloudWatch Logging & Monitoring
+
+### Structured Logging with CloudWatch
+```python
+# src/utils/logging.py
+import json
+import logging
+import sys
+from typing import Any, Dict
+from datetime import datetime
+import boto3
+from pythonjsonlogger import jsonlogger
+
+# CloudWatch Logs client
+cloudwatch_logs = boto3.client('logs', region_name='us-east-1')
+
+class CloudWatchFormatter(jsonlogger.JsonFormatter):
+    """Custom JSON formatter for CloudWatch compatibility."""
+
+    def add_fields(self, log_record: Dict[str, Any], record: logging.LogRecord, message_dict: Dict[str, Any]) -> None:
+        super().add_fields(log_record, record, message_dict)
+
+        # Add CloudWatch-friendly fields
+        log_record['timestamp'] = datetime.utcnow().isoformat()
+        log_record['level'] = record.levelname
+        log_record['logger'] = record.name
+
+        # Add AWS request context if available
+        if hasattr(record, 'aws_request_id'):
+            log_record['aws_request_id'] = record.aws_request_id
+
+def setup_logging(service_name: str, environment: str) -> logging.Logger:
+    """
+    Configure structured logging for CloudWatch.
+
+    Args:
+        service_name: Name of the service (e.g., 'api', 'worker')
+        environment: Environment (e.g., 'dev', 'prod')
+
+    Returns:
+        Configured logger instance
+    """
+    logger = logging.getLogger(service_name)
+    logger.setLevel(logging.INFO if environment == 'prod' else logging.DEBUG)
+
+    # Console handler with JSON formatting
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = CloudWatchFormatter(
+        '%(timestamp)s %(level)s %(name)s %(message)s',
+        rename_fields={'levelname': 'level', 'name': 'logger'}
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    return logger
+
+# Usage in application
+logger = setup_logging('api', os.getenv('STAGE', 'dev'))
+
+# Structured logging examples
+logger.info('User created', extra={
+    'user_id': user_id,
+    'email': email,
+    'action': 'user.created'
+})
+
+logger.error('Database query failed', extra={
+    'table_name': 'users',
+    'query_type': 'get_item',
+    'error_code': 'ResourceNotFoundException',
+    'user_id': user_id
+})
+```
+
+### CloudWatch Metrics
+```python
+# src/utils/metrics.py
+import boto3
+from typing import Dict, List
+from datetime import datetime
+
+cloudwatch = boto3.client('cloudwatch', region_name='us-east-1')
+
+def publish_metric(
+    metric_name: str,
+    value: float,
+    namespace: str = 'MyApp/API',
+    dimensions: Dict[str, str] = None,
+    unit: str = 'Count'
+) -> None:
+    """
+    Publish custom metric to CloudWatch.
+
+    Args:
+        metric_name: Metric name (e.g., 'UserSignups', 'APILatency')
+        value: Metric value
+        namespace: CloudWatch namespace
+        dimensions: Metric dimensions (e.g., {'Environment': 'prod'})
+        unit: Metric unit (Count, Seconds, Milliseconds, etc.)
+    """
+    metric_data = {
+        'MetricName': metric_name,
+        'Value': value,
+        'Unit': unit,
+        'Timestamp': datetime.utcnow()
+    }
+
+    if dimensions:
+        metric_data['Dimensions'] = [
+            {'Name': k, 'Value': v} for k, v in dimensions.items()
+        ]
+
+    cloudwatch.put_metric_data(
+        Namespace=namespace,
+        MetricData=[metric_data]
+    )
+
+# Usage examples
+publish_metric('UserSignup', 1, dimensions={'Environment': os.getenv('STAGE')})
+publish_metric('APILatency', response_time_ms, unit='Milliseconds')
+publish_metric('OrderAmount', order_total, unit='None')
+```
+
+### CloudWatch Alarms Integration
+```python
+# src/services/monitoring.py
+from src.utils.metrics import publish_metric
+from src.utils.logging import logger
+import time
+from functools import wraps
+
+def monitor_execution_time(metric_name: str):
+    """Decorator to monitor function execution time and publish to CloudWatch."""
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            start_time = time.time()
+            try:
+                result = await func(*args, **kwargs)
+                execution_time = (time.time() - start_time) * 1000  # ms
+
+                publish_metric(
+                    metric_name,
+                    execution_time,
+                    unit='Milliseconds',
+                    dimensions={'Function': func.__name__}
+                )
+
+                return result
+            except Exception as e:
+                logger.error(f'{func.__name__} failed', extra={
+                    'function': func.__name__,
+                    'error': str(e),
+                    'execution_time_ms': (time.time() - start_time) * 1000
+                })
+                publish_metric('APIError', 1, dimensions={'Function': func.__name__})
+                raise
+        return wrapper
+    return decorator
+
+# Usage
+@monitor_execution_time('ProcessOrder')
+async def process_order(order_id: str) -> dict:
+    """Process order with automatic monitoring."""
+    # ... processing logic
+    pass
+```
+
+## AWS Secrets Manager
+
+### Secrets Management Best Practices
+```python
+# src/utils/secrets.py
+import boto3
+import json
+import os
+from typing import Dict, Any
+from functools import lru_cache
+
+secrets_client = boto3.client('secretsmanager', region_name='us-east-1')
+
+@lru_cache(maxsize=128)
+def get_secret(secret_name: str) -> Dict[str, Any]:
+    """
+    Retrieve secret from AWS Secrets Manager with caching.
+
+    Args:
+        secret_name: Name of the secret in Secrets Manager
+
+    Returns:
+        Secret value as dictionary
+
+    Note:
+        Secrets are cached in memory. For rotation, restart the application
+        or clear the cache with get_secret.cache_clear()
+    """
+    try:
+        response = secrets_client.get_secret_value(SecretId=secret_name)
+        return json.loads(response['SecretString'])
+    except Exception as e:
+        logger.error(f'Failed to retrieve secret: {secret_name}', extra={
+            'secret_name': secret_name,
+            'error': str(e)
+        })
+        raise
+
+def get_db_credentials() -> Dict[str, str]:
+    """Get database credentials from Secrets Manager."""
+    secret_name = os.getenv('DB_SECRET_NAME', 'prod/db/credentials')
+    return get_secret(secret_name)
+
+def get_api_key(service: str) -> str:
+    """Get API key for external service."""
+    secret_name = f"{os.getenv('STAGE')}/api/{service}"
+    secret = get_secret(secret_name)
+    return secret.get('api_key', '')
+
+# Usage in application
+db_creds = get_db_credentials()
+connection_string = f"postgresql://{db_creds['username']}:{db_creds['password']}@{db_creds['host']}:{db_creds['port']}/{db_creds['database']}"
+
+stripe_api_key = get_api_key('stripe')
+```
+
+### Environment-Based Configuration
+```python
+# src/config.py
+import os
+from src.utils.secrets import get_secret
+from typing import Optional
+
+class Config:
+    """Application configuration with environment-based secret loading."""
+
+    def __init__(self):
+        self.stage = os.getenv('STAGE', 'dev')
+        self.aws_region = os.getenv('AWS_REGION', 'us-east-1')
+
+        # Local development: use environment variables
+        # Production: use AWS Secrets Manager
+        if self.stage == 'local':
+            self.database_url = os.getenv('DATABASE_URL', 'postgresql://localhost/myapp')
+            self.redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
+            self.jwt_secret = os.getenv('JWT_SECRET', 'dev-secret-change-in-prod')
+        else:
+            # Production: load from Secrets Manager
+            db_secret = get_secret(f'{self.stage}/database')
+            self.database_url = db_secret['connection_string']
+
+            cache_secret = get_secret(f'{self.stage}/redis')
+            self.redis_url = cache_secret['connection_string']
+
+            app_secret = get_secret(f'{self.stage}/app')
+            self.jwt_secret = app_secret['jwt_secret']
+
+    @property
+    def is_production(self) -> bool:
+        return self.stage == 'prod'
+
+config = Config()
+```
+
+### Docker Secrets Best Practices
+```python
+# Local development: Use .env file (never commit!)
+# Production: Secrets injected as environment variables from Secrets Manager
+
+# .env.example (commit this, not .env)
+STAGE=local
+DATABASE_URL=postgresql://localhost/myapp
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-dev-secret-here
+AWS_REGION=us-east-1
+
+# In production, secrets are set by ECS task definition from Secrets Manager
+# Never hardcode secrets in code or Dockerfile
+```
+
 ## Docker Expertise
 - **Multi-stage builds** for small production images
 - **Non-root users** for security
 - **Layer caching** optimization
 - **.dockerignore** to exclude unnecessary files
 - **Health checks** for container orchestration
+- **Secrets management** - use build args for build-time, environment variables for runtime
 
 ## Dockerfile Pattern
 ```dockerfile
@@ -741,6 +1020,8 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s \
   CMD python -c "import requests; requests.get('http://localhost:8000/health')"
 
+# IMPORTANT: Secrets are passed as environment variables at runtime
+# Never COPY .env files or hardcode secrets in Dockerfile
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
@@ -758,7 +1039,7 @@ services:
         condition: service_healthy
     volumes:
       - ./app:/app/app  # Hot reload in dev
-  
+
   db:
     image: postgres:16-alpine
     environment:
@@ -767,6 +1048,496 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
+```
+
+## OpenAPI/Swagger Documentation
+
+### FastAPI Automatic OpenAPI
+```python
+# main.py
+from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
+
+app = FastAPI(
+    title="My API",
+    description="API for managing users and orders",
+    version="1.0.0",
+    docs_url="/docs",  # Swagger UI
+    redoc_url="/redoc",  # ReDoc
+    openapi_url="/openapi.json",
+)
+
+# Custom OpenAPI schema with examples
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title="My API",
+        version="1.0.0",
+        description="Complete API documentation with examples",
+        routes=app.routes,
+    )
+
+    # Add custom examples to endpoints
+    openapi_schema["paths"]["/api/users"]["post"]["requestBody"]["content"]["application/json"]["example"] = {
+        "name": "John Doe",
+        "email": "john@example.com"
+    }
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+
+# Endpoints with rich documentation
+@app.post(
+    "/api/users",
+    response_model=UserResponse,
+    status_code=201,
+    summary="Create a new user",
+    description="Create a new user with email and name. Email must be unique.",
+    responses={
+        201: {
+            "description": "User created successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "name": "John Doe",
+                        "email": "john@example.com",
+                        "created_at": "2025-01-15T10:30:00Z"
+                    }
+                }
+            }
+        },
+        400: {"description": "Invalid input"},
+        409: {"description": "Email already exists"},
+    },
+    tags=["Users"]
+)
+async def create_user(user: CreateUserRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Create a new user with the following validations:
+    - Email must be valid format
+    - Email must be unique
+    - Name is required
+
+    Returns the created user with generated ID and timestamp.
+    """
+    return await user_service.create_user(user.name, user.email)
+```
+
+### Pydantic Models with Examples
+```python
+# models/user.py
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional
+from datetime import datetime
+
+class CreateUserRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100, description="User's full name")
+    email: EmailStr = Field(..., description="User's email address")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "John Doe",
+                "email": "john@example.com"
+            }
+        }
+
+class UserResponse(BaseModel):
+    id: str = Field(..., description="Unique user identifier (UUID)")
+    name: str
+    email: EmailStr
+    created_at: datetime
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "John Doe",
+                "email": "john@example.com",
+                "created_at": "2025-01-15T10:30:00Z"
+            }
+        }
+```
+
+## API Testing Structure
+
+### Test Organization
+```
+tests/
+├── api/                    # API endpoint tests
+│   ├── test_users.py      # User endpoints
+│   ├── test_orders.py     # Order endpoints
+│   └── test_auth.py       # Authentication
+├── integration/            # Integration tests
+│   ├── test_user_flow.py  # End-to-end flows
+│   └── test_payment.py    # Payment integration
+├── curls/                  # cURL commands for manual testing and canaries
+│   ├── users.sh           # User endpoint curls
+│   ├── orders.sh          # Order endpoint curls
+│   └── README.md          # How to use curl scripts
+├── fixtures/               # Test data
+│   └── test_data.py
+└── conftest.py            # Pytest configuration
+```
+
+### cURL Scripts for Testing & Canaries
+```bash
+# tests/curls/users.sh
+#!/bin/bash
+# User API endpoints - Used for manual testing and CloudWatch Synthetic Canaries
+
+set -e
+
+# Configuration
+API_BASE_URL="${API_BASE_URL:-http://localhost:8000}"
+TOKEN="${AUTH_TOKEN:-}" # Set via environment or ask user
+
+# Color output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+echo "Testing User API endpoints..."
+echo "Base URL: $API_BASE_URL"
+
+# Health check
+echo -e "\n${GREEN}[1/5] Health Check${NC}"
+curl -X GET "$API_BASE_URL/health" \
+  -H "Content-Type: application/json" \
+  -w "\nStatus: %{http_code}\n" || echo -e "${RED}FAILED${NC}"
+
+# Create user
+echo -e "\n${GREEN}[2/5] Create User${NC}"
+USER_ID=$(curl -X POST "$API_BASE_URL/api/users" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Test User",
+    "email": "test@example.com"
+  }' \
+  -w "\nStatus: %{http_code}\n" \
+  | jq -r '.id') || echo -e "${RED}FAILED${NC}"
+
+echo "Created user ID: $USER_ID"
+
+# Get user
+echo -e "\n${GREEN}[3/5] Get User${NC}"
+curl -X GET "$API_BASE_URL/api/users/$USER_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -w "\nStatus: %{http_code}\n" || echo -e "${RED}FAILED${NC}"
+
+# Update user
+echo -e "\n${GREEN}[4/5] Update User${NC}"
+curl -X PUT "$API_BASE_URL/api/users/$USER_ID" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Updated User"
+  }' \
+  -w "\nStatus: %{http_code}\n" || echo -e "${RED}FAILED${NC}"
+
+# Delete user
+echo -e "\n${GREEN}[5/5] Delete User${NC}"
+curl -X DELETE "$API_BASE_URL/api/users/$USER_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -w "\nStatus: %{http_code}\n" || echo -e "${RED}FAILED${NC}"
+
+echo -e "\n${GREEN}All tests completed!${NC}"
+```
+
+### Pytest API Tests
+```python
+# tests/api/test_users.py
+import pytest
+from httpx import AsyncClient
+from fastapi import status
+
+@pytest.mark.asyncio
+async def test_create_user(client: AsyncClient, auth_headers: dict):
+    """Test creating a new user."""
+    response = await client.post(
+        "/api/users",
+        json={"name": "John Doe", "email": "john@example.com"},
+        headers=auth_headers
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    data = response.json()
+    assert data["name"] == "John Doe"
+    assert data["email"] == "john@example.com"
+    assert "id" in data
+    assert "created_at" in data
+
+@pytest.mark.asyncio
+async def test_create_user_duplicate_email(client: AsyncClient, auth_headers: dict):
+    """Test that duplicate emails are rejected."""
+    user_data = {"name": "John Doe", "email": "duplicate@example.com"}
+
+    # Create first user
+    response1 = await client.post("/api/users", json=user_data, headers=auth_headers)
+    assert response1.status_code == status.HTTP_201_CREATED
+
+    # Try to create duplicate
+    response2 = await client.post("/api/users", json=user_data, headers=auth_headers)
+    assert response2.status_code == status.HTTP_409_CONFLICT
+
+@pytest.mark.asyncio
+async def test_get_user(client: AsyncClient, auth_headers: dict, test_user: dict):
+    """Test retrieving a user by ID."""
+    response = await client.get(
+        f"/api/users/{test_user['id']}",
+        headers=auth_headers
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["id"] == test_user["id"]
+    assert data["email"] == test_user["email"]
+
+@pytest.mark.asyncio
+async def test_update_user(client: AsyncClient, auth_headers: dict, test_user: dict):
+    """Test updating user information."""
+    response = await client.put(
+        f"/api/users/{test_user['id']}",
+        json={"name": "Updated Name"},
+        headers=auth_headers
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["name"] == "Updated Name"
+
+# tests/conftest.py
+import pytest
+from httpx import AsyncClient
+from main import app
+
+@pytest.fixture
+async def client():
+    """Async HTTP client for testing."""
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client
+
+@pytest.fixture
+def auth_headers(test_token: str) -> dict:
+    """Authentication headers for protected endpoints."""
+    return {"Authorization": f"Bearer {test_token}"}
+
+@pytest.fixture
+async def test_user(client: AsyncClient, auth_headers: dict) -> dict:
+    """Create a test user for use in tests."""
+    response = await client.post(
+        "/api/users",
+        json={"name": "Test User", "email": "test@example.com"},
+        headers=auth_headers
+    )
+    return response.json()
+```
+
+### Interactive Testing Helper
+```python
+# tests/curls/generate_curl.py
+"""Generate cURL commands from OpenAPI spec for testing."""
+import json
+import sys
+from typing import Dict, Any
+
+def generate_curl_from_openapi(endpoint: str, method: str, openapi_spec: Dict[str, Any]) -> str:
+    """
+    Generate cURL command from OpenAPI specification.
+
+    When input is needed and unclear, this will prompt the user with:
+    - Expected parameters from OpenAPI spec
+    - Example values from schema
+    - Required vs optional fields
+    """
+    path_spec = openapi_spec["paths"].get(endpoint, {})
+    method_spec = path_spec.get(method.lower(), {})
+
+    # Extract request body example
+    request_body = method_spec.get("requestBody", {})
+    example = None
+
+    if request_body:
+        content = request_body.get("content", {}).get("application/json", {})
+        example = content.get("example") or content.get("schema", {}).get("example")
+
+    # Build curl command
+    curl_parts = [
+        f'curl -X {method.upper()}',
+        '"$API_BASE_URL{endpoint}"',
+        '-H "Content-Type: application/json"',
+        '-H "Authorization: Bearer $TOKEN"',
+    ]
+
+    if example:
+        json_data = json.dumps(example, indent=2)
+        curl_parts.append(f"-d '{json_data}'")
+
+    curl_parts.append('-w "\\nStatus: %{http_code}\\n"')
+
+    return ' \\\n  '.join(curl_parts)
+
+# Usage: python generate_curl.py /api/users POST
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("Usage: python generate_curl.py <endpoint> <method>")
+        print("Example: python generate_curl.py /api/users POST")
+        sys.exit(1)
+
+    # Load OpenAPI spec from running app
+    import requests
+    spec = requests.get("http://localhost:8000/openapi.json").json()
+
+    endpoint = sys.argv[1]
+    method = sys.argv[2]
+
+    curl_cmd = generate_curl_from_openapi(endpoint, method, spec)
+    print(curl_cmd)
+```
+
+## CloudWatch Synthetic Canaries
+
+### Canary Script Template (for test engineers)
+```python
+# tests/canaries/api_canary.py
+"""
+CloudWatch Synthetic Canary for API health monitoring.
+Test engineers: Create these scripts in tests/canaries/
+CDK expert will deploy them to CloudWatch Synthetics.
+"""
+import json
+from aws_synthetics.selenium import synthetics_webdriver as webdriver
+from aws_synthetics.common import synthetics_logger as logger
+
+def handler(event, context):
+    """
+    Canary handler - runs periodically to test API endpoints.
+
+    Tests critical user flows:
+    1. Health check
+    2. User creation
+    3. User retrieval
+    4. Authentication flow
+    """
+
+    # Configuration
+    api_base_url = "https://api.example.com"
+
+    # Test 1: Health check
+    logger.info("Testing health endpoint")
+    response = requests.get(f"{api_base_url}/health")
+    assert response.status_code == 200, f"Health check failed: {response.status_code}"
+
+    # Test 2: Create user
+    logger.info("Testing user creation")
+    user_data = {
+        "name": "Canary Test User",
+        "email": f"canary-{context.request_id}@example.com"
+    }
+
+    # Get auth token (using service account or test credentials)
+    token = get_test_auth_token()
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.post(
+        f"{api_base_url}/api/users",
+        json=user_data,
+        headers=headers
+    )
+    assert response.status_code == 201, f"User creation failed: {response.status_code}"
+
+    user_id = response.json()["id"]
+    logger.info(f"Created user: {user_id}")
+
+    # Test 3: Get user
+    logger.info("Testing user retrieval")
+    response = requests.get(
+        f"{api_base_url}/api/users/{user_id}",
+        headers=headers
+    )
+    assert response.status_code == 200, f"User retrieval failed: {response.status_code}"
+
+    # Cleanup: Delete test user
+    requests.delete(f"{api_base_url}/api/users/{user_id}", headers=headers)
+
+    logger.info("All canary tests passed")
+    return {"statusCode": 200, "body": "Canary tests successful"}
+
+def get_test_auth_token() -> str:
+    """Get authentication token for canary testing."""
+    # Retrieve from Secrets Manager or use service account
+    import boto3
+
+    secrets = boto3.client('secretsmanager')
+    secret = secrets.get_secret_value(SecretId='canary/api-credentials')
+    credentials = json.loads(secret['SecretString'])
+
+    # Authenticate and get token
+    # Implementation depends on your auth system
+    return credentials['test_token']
+```
+
+### cURL README for Test Engineers
+```markdown
+# tests/curls/README.md
+
+# API Testing with cURL
+
+This directory contains cURL scripts for manual API testing and CloudWatch Synthetic Canary creation.
+
+## Usage
+
+### Local Testing
+```bash
+# Set environment variables
+export API_BASE_URL="http://localhost:8000"
+export AUTH_TOKEN="your-test-token"
+
+# Run user endpoint tests
+./users.sh
+
+# Run order endpoint tests
+./orders.sh
+```
+
+### Production Testing
+```bash
+export API_BASE_URL="https://api.example.com"
+export AUTH_TOKEN="your-prod-token"  # Or ask user for token
+
+./users.sh
+```
+
+## For Test Engineers
+
+1. **Manual Testing**: Use these scripts to test API endpoints locally
+2. **Canary Creation**: Convert successful curl scripts to CloudWatch Synthetic Canaries
+3. **CI/CD Integration**: These scripts can be used in GitHub Actions for smoke tests
+
+## When Input is Needed
+
+If authentication tokens or other parameters are not set, the script will prompt:
+```bash
+if [ -z "$AUTH_TOKEN" ]; then
+  echo "AUTH_TOKEN not set. Please provide authentication token:"
+  read -r AUTH_TOKEN
+fi
+```
+
+## Converting to Canaries
+
+See `tests/canaries/` for Python versions of these scripts that can be deployed
+as CloudWatch Synthetic Canaries by the CDK expert.
 ```
 
 ## Web Search for Latest Documentation
