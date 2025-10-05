@@ -71,7 +71,12 @@ echo ""
 # Update .zshrc to use Powerlevel10k theme
 if [ -f "$HOME/.zshrc" ]; then
     if grep -q "^ZSH_THEME=" "$HOME/.zshrc"; then
-        sed -i.bak 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/' "$HOME/.zshrc"
+        # macOS sed requires different syntax than Linux
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/' "$HOME/.zshrc"
+        else
+            sed -i.bak 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/' "$HOME/.zshrc"
+        fi
         echo "✓ Updated .zshrc to use Powerlevel10k theme"
     else
         echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> "$HOME/.zshrc"
