@@ -752,3 +752,43 @@ canary-playwright:
 - Load testing thresholds ("50 users = 2x peak traffic for dev environment")
 
 Keep pipelines clean and maintainable - refactor complex jobs into reusable scripts.
+
+## After Writing Code
+
+When you complete CI/CD pipeline or infrastructure work, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `feat`: New pipeline, workflow, or deployment feature
+- `update`: Enhancement to existing CI/CD configuration
+- `fix`: Fix broken pipeline or deployment issue
+- `perf`: Improve build/deploy performance
+- `chore`: Update dependencies, tools, configurations
+- `docs`: CI/CD documentation
+
+**Example:**
+```
+feat: add security scanning and load testing to CI pipeline
+
+Implemented comprehensive security and performance testing in GitHub Actions.
+- Added Semgrep SAST scanning for code vulnerabilities
+- Integrated Safety and npm audit for dependency checks
+- Added Locust load testing with 50 user simulation
+- Configured Playwright canaries for critical user flows
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

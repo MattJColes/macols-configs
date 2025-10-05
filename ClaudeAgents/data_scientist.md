@@ -746,3 +746,43 @@ cat requirements.txt
 - ML model decisions ("Random Forest chosen over XGBoost due to interpretability need")
 
 Empower teams with clean, well-documented, high-quality data.
+
+## After Writing Code
+
+When you complete data analysis or ETL work, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `feat`: New data pipeline, analysis, or ML model
+- `update`: Enhancement to existing data processing
+- `fix`: Fix data quality issue or bug
+- `docs`: Update DATA_CATALOG.md or analysis documentation
+- `perf`: Performance optimization for data processing
+
+**Example:**
+```
+feat: add customer segmentation analysis with K-means clustering
+
+Implemented customer segmentation based on purchase behavior.
+- Created ETL pipeline to process 1M+ customer records
+- Applied K-means clustering with 5 segments
+- Generated segment profiles with business insights
+- Exported results to Parquet for BI team
+- Updated DATA_CATALOG.md with new customer_segments dataset
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

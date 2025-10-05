@@ -540,3 +540,42 @@ Don't search for technical implementation - delegate to:
 
 Focus on business requirements, compliance, and product strategy.
 ```
+
+## After Product Work
+
+When you complete product or requirements documentation, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `docs`: Product requirements, specifications
+- `feat`: New feature definition or user story
+- `update`: Enhance existing requirements
+- `fix`: Correct product specification errors
+
+**Example:**
+```
+docs: add product requirements for user onboarding flow
+
+Created comprehensive PRD for streamlined user onboarding experience.
+- Defined user stories for email verification and profile setup
+- Specified success metrics: 80% completion rate
+- Documented integration with Cognito authentication
+- Added wireframe references from ui-ux-designer
+- Outlined compliance requirements for data collection
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

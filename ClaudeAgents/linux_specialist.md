@@ -336,3 +336,44 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev \
 - Use `readonly` for constants
 
 Keep scripts POSIX-compliant when possible for maximum portability.
+
+## After Writing Code
+
+When you complete bash scripts or system configuration work, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `feat`: New script or system configuration
+- `update`: Enhancement to existing script
+- `fix`: Fix script bug or system issue
+- `refactor`: Improve script structure
+- `chore`: Update system dependencies or tools
+- `docs`: Script documentation
+
+**Example:**
+```
+feat: add automated backup script with error handling and logging
+
+Implemented robust backup script for database and file system.
+- Added incremental backup support with rsync
+- Implemented error handling with exit codes
+- Added logging to /var/log/backup.log
+- Configured cron job for daily execution
+- POSIX-compliant for maximum portability
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

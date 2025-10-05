@@ -600,6 +600,321 @@ async def get_user_profile(user: dict = Depends(get_current_user)):
     return {"id": user_id, "email": email}
 ```
 
+### Audit Logging for User Actions
+
+**ALWAYS implement audit logging for user interactions with API routes and services.**
+
+```python
+# src/utils/audit.py
+import json
+from datetime import datetime
+from typing import Dict, Any, Optional
+import boto3
+from fastapi import Request
+
+# DynamoDB for audit log storage
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+audit_table = dynamodb.Table(os.getenv('AUDIT_LOG_TABLE', 'audit-logs'))
+
+async def log_user_action(
+    user_id: str,
+    action: str,
+    resource_type: str,
+    resource_id: Optional[str] = None,
+    request: Optional[Request] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+    status: str = "success",
+    error_message: Optional[str] = None
+) -> None:
+    """
+    Log user action to DynamoDB audit table.
+
+    Args:
+        user_id: Cognito user ID (sub claim)
+        action: Action performed (e.g., 'create', 'read', 'update', 'delete')
+        resource_type: Type of resource (e.g., 'user', 'order', 'payment')
+        resource_id: ID of the specific resource
+        request: FastAPI request object for IP and user agent
+        metadata: Additional context (e.g., changed fields, amounts)
+        status: 'success' or 'failure'
+        error_message: Error details if status is 'failure'
+    """
+    timestamp = datetime.utcnow().isoformat()
+
+    audit_entry = {
+        'audit_id': f"{user_id}#{timestamp}",  # Composite key
+        'timestamp': timestamp,
+        'user_id': user_id,
+        'action': action,
+        'resource_type': resource_type,
+        'resource_id': resource_id,
+        'status': status,
+    }
+
+    # Add request context if available
+    if request:
+        audit_entry['ip_address'] = request.client.host
+        audit_entry['user_agent'] = request.headers.get('user-agent', 'unknown')
+        audit_entry['request_path'] = str(request.url.path)
+        audit_entry['request_method'] = request.method
+
+    # Add metadata and errors
+    if metadata:
+        audit_entry['metadata'] = json.dumps(metadata)
+
+    if error_message:
+        audit_entry['error_message'] = error_message
+
+    # Store in DynamoDB
+    try:
+        audit_table.put_item(Item=audit_entry)
+    except Exception as e:
+        # Log to CloudWatch if DynamoDB fails (don't fail the request)
+        logger.error(f"Failed to write audit log: {e}", extra={
+            'audit_entry': audit_entry,
+            'error': str(e)
+        })
+
+# Decorator for automatic audit logging
+from functools import wraps
+
+def audit_action(action: str, resource_type: str):
+    """Decorator to automatically log user actions on API endpoints."""
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            # Extract user and request from kwargs
+            user = kwargs.get('user') or kwargs.get('current_user')
+            request = kwargs.get('request')
+
+            try:
+                result = await func(*args, **kwargs)
+
+                # Log successful action
+                if user:
+                    resource_id = None
+                    if isinstance(result, dict):
+                        resource_id = result.get('id')
+
+                    await log_user_action(
+                        user_id=user.get('sub'),
+                        action=action,
+                        resource_type=resource_type,
+                        resource_id=resource_id,
+                        request=request,
+                        status='success'
+                    )
+
+                return result
+
+            except Exception as e:
+                # Log failed action
+                if user:
+                    await log_user_action(
+                        user_id=user.get('sub'),
+                        action=action,
+                        resource_type=resource_type,
+                        request=request,
+                        status='failure',
+                        error_message=str(e)
+                    )
+                raise
+
+        return wrapper
+    return decorator
+```
+
+### Using Audit Logging in Endpoints
+
+```python
+from fastapi import FastAPI, Depends, Request
+from src.utils.audit import log_user_action, audit_action
+
+@app.post("/api/users")
+@audit_action(action="create", resource_type="user")
+async def create_user(
+    user_data: CreateUserRequest,
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create user with automatic audit logging via decorator."""
+    new_user = await user_service.create_user(user_data)
+    return new_user
+
+@app.put("/api/users/{user_id}")
+async def update_user(
+    user_id: str,
+    updates: UpdateUserRequest,
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update user with manual audit logging for detailed metadata."""
+    old_user = await user_service.get_user(user_id)
+    updated_user = await user_service.update_user(user_id, updates)
+
+    # Manual audit log with change details
+    await log_user_action(
+        user_id=current_user['sub'],
+        action='update',
+        resource_type='user',
+        resource_id=user_id,
+        request=request,
+        metadata={
+            'changed_fields': list(updates.dict(exclude_unset=True).keys()),
+            'old_email': old_user.get('email'),
+            'new_email': updated_user.get('email')
+        }
+    )
+
+    return updated_user
+
+@app.delete("/api/orders/{order_id}")
+async def cancel_order(
+    order_id: str,
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """Cancel order with audit logging."""
+    order = await order_service.get_order(order_id)
+
+    # Verify user owns the order
+    if order['user_id'] != current_user['sub']:
+        await log_user_action(
+            user_id=current_user['sub'],
+            action='delete',
+            resource_type='order',
+            resource_id=order_id,
+            request=request,
+            status='failure',
+            error_message='Unauthorized: User does not own this order'
+        )
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    await order_service.cancel_order(order_id)
+
+    await log_user_action(
+        user_id=current_user['sub'],
+        action='delete',
+        resource_type='order',
+        resource_id=order_id,
+        request=request,
+        metadata={'order_amount': order.get('total_amount')}
+    )
+
+    return {"message": "Order cancelled"}
+```
+
+### DynamoDB Audit Table Schema
+
+```python
+# CDK definition (for cdk-expert to implement)
+"""
+Table: audit-logs
+Partition Key: audit_id (String) - user_id#timestamp
+Sort Key: timestamp (String) - ISO 8601 format
+
+GSI 1:
+  Partition Key: user_id (String)
+  Sort Key: timestamp (String)
+  Purpose: Query all actions by user
+
+GSI 2:
+  Partition Key: resource_type (String)
+  Sort Key: timestamp (String)
+  Purpose: Query all actions on a resource type
+
+Attributes:
+- user_id: Cognito sub
+- action: create, read, update, delete
+- resource_type: user, order, payment, etc.
+- resource_id: ID of affected resource
+- status: success, failure
+- ip_address: Client IP
+- user_agent: Browser/client info
+- request_path: API endpoint
+- request_method: GET, POST, PUT, DELETE
+- metadata: JSON string with additional context
+- error_message: Error details if failed
+- timestamp: ISO 8601 timestamp
+"""
+```
+
+### Querying Audit Logs
+
+```python
+from boto3.dynamodb.conditions import Key
+from datetime import datetime, timedelta
+
+async def get_user_audit_history(
+    user_id: str,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    limit: int = 100
+) -> List[Dict[str, Any]]:
+    """Retrieve audit history for a specific user."""
+    if not start_date:
+        start_date = datetime.utcnow() - timedelta(days=30)
+    if not end_date:
+        end_date = datetime.utcnow()
+
+    response = audit_table.query(
+        IndexName='user-id-index',
+        KeyConditionExpression=Key('user_id').eq(user_id) &
+                              Key('timestamp').between(
+                                  start_date.isoformat(),
+                                  end_date.isoformat()
+                              ),
+        Limit=limit,
+        ScanIndexForward=False  # Most recent first
+    )
+
+    return response.get('Items', [])
+
+async def get_failed_actions(
+    resource_type: str,
+    hours: int = 24
+) -> List[Dict[str, Any]]:
+    """Get all failed actions for a resource type in the last N hours."""
+    start_time = (datetime.utcnow() - timedelta(hours=hours)).isoformat()
+
+    response = audit_table.query(
+        IndexName='resource-type-index',
+        KeyConditionExpression=Key('resource_type').eq(resource_type) &
+                              Key('timestamp').gte(start_time),
+        FilterExpression=Attr('status').eq('failure')
+    )
+
+    return response.get('Items', [])
+```
+
+### Compliance & Retention
+
+```python
+# src/utils/audit_retention.py
+"""
+Audit log retention policy for compliance.
+
+GDPR/SOC2 Requirements:
+- Retain audit logs for minimum 90 days
+- Maximum 7 years for financial transactions
+- Support data deletion requests (user right to be forgotten)
+"""
+
+async def cleanup_old_audit_logs(retention_days: int = 90):
+    """Delete audit logs older than retention period."""
+    cutoff_date = (datetime.utcnow() - timedelta(days=retention_days)).isoformat()
+
+    # Scan and delete old records (implement in batches)
+    # For production, use DynamoDB TTL instead
+    logger.info(f"Cleaning up audit logs older than {retention_days} days")
+
+# Configure DynamoDB TTL for automatic cleanup
+"""
+Enable TTL on 'ttl' attribute in audit-logs table.
+Set ttl = timestamp + retention_period when creating audit entries.
+"""
+```
+
 ### Service-to-Service Authentication
 ```python
 import boto3
@@ -610,14 +925,14 @@ async def call_internal_service(endpoint: str, method: str = "GET", data: dict =
     """Call internal service with AWS IAM authentication (SigV4)."""
     session = boto3.Session()
     credentials = session.get_credentials()
-    
+
     request = AWSRequest(
         method=method,
         url=endpoint,
         data=json.dumps(data) if data else None,
         headers={"Content-Type": "application/json"}
     )
-    
+
     # Sign request with IAM credentials
     SigV4Auth(credentials, "execute-api", "us-east-1").add_auth(request)
     
@@ -1621,3 +1936,126 @@ def process_orders(df: pd.DataFrame, min_amount: Decimal) -> pd.DataFrame:
 ```
 
 Type hints make your code self-documenting. Trust them.
+
+## After Writing Code
+
+When you complete writing code, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `feat`: New feature
+- `update`: Enhancement to existing feature
+- `fix`: Bug fix
+- `refactor`: Code restructuring without behavior change
+- `perf`: Performance improvement
+- `test`: Add or update tests
+- `docs`: Documentation changes
+- `chore`: Build process, dependencies, tooling
+
+**Example:**
+```
+feat: add DynamoDB caching layer for user queries
+
+Implemented Redis-backed cache for user data queries to reduce
+DynamoDB read costs and improve response times.
+- Added cache_get_or_compute utility in db/redis.py
+- Updated user_service to use caching
+- Cache TTL set to 1 hour with automatic invalidation
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+## Run Tests After Code Changes
+
+**ALWAYS run tests after completing code changes.**
+
+### Test Running Workflow
+
+1. **Identify test command** - Check for pytest, unittest, or test script
+2. **Run tests** - Execute the test suite
+3. **If tests pass** - Proceed to suggest commit message
+4. **If tests fail** - Analyze and fix errors (max 3 attempts)
+
+### How to Run Tests
+
+```bash
+# Common Python test commands
+pytest                           # Run all pytest tests
+pytest tests/                    # Run specific directory
+pytest -v                        # Verbose output
+python -m pytest                 # Run as module
+python -m unittest discover      # Run unittest tests
+```
+
+### Error Resolution Process
+
+When tests fail:
+
+1. **Read the error message carefully** - Understand the failure
+2. **Analyze the root cause** - Is it:
+   - Import error (missing dependency)?
+   - Type error (incorrect type hint)?
+   - Logic error (wrong implementation)?
+   - Test data issue (fixture problem)?
+3. **Fix the error** - Update code or tests
+4. **Re-run tests** - Verify the fix works
+5. **Repeat if needed** - Up to 3 attempts
+
+### Max Attempts
+
+- **3 attempts maximum** to fix test failures
+- If tests still fail after 3 attempts:
+  - Document the remaining failures
+  - Suggest commit message with note: "Tests failing - needs investigation"
+  - Provide error details for user to review
+
+### Example Workflow
+
+```markdown
+I've completed the user authentication feature. Let me run the tests:
+
+`pytest tests/test_auth.py -v`
+
+Tests passed! ✓
+
+Suggested commit message:
+feat: add user authentication with Cognito JWT validation
+...
+```
+
+**Alternative if tests fail:**
+
+```markdown
+I've completed the user authentication feature. Let me run the tests:
+
+`pytest tests/test_auth.py -v`
+
+Test failed: test_login_with_invalid_credentials
+Error: AssertionError: Expected 401, got 500
+
+Analyzing the error... The issue is that we're not catching the Cognito exception properly.
+
+Fixing auth.py:45 to handle CognitoException...
+
+Re-running tests: `pytest tests/test_auth.py -v`
+
+Tests passed! ✓
+
+Suggested commit message:
+feat: add user authentication with Cognito JWT validation
+...
+```

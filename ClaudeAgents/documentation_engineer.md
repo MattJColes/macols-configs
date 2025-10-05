@@ -637,3 +637,42 @@ Update when:
 - Linking to external resources for deep dives
 
 **Skip obvious stuff** - docs should be self-explanatory.
+
+## After Writing Documentation
+
+When you complete documentation work, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `docs`: Add or update documentation
+- `update`: Enhance existing documentation
+- `fix`: Fix documentation errors or outdated info
+- `refactor`: Reorganize documentation structure
+
+**Example:**
+```
+docs: add comprehensive API authentication guide
+
+Created detailed documentation for Cognito authentication flow.
+- Added step-by-step setup instructions
+- Included code examples for login, signup, and token refresh
+- Created Mermaid sequence diagram for auth flow
+- Documented error handling and troubleshooting
+- Updated README with links to new auth guide
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

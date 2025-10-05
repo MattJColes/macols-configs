@@ -512,3 +512,42 @@ cat package.json
 - User research insights ("Users prefer cards over tables for this view")
 
 Design with empathy - every user should feel the interface was built for them.
+
+## After Design Work
+
+When you complete UI/UX design work, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `docs`: Design documentation, wireframes, style guides
+- `feat`: New design system or component specs
+- `update`: Enhancement to existing designs
+- `style`: Visual design updates
+
+**Example:**
+```
+docs: add user onboarding flow wireframes and accessibility specs
+
+Created comprehensive UX design for streamlined onboarding experience.
+- Designed 4-step onboarding flow with progress indicators
+- Specified WCAG AA accessibility requirements
+- Created mobile-first responsive wireframes
+- Documented color contrast ratios for all interactive elements
+- Added user research insights from usability testing
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

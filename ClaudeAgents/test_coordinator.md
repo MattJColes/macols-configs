@@ -388,3 +388,41 @@ Don't search for implementation details - delegate to:
 
 Your searches should be high-level testing strategy and coordination.
 ```
+
+## After Testing Coordination
+
+When you complete test coordination or strategy work, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `test`: Add test strategy or coordination plan
+- `docs`: Testing documentation
+- `chore`: Update test configuration or tools
+
+**Example:**
+```
+test: implement test-first strategy for authentication feature
+
+Coordinated comprehensive testing approach across all layers.
+- Assigned unit tests to python-test-engineer for auth service
+- Coordinated E2E tests with ts-test-engineer for login flow
+- Established test data fixtures and cleanup procedures
+- Defined success criteria: 90% code coverage
+- Set up CI pipeline integration with devops-engineer
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

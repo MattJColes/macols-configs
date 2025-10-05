@@ -63,21 +63,7 @@ else
     echo -e "${GREEN}✓ uv found: $(uv --version)${NC}"
 fi
 
-# Check git
-if ! command -v git &> /dev/null; then
-    echo -e "${YELLOW}⚠ git not found. GitHub MCP will not work without git.${NC}"
-    read -p "Install git now? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        if [[ "$OSTYPE" == "linux-gnu"* ]] || grep -qi microsoft /proc/version 2>/dev/null; then
-            sudo apt-get install -y git
-        elif [[ "$OSTYPE" == "darwin"* ]]; then
-            brew install git
-        fi
-    fi
-else
-    echo -e "${GREEN}✓ git found: $(git --version | head -n1)${NC}"
-fi
+# Git check removed - not needed without GitHub MCP
 
 echo -e "\n${GREEN}Installing MCP servers...${NC}\n"
 
@@ -89,17 +75,23 @@ mkdir -p "$MCP_DIR"
 echo -e "${BLUE}Installing @modelcontextprotocol/server-filesystem...${NC}"
 npm install -g @modelcontextprotocol/server-filesystem
 
-echo -e "${BLUE}Installing @modelcontextprotocol/server-github...${NC}"
-npm install -g @modelcontextprotocol/server-github
+echo -e "${BLUE}Installing @modelcontextprotocol/server-sequential-thinking...${NC}"
+npm install -g @modelcontextprotocol/server-sequential-thinking
+
+echo -e "${BLUE}Installing @modelcontextprotocol/server-puppeteer...${NC}"
+npm install -g @modelcontextprotocol/server-puppeteer
+
+echo -e "${BLUE}Installing @playwright/mcp...${NC}"
+npm install -g @playwright/mcp
+
+echo -e "${BLUE}Installing @modelcontextprotocol/server-memory...${NC}"
+npm install -g @modelcontextprotocol/server-memory
 
 echo -e "${BLUE}Installing @modelcontextprotocol/server-aws...${NC}"
 npm install -g @modelcontextprotocol/server-aws
 
-echo -e "${BLUE}Installing @modelcontextprotocol/server-postgres...${NC}"
-npm install -g @modelcontextprotocol/server-postgres
-
-echo -e "${BLUE}Installing @modelcontextprotocol/server-brave-search...${NC}"
-npm install -g @modelcontextprotocol/server-brave-search
+echo -e "${BLUE}Installing @imankamyabi/dynamodb-mcp-server...${NC}"
+npm install -g @imankamyabi/dynamodb-mcp-server
 
 echo -e "\n${GREEN}✓ All MCP servers installed${NC}\n"
 
@@ -111,18 +103,7 @@ mkdir -p "$CLAUDE_CONFIG_DIR"
 
 echo -e "${YELLOW}Configuring MCP servers for Claude Code...${NC}\n"
 
-# Prompt for credentials
-echo -e "${BLUE}GitHub MCP Configuration:${NC}"
-echo "To use the GitHub MCP, you need a GitHub Personal Access Token."
-echo "Create one at: https://github.com/settings/tokens (needs 'repo' scope)"
-read -p "Enter GitHub Personal Access Token (or press Enter to skip): " GITHUB_TOKEN
-echo
-
-echo -e "${BLUE}Brave Search MCP Configuration:${NC}"
-echo "To use Brave Search MCP, you need a Brave Search API key."
-echo "Get one at: https://brave.com/search/api/"
-read -p "Enter Brave Search API Key (or press Enter to skip): " BRAVE_API_KEY
-echo
+# No credential prompts needed for these MCPs
 
 # Create or update Claude config
 cat > "$CLAUDE_CONFIG_FILE" << EOF
@@ -136,12 +117,21 @@ cat > "$CLAUDE_CONFIG_FILE" << EOF
         "$HOME"
       ]
     },
-    "github": {
+    "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
-      }
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
     },
     "aws": {
       "command": "npx",
@@ -150,18 +140,11 @@ cat > "$CLAUDE_CONFIG_FILE" << EOF
         "AWS_PROFILE": "default"
       }
     },
-    "postgres": {
+    "dynamodb": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "args": ["-y", "@imankamyabi/dynamodb-mcp-server"],
       "env": {
-        "POSTGRES_CONNECTION_STRING": "postgresql://localhost/mydb"
-      }
-    },
-    "brave-search": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
-      "env": {
-        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+        "AWS_REGION": "us-east-1"
       }
     }
   }
@@ -176,31 +159,30 @@ echo -e "${GREEN}MCP Installation Complete!${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
 
 echo -e "${YELLOW}Installed MCP Servers:${NC}"
-echo "  1. filesystem    - File operations for all agents"
-echo "  2. github        - PR/issue management (DevOps, code reviewer)"
-echo "  3. aws           - AWS service interactions (CDK, backend, DevOps)"
-echo "  4. postgres      - Database operations (backend, test engineers)"
-echo "  5. brave-search  - Latest docs/troubleshooting (all agents)"
+echo "  1. filesystem          - File operations for all agents"
+echo "  2. sequential-thinking - Complex problem-solving, system design planning"
+echo "  3. puppeteer           - Browser automation, screenshots, UI testing"
+echo "  4. playwright          - Cross-browser testing, modern web automation"
+echo "  5. memory              - Knowledge graph memory, maintains context across sessions"
+echo "  6. aws                 - AWS service interactions (CDK, backend, DevOps)"
+echo "  7. dynamodb            - DynamoDB operations (backend, data modeling)"
 
 echo -e "\n${YELLOW}Configuration:${NC}"
 echo "  Location: $CLAUDE_CONFIG_FILE"
 
 echo -e "\n${YELLOW}Next Steps:${NC}"
-if [[ -z "$GITHUB_TOKEN" ]]; then
-    echo "  • Add GitHub token to config for GitHub MCP"
-fi
-if [[ -z "$BRAVE_API_KEY" ]]; then
-    echo "  • Add Brave API key to config for search MCP"
-fi
-echo "  • Update POSTGRES_CONNECTION_STRING in config for your database"
 echo "  • Ensure AWS credentials are configured (~/.aws/credentials)"
+echo "  • Configure DynamoDB MCP by setting AWS_REGION if needed"
 echo "  • Restart Claude Code to load MCP servers"
+echo "  • Knowledge graph memory will be stored in ~/.claude/memory"
 
 echo -e "\n${YELLOW}Usage:${NC}"
 echo "  Claude Code agents will automatically use these MCPs when needed."
 echo "  Examples:"
-echo "    • Python backend will use AWS MCP for DynamoDB operations"
-echo "    • DevOps engineer will use GitHub MCP for PR management"
-echo "    • All agents will use Brave Search for latest documentation"
+echo "    • All agents use Sequential Thinking for complex problem-solving"
+echo "    • Architecture expert uses Sequential Thinking for system design"
+echo "    • Test engineers use Puppeteer and Playwright for browser automation"
+echo "    • Memory MCP maintains project context across all sessions"
+echo "    • Python backend uses DynamoDB MCP for data modeling"
 
 echo -e "\n${GREEN}Done! 🎉${NC}"

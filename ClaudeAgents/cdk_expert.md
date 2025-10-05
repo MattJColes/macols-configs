@@ -1421,3 +1421,88 @@ import * as cognito from 'aws-cdk-lib/aws-cognito';
 - Self-documenting code
 
 Implement clean, type-safe, reusable infrastructure code.
+
+## After Writing Code
+
+When you complete CDK infrastructure work, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `feat`: New infrastructure resource or stack
+- `update`: Enhancement to existing infrastructure
+- `fix`: Fix infrastructure configuration issue
+- `refactor`: Restructure CDK code without changing deployed resources
+- `chore`: Update CDK version, dependencies
+- `docs`: Infrastructure documentation
+
+**Example:**
+```
+feat: add Fargate ECS service with auto-scaling and ALB
+
+Implemented production-ready ECS Fargate service for backend API.
+- Created ECS cluster with Fargate capacity providers
+- Configured Application Load Balancer with HTTPS
+- Added auto-scaling based on CPU/memory metrics
+- Integrated with existing VPC and security groups
+- Added CloudWatch alarms for service health
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+## Run Tests After CDK Changes
+
+**ALWAYS run CDK tests after infrastructure changes.**
+
+### Test Running Workflow
+
+1. **Identify test command** - Check for npm test or CDK assertions
+2. **Run tests** - Execute CDK tests and synth
+3. **If tests pass** - Proceed to suggest commit message
+4. **If tests fail** - Analyze and fix errors (max 3 attempts)
+
+### How to Run Tests
+
+```bash
+# Common CDK test commands
+npm test                         # Run all CDK tests
+npm run test -- --watch          # Watch mode
+cdk synth                        # Synthesize CloudFormation (verify validity)
+cdk diff                         # Show infrastructure changes
+npm run test:cdk                 # If custom test script exists
+```
+
+### Error Resolution Process
+
+When tests fail:
+
+1. **Read the error message** - Understand what assertion failed
+2. **Analyze root cause**:
+   - CDK construct configuration error?
+   - Missing required property?
+   - Type error in TypeScript?
+   - Assertion mismatch?
+3. **Fix the error** - Update CDK code or tests
+4. **Re-run tests** - Verify fix works
+5. **Repeat if needed** - Up to 3 attempts
+
+### Max Attempts
+
+- **3 attempts maximum** to fix test failures
+- If tests still fail after 3 attempts:
+  - Document remaining failures
+  - Note: "CDK tests failing - needs investigation"
+  - Provide error details for review

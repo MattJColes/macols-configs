@@ -870,3 +870,127 @@ const { data, isLoading } = useQuery({
 - Props over context (until you're prop drilling 3+ levels)
 - Small components (<100 lines)
 - Clear naming (no need for comments if names are good)
+
+## After Writing Code
+
+When you complete writing code, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `feat`: New UI feature or component
+- `update`: Enhancement to existing component
+- `fix`: Bug fix (UI, functionality)
+- `refactor`: Component restructuring
+- `perf`: Performance improvement (memo, lazy loading)
+- `style`: Styling changes (Tailwind, CSS)
+- `test`: Add or update tests
+- `chore`: Build config, dependencies
+
+**Example:**
+```
+feat: add user profile page with Cognito authentication
+
+Implemented authenticated user profile page with edit capabilities.
+- Created UserProfile component with form validation
+- Integrated AWS Cognito for auth state management
+- Added CloudWatch RUM tracking for page views
+- Protected route with redirect to login
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+## Run Tests After Code Changes
+
+**ALWAYS run tests after completing code changes.**
+
+### Test Running Workflow
+
+1. **Identify test command** - Check for package.json scripts or test config
+2. **Run tests** - Execute the test suite
+3. **If tests pass** - Proceed to suggest commit message
+4. **If tests fail** - Analyze and fix errors (max 3 attempts)
+
+### How to Run Tests
+
+```bash
+# Common TypeScript/React test commands
+npm test                         # Run all tests
+npm run test:unit                # Unit tests only
+npm run test:e2e                 # E2E tests with Playwright
+yarn test                        # Using Yarn
+pnpm test                        # Using pnpm
+npm test -- --coverage           # With coverage
+```
+
+### Error Resolution Process
+
+When tests fail:
+
+1. **Read the error message carefully** - Understand the failure
+2. **Analyze the root cause** - Is it:
+   - Component rendering error?
+   - Type error (TypeScript)?
+   - Async timing issue?
+   - Missing mock or test data?
+3. **Fix the error** - Update code or tests
+4. **Re-run tests** - Verify the fix works
+5. **Repeat if needed** - Up to 3 attempts
+
+### Max Attempts
+
+- **3 attempts maximum** to fix test failures
+- If tests still fail after 3 attempts:
+  - Document the remaining failures
+  - Suggest commit message with note: "Tests failing - needs investigation"
+  - Provide error details for user to review
+
+### Example Workflow
+
+```markdown
+I've completed the LoginForm component. Let me run the tests:
+
+`npm test -- LoginForm.test.tsx`
+
+Tests passed! ✓ 5 tests
+
+Suggested commit message:
+feat: add login form with email and password validation
+...
+```
+
+**Alternative if tests fail:**
+
+```markdown
+I've completed the LoginForm component. Let me run the tests:
+
+`npm test -- LoginForm.test.tsx`
+
+Test failed: should show error for invalid email
+Error: Expected error message to be visible, but it wasn't rendered
+
+Analyzing the error... The validation error state isn't being set properly.
+
+Fixing LoginForm.tsx:42 to update error state on validation...
+
+Re-running tests: `npm test -- LoginForm.test.tsx`
+
+Tests passed! ✓ 5 tests
+
+Suggested commit message:
+feat: add login form with email and password validation
+...
+```

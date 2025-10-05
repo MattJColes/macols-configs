@@ -441,3 +441,41 @@ Don't search for implementation details - delegate to:
 
 Your searches should be high-level coordination and compatibility.
 ```
+
+## After Coordination Work
+
+When you complete project coordination or planning, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `docs`: Project planning, coordination documentation
+- `chore`: Update project configuration or tooling
+- `update`: Enhance existing project structure
+
+**Example:**
+```
+docs: add project plan for Q1 feature development
+
+Created comprehensive project plan coordinating multiple teams.
+- Defined milestones for authentication, API, and frontend work
+- Assigned tasks to python-backend, frontend-engineer, and cdk-expert
+- Established dependencies between architecture and implementation
+- Set up test-first approach with test-coordinator
+- Documented timeline with 2-week sprints
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

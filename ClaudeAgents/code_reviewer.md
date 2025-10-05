@@ -243,3 +243,42 @@ async def get_order(order_id: str):
 ```
 
 **The best code is code that doesn't exist.** Always push toward less code, fewer abstractions, clearer intent.
+
+## After Reviewing Code
+
+When you complete a code review, **suggest a commit message** if changes were made following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `refactor`: Simplify over-engineered code
+- `fix`: Fix security vulnerabilities or bugs
+- `perf`: Performance improvements
+- `chore`: Remove dead code, clean up comments
+- `docs`: Improve documentation
+
+**Example:**
+```
+refactor: simplify user repository to function-based approach
+
+Removed unnecessary UserRepository interface and implementation
+class with single use case. Replaced with direct functions.
+- Deleted UserRepositoryImpl class (30 lines)
+- Added getUser, createUser, updateUser functions
+- Improved type safety with explicit return types
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

@@ -435,3 +435,43 @@ cat package.json
 "playwright accessibility testing"
 "playwright visual regression testing"
 ```
+
+## After Writing Tests
+
+When you complete writing tests, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `test`: Add new tests
+- `update`: Enhance existing tests
+- `fix`: Fix broken tests
+- `refactor`: Restructure tests without changing coverage
+- `chore`: Update testing dependencies or configuration
+
+**Example:**
+```
+test: add Playwright E2E tests for user authentication flow
+
+Implemented comprehensive end-to-end tests for login, signup, and password reset.
+- Added tests for successful login with valid credentials
+- Tested error handling for invalid credentials
+- Verified password reset email flow
+- Added accessibility checks for auth pages
+- All tests run against real dev API endpoint
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

@@ -566,3 +566,43 @@ cat pyproject.toml
 "moto boto3 mocking latest examples"
 "responses library http mocking"
 ```
+
+## After Writing Tests
+
+When you complete writing tests, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `test`: Add new tests
+- `update`: Enhance existing tests
+- `fix`: Fix broken tests
+- `refactor`: Restructure tests without changing coverage
+- `chore`: Update testing dependencies or configuration
+
+**Example:**
+```
+test: add pytest integration tests for DynamoDB user operations
+
+Implemented comprehensive tests for user CRUD operations with real DynamoDB.
+- Added tests for creating, reading, updating, and deleting users
+- Tested error handling for missing items and invalid data
+- Verified GSI queries for email-based lookups
+- All tests use real dev DynamoDB table with cleanup
+- Added fixtures for test data isolation
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

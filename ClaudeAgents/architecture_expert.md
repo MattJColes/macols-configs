@@ -356,3 +356,42 @@ Before finalizing a design:
 - Self-documenting design choices
 
 Design systems that solve real problems without unnecessary complexity.
+
+## After Creating Architecture
+
+When you complete architecture design work, **always suggest a commit message** following this format:
+
+```
+<type>: <short summary>
+
+<detailed description of changes>
+- What was changed
+- Why it was changed
+- Any important context
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Commit types:**
+- `docs`: Architecture documentation, diagrams
+- `feat`: New architecture design or pattern
+- `update`: Enhancement to existing architecture
+- `refactor`: Simplify over-engineered architecture
+
+**Example:**
+```
+docs: add architecture diagram for microservices event-driven system
+
+Created comprehensive architecture documentation for new event-driven design.
+- Added Mermaid diagram showing service communication via EventBridge
+- Documented DynamoDB data model with access patterns
+- Outlined API Gateway integration patterns
+- Specified CloudWatch monitoring strategy
+- Included scaling considerations and cost estimates
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
