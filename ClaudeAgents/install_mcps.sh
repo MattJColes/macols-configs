@@ -97,7 +97,7 @@ npm install -g @upstash/context7-mcp
 INSTALL_GITHUB=false
 INSTALL_GITLAB=false
 
-read -p "$(echo -e ${YELLOW}Install GitHub MCP? [y/N]: ${NC})" -n 1 -r
+read -p "$(echo -e "${YELLOW}Install GitHub MCP? [y/N]: ${NC}")" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     INSTALL_GITHUB=true
@@ -105,7 +105,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     npm install -g @modelcontextprotocol/server-github
 fi
 
-read -p "$(echo -e ${YELLOW}Install GitLab MCP? [y/N]: ${NC})" -n 1 -r
+read -p "$(echo -e "${YELLOW}Install GitLab MCP? [y/N]: ${NC}")" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     INSTALL_GITLAB=true
@@ -129,7 +129,7 @@ echo -e "${YELLOW}Configuring MCP servers for Claude Code...${NC}\n"
 # Prompt for GitHub token if GitHub MCP is being installed
 GITHUB_TOKEN_VALUE=""
 if [ "$INSTALL_GITHUB" = true ]; then
-    read -p "$(echo -e ${YELLOW}Enter GitHub Personal Access Token (or press Enter to skip): ${NC})" GITHUB_TOKEN_VALUE
+    read -p "$(echo -e "${YELLOW}Enter GitHub Personal Access Token (or press Enter to skip): ${NC}")" GITHUB_TOKEN_VALUE
     echo
 fi
 
@@ -137,9 +137,9 @@ fi
 GITLAB_TOKEN_VALUE=""
 GITLAB_API_URL_VALUE="https://gitlab.com"
 if [ "$INSTALL_GITLAB" = true ]; then
-    read -p "$(echo -e ${YELLOW}Enter GitLab Personal Access Token (or press Enter to skip): ${NC})" GITLAB_TOKEN_VALUE
+    read -p "$(echo -e "${YELLOW}Enter GitLab Personal Access Token (or press Enter to skip): ${NC}")" GITLAB_TOKEN_VALUE
     echo
-    read -p "$(echo -e ${YELLOW}Enter GitLab API URL [https://gitlab.com]: ${NC})" GITLAB_API_URL_INPUT
+    read -p "$(echo -e "${YELLOW}Enter GitLab API URL [https://gitlab.com]: ${NC}")" GITLAB_API_URL_INPUT
     if [ -n "$GITLAB_API_URL_INPUT" ]; then
         GITLAB_API_URL_VALUE="$GITLAB_API_URL_INPUT"
     fi
