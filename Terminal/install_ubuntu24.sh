@@ -89,6 +89,10 @@ echo "Installing Claude Code..."
 curl -fsSL https://deb.anthropic.com/setup.sh | sudo -E bash -
 sudo apt-get install -y claude
 
+# Install Ollama
+echo "Installing Ollama..."
+curl -fsSL https://ollama.com/install.sh | sh
+
 # Backup existing nvim config if it exists
 if [ -d "$HOME/.config/nvim" ]; then
     echo "Backing up existing nvim config..."
@@ -135,15 +139,40 @@ echo ""
 echo "Configuring AWS CLI..."
 aws configure
 
+# Ollama model configuration
+echo ""
+echo "=== Ollama Model Setup ==="
+read -p "Pull an Ollama model now? [y/N]: " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "Popular models:"
+    echo "  - qwen3:30b     (30B - powerful, recommended)"
+    echo "  - qwen2.5-coder (7B - coding focused)"
+    echo "  - deepseek-r1   (7B - reasoning focused)"
+    echo "  - llama3.2      (3B - fast, lightweight)"
+    echo "  - llama3.1      (8B - balanced)"
+    echo ""
+    read -p "Enter model name [qwen3:30b]: " ollama_model
+    ollama_model=${ollama_model:-qwen3:30b}
+
+    echo "Pulling $ollama_model..."
+    ollama pull "$ollama_model"
+    echo "Model $ollama_model installed successfully!"
+fi
+
 echo ""
 echo "=== Installation Complete ==="
 echo ""
 echo "Next steps:"
 echo "1. Restart your terminal or run: source ~/.bashrc"
 echo "2. Run 'nvim' to complete LazyVim setup"
-echo "3. Verify installations:"
+echo "3. Start Ollama service if not already running: ollama serve"
+echo "4. Pull additional models: ollama pull <model-name>"
+echo "5. Verify installations:"
 echo "   - python3 --version"
 echo "   - node --version"
 echo "   - aws --version"
 echo "   - claude --version"
 echo "   - q --version"
+echo "   - ollama --version"

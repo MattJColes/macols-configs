@@ -65,6 +65,10 @@ brew install --cask amazon-q
 echo "Installing Claude Code..."
 brew install anthropics/claude/claude
 
+# Install Ollama
+echo "Installing Ollama..."
+brew install ollama
+
 # Install LazyVim dependencies
 echo "Installing LazyVim dependencies..."
 brew install neovim ripgrep fd
@@ -115,6 +119,37 @@ echo ""
 echo "Configuring AWS CLI..."
 aws configure
 
+# Start Ollama service
+echo ""
+echo "Starting Ollama service..."
+brew services start ollama
+
+# Wait for Ollama to be ready
+echo "Waiting for Ollama service to start..."
+sleep 3
+
+# Ollama model configuration
+echo ""
+echo "=== Ollama Model Setup ==="
+read -p "Pull an Ollama model now? [y/N]: " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "Popular models:"
+    echo "  - qwen3:30b     (30B - powerful, recommended)"
+    echo "  - qwen2.5-coder (7B - coding focused)"
+    echo "  - deepseek-r1   (7B - reasoning focused)"
+    echo "  - llama3.2      (3B - fast, lightweight)"
+    echo "  - llama3.1      (8B - balanced)"
+    echo ""
+    read -p "Enter model name [qwen3:30b]: " ollama_model
+    ollama_model=${ollama_model:-qwen3:30b}
+
+    echo "Pulling $ollama_model..."
+    ollama pull "$ollama_model"
+    echo "Model $ollama_model installed successfully!"
+fi
+
 echo ""
 echo "=== Installation Complete ==="
 echo ""
@@ -122,3 +157,11 @@ echo "Next steps:"
 echo "1. Start a new terminal session to load updated PATH"
 echo "2. Run 'nvim' to complete LazyVim setup"
 echo "3. Initialize Podman: podman machine init && podman machine start"
+echo "4. Pull additional models: ollama pull <model-name>"
+echo "5. Verify installations:"
+echo "   - python3 --version"
+echo "   - node --version"
+echo "   - aws --version"
+echo "   - claude --version"
+echo "   - q --version"
+echo "   - ollama --version"

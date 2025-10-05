@@ -90,6 +90,9 @@ npm install -g @modelcontextprotocol/server-memory
 echo -e "${BLUE}Installing @modelcontextprotocol/server-aws-kb-retrieval...${NC}"
 npm install -g @modelcontextprotocol/server-aws-kb-retrieval
 
+echo -e "${BLUE}Installing @upstash/context7-mcp...${NC}"
+npm install -g @upstash/context7-mcp
+
 # Optional MCPs
 INSTALL_GITHUB=false
 INSTALL_GITLAB=false
@@ -178,6 +181,10 @@ cat > "$Q_CONFIG_FILE" << EOF
         "AWS_PROFILE": "default"
       }
     },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
     "dynamodb": {
       "command": "uvx",
       "args": ["awslabs.dynamodb-mcp-server@latest"],
@@ -236,12 +243,13 @@ echo "  3. puppeteer           - Browser automation, screenshots, UI testing"
 echo "  4. playwright          - Cross-browser testing, modern web automation"
 echo "  5. memory              - Knowledge graph memory, maintains context across sessions"
 echo "  6. aws                 - AWS service interactions (CDK, backend, DevOps)"
-echo "  7. dynamodb            - DynamoDB operations (backend, data modeling)"
+echo "  7. context7            - Real-time version-specific documentation"
+echo "  8. dynamodb            - DynamoDB operations (backend, data modeling)"
 if [ "$INSTALL_GITHUB" = true ]; then
-    echo "  8. github              - GitHub repository operations, issues, PRs"
+    echo "  9. github              - GitHub repository operations, issues, PRs"
 fi
 if [ "$INSTALL_GITLAB" = true ]; then
-    echo "  9. gitlab              - GitLab repository operations, issues, MRs"
+    echo " 10. gitlab              - GitLab repository operations, issues, MRs"
 fi
 
 echo -e "\n${YELLOW}Configuration:${NC}"
