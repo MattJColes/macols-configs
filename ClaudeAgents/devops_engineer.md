@@ -660,9 +660,10 @@ canary-playwright:
 > 4. SNS topic for alerts"
 
 ### Work with linux-specialist for:
+- Git workflows and rebase strategies
 - Podman optimization for Playwright images
 - Debugging container issues (rootless Podman)
-- Shell scripts for test orchestration
+- Zsh/bash shell scripts for test orchestration
 
 ## Web Search for CI/CD Best Practices
 

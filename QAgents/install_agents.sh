@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eu
 
 # Colors for output
 RED='\033[0;31m'
@@ -17,11 +17,11 @@ mkdir -p "$AGENTS_DIR"
 echo -e "${YELLOW}Installing agents to: $AGENTS_DIR${NC}\n"
 
 # Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SOURCE_AGENTS_DIR="$SCRIPT_DIR/agents"
 
 # Check if agents directory exists
-if [[ ! -d "$SOURCE_AGENTS_DIR" ]]; then
+if [ ! -d "$SOURCE_AGENTS_DIR" ]; then
   echo -e "${RED}Error: agents directory not found at $SOURCE_AGENTS_DIR${NC}"
   exit 1
 fi
@@ -29,7 +29,7 @@ fi
 # Count JSON files
 AGENT_COUNT=$(find "$SOURCE_AGENTS_DIR" -name "*.json" -type f | wc -l)
 
-if [[ $AGENT_COUNT -eq 0 ]]; then
+if [ "$AGENT_COUNT" -eq 0 ]; then
   echo -e "${RED}Error: No agent JSON files found in $SOURCE_AGENTS_DIR${NC}"
   exit 1
 fi
@@ -93,18 +93,18 @@ echo "MCPs enable agents to interact with external tools (GitHub, AWS, databases
 echo ""
 
 # Auto-skip if SKIP_MCP_PROMPT is set or stdin is not a terminal
-if [[ -n "${SKIP_MCP_PROMPT:-}" ]] || [[ ! -t 0 ]]; then
+if [ -n "${SKIP_MCP_PROMPT:-}" ] || [ ! -t 0 ]; then
     echo -e "${YELLOW}Skipping MCP installation (non-interactive mode).${NC}"
     REPLY="n"
 else
-    read -p "Install MCP servers now? (y/n) " -n 1 -r
+    read -p "Install MCP servers now? (y/n) " -r REPLY
     echo
 fi
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if echo "$REPLY" | grep -q "^[Yy]$"; then
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-    if [[ -f "$SCRIPT_DIR/install_mcps.sh" ]]; then
+    if [ -f "$SCRIPT_DIR/install_mcps.sh" ]; then
         echo -e "\n${GREEN}Running MCP installer...${NC}\n"
         bash "$SCRIPT_DIR/install_mcps.sh"
     else
@@ -114,5 +114,5 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 else
     echo -e "\n${YELLOW}Skipping MCP installation.${NC}"
     echo "You can install MCPs later by running:"
-    echo "  bash $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/install_mcps.sh"
+    echo "  bash $(cd "$(dirname "$0")" && pwd)/install_mcps.sh"
 fi

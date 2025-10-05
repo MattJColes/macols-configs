@@ -87,11 +87,11 @@ npm install -g @playwright/mcp
 echo -e "${BLUE}Installing @modelcontextprotocol/server-memory...${NC}"
 npm install -g @modelcontextprotocol/server-memory
 
-echo -e "${BLUE}Installing @modelcontextprotocol/server-aws...${NC}"
-npm install -g @modelcontextprotocol/server-aws
+echo -e "${BLUE}Installing @modelcontextprotocol/server-aws-kb-retrieval...${NC}"
+npm install -g @modelcontextprotocol/server-aws-kb-retrieval
 
-echo -e "${BLUE}Installing @imankamyabi/dynamodb-mcp-server...${NC}"
-npm install -g @imankamyabi/dynamodb-mcp-server
+echo -e "${BLUE}Installing awslabs.dynamodb-mcp-server (Python)...${NC}"
+# Python package installed via uvx on-demand, no pre-install needed
 
 echo -e "\n${GREEN}✓ All MCP servers installed${NC}\n"
 
@@ -133,18 +133,20 @@ cat > "$Q_CONFIG_FILE" << EOF
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"]
     },
-    "aws": {
+    "aws-kb": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-aws"],
+      "args": ["-y", "@modelcontextprotocol/server-aws-kb-retrieval"],
       "env": {
         "AWS_PROFILE": "default"
       }
     },
     "dynamodb": {
-      "command": "npx",
-      "args": ["-y", "@imankamyabi/dynamodb-mcp-server"],
+      "command": "uvx",
+      "args": ["awslabs.dynamodb-mcp-server@latest"],
       "env": {
-        "AWS_REGION": "us-east-1"
+        "AWS_REGION": "us-east-1",
+        "AWS_PROFILE": "default",
+        "DDB-MCP-READONLY": "false"
       }
     }
   }
