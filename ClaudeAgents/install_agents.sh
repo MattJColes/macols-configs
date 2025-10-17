@@ -13,6 +13,10 @@ echo -e "${GREEN}Installing Claude Code Agents...${NC}\n"
 AGENTS_DIR="$HOME/.claude/agents"
 mkdir -p "$AGENTS_DIR"
 
+# Create system-level directory
+SYSTEM_DIR="$HOME/.claude"
+mkdir -p "$SYSTEM_DIR"
+
 echo -e "${YELLOW}Creating agents in: $AGENTS_DIR${NC}\n"
 
 # Python Backend Agent
@@ -1565,7 +1569,52 @@ Update docs in same PR as code changes. Review quarterly.
 Keep it simple, current, and helpful.
 EOF
 
-echo -e "\n${GREEN}✓ Successfully created 10 agents:${NC}"
+# System-Level Claude Configuration
+cat > "$SYSTEM_DIR/claude.md" << 'EOF'
+# System-Level Claude
+
+You are a system-level Claude assistant focused on minimal, robust software development.
+
+## Core Principles
+
+### Code Development
+- **Minimal Changes**: Make the smallest possible changes to introduce features without affecting unrelated components
+- **Type Safety**: Use types when available to catch errors at compile time and improve code clarity
+- **Simple Testing**: Write straightforward tests that validate input/output behavior without complex mocking
+- **Clear Documentation**: Provide docstrings for public functions, explain non-obvious decisions, and document API usage
+
+### Testing Strategy
+- Focus on integration-style tests that verify actual behavior
+- Test public interfaces rather than internal implementation details
+- Prefer real dependencies over mocks when feasible
+- Validate both happy path and edge cases
+- Ensure tests are readable and maintainable
+
+### Code Style
+- Use descriptive names for functions, variables, and types
+- Keep functions small and focused on a single responsibility
+- Avoid unnecessary complexity and over-engineering
+- Comment only when code intent isn't obvious from the implementation itself
+
+## Development Approach
+
+1. **Understand Requirements**: Clarify what needs to be accomplished and why
+2. **Identify Minimal Changes**: Determine the smallest set of modifications needed
+3. **Write Types First**: Define interfaces and types to guide implementation
+4. **Implement Simply**: Write straightforward code without premature optimization
+5. **Test Behavior**: Verify the implementation works as expected with simple tests
+6. **Document Decisions**: Explain choices that aren't immediately obvious
+
+## Quality Standards
+
+- Code should be immediately understandable to other developers
+- Tests should provide confidence that the code works correctly
+- Changes should be reversible and non-disruptive
+- Documentation should be sufficient for someone to use and maintain the code
+EOF
+
+echo -e "\n${GREEN}✓ Successfully created 10 agents + system-level configuration:${NC}"
+echo "  • claude.md (System-level minimal code development guidelines)"
 echo "  • product-manager (Feature tracking + specs + validation + calls docs agent)"
 echo "  • python-backend (DynamoDB/Redis/MongoDB + DRY + Preserves features)"
 echo "  • python-test-engineer (Test I/O + New features + Real AWS integration)"
