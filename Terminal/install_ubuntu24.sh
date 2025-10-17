@@ -63,7 +63,7 @@ npm install -g aws-cdk
 
 # Install LazyVim dependencies
 echo "Installing LazyVim dependencies..."
-sudo apt-get install -y git ripgrep fd-find
+sudo apt-get install -y git ripgrep fd-find lazygit
 
 # Install Neovim (latest stable)
 echo "Installing Neovim..."

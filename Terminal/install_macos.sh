@@ -71,7 +71,7 @@ brew install ollama
 
 # Install LazyVim dependencies
 echo "Installing LazyVim dependencies..."
-brew install neovim ripgrep fd
+brew install neovim ripgrep fd lazygit
 
 # Backup existing nvim config if it exists
 if [ -d "$HOME/.config/nvim" ]; then
