@@ -29,6 +29,10 @@ brew install htop
 echo "Installing AWS CLI..."
 brew install awscli
 
+# Install GitHub CLI
+echo "Installing GitHub CLI..."
+brew install gh
+
 # Install Podman
 echo "Installing Podman..."
 brew install podman
