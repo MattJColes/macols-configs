@@ -6,7 +6,6 @@
 set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ITERM_COLORS_DIR="$HOME/Library/Application Support/iTerm2/DynamicProfiles"
 
 echo "Installing iTerm2 color schemes..."
 
