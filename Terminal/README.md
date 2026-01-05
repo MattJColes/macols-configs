@@ -40,10 +40,12 @@ Automated scripts to set up a complete development environment for macOS and Ubu
 - Specialized agents for different development tasks
 - MCP (Model Context Protocol) server support
 
-#### **Amazon Q Developer CLI**
-- AWS-native AI coding assistant
+#### **Kiro CLI** (formerly Amazon Q Developer CLI)
+- AWS-native AI coding assistant by AWS
 - Deep AWS service integration
 - Code generation and debugging
+- Backwards compatible with Q Developer CLI
+- Enhanced features and improved performance
 
 ### Editor Setup
 
@@ -66,7 +68,7 @@ Automated scripts to set up a complete development environment for macOS and Ubu
 2. Installs all core development tools
 3. Installs Node.js 22 and Python 3.12
 4. Installs Podman for containers
-5. Installs Claude Code and Amazon Q Developer
+5. Installs Claude Code and Kiro CLI
 6. Sets up LazyVim (backs up existing config)
 
 **Requirements:**
@@ -100,7 +102,7 @@ podman machine start
 2. Installs Python 3.12, Node.js 22, AWS CLI
 3. Installs Podman for containers
 4. Installs Neovim (latest stable)
-5. Installs Claude Code and Amazon Q Developer
+5. Installs Claude Code and Kiro CLI
 6. Sets up LazyVim with backups
 
 **Requirements:**
@@ -124,7 +126,7 @@ python3 --version
 node --version
 aws --version
 claude --version
-q --version
+kiro --version  # or 'q --version' for backwards compatibility
 ```
 
 ---
@@ -213,7 +215,7 @@ p10k configure
 | Tool | Best For |
 |------|----------|
 | Claude Code | General development, specialized agents |
-| Amazon Q | AWS services, cloud architecture |
+| Kiro CLI | AWS services, cloud architecture, Q Developer successor |
 
 ### Editor
 
@@ -281,11 +283,13 @@ cd ../ClaudeAgents
 ./install_agents.sh
 ```
 
-### 4. Set Up Amazon Q Agents
+### 4. Set Up Kiro CLI Agents
 ```bash
-cd ../QAgents
-./install_mcps.sh
+cd ../KiroAgents
+./install_agents.sh  # Installs agents and optionally MCPs
 ```
+
+**Note**: If you have legacy Amazon Q Developer CLI configurations, they will be automatically migrated when you first run Kiro CLI.
 
 ### 5. Initialize Podman (if using containers)
 ```bash
@@ -305,8 +309,9 @@ nvim
 # Use Claude Code
 claude
 
-# Use Amazon Q
-q chat
+# Use Kiro CLI
+kiro chat
+# or use 'q chat' (backwards compatible)
 ```
 
 ## 🔄 Updating Tools
@@ -335,9 +340,12 @@ brew upgrade anthropics/claude/claude
 sudo apt update && sudo apt upgrade claude
 ```
 
-### Update Amazon Q
+### Update Kiro CLI
 ```bash
-# Download latest from AWS Q website
+# macOS
+brew upgrade kiro-cli
+
+# Ubuntu - download latest from kiro.dev
 # Or re-run installation script
 ```
 
@@ -373,7 +381,8 @@ source ~/.bashrc  # or source ~/.zshrc
 ## 📚 Additional Resources
 
 - [Claude Code Docs](https://docs.claude.com/en/docs/claude-code)
-- [Amazon Q Developer](https://aws.amazon.com/q/developer/)
+- [Kiro CLI Docs](https://kiro.dev/docs/cli/)
+- [Amazon Q Developer](https://aws.amazon.com/q/developer/) (legacy)
 - [LazyVim Docs](https://www.lazyvim.org/)
 - [Podman Docs](https://podman.io/)
 - [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
@@ -381,7 +390,8 @@ source ~/.bashrc  # or source ~/.zshrc
 ## 🔗 Related Directories
 
 - **`../ClaudeAgents/`** - Claude Code specialized agents and MCPs
-- **`../QAgents/`** - Amazon Q Developer agents and MCPs
+- **`../KiroAgents/`** - Kiro CLI agents and MCPs (recommended)
+- **`../QAgents/`** - Amazon Q Developer CLI agents and MCPs (legacy)
 - **`../iTerm2/`** - iTerm2-specific configurations (if exists)
 
 ## ⚡ Quick Reference
@@ -410,9 +420,11 @@ aws dynamodb list-tables
 claude chat
 claude code
 
-# Amazon Q
-q chat
-q explain <code>
+# Kiro CLI
+kiro chat
+q chat           # backwards compatible
+/agent list      # list available agents
+/agent use <agent-name>
 
 # LazyVim
 nvim                    # Start editor
