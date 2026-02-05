@@ -5,6 +5,7 @@ my-configs/
 ├── Terminal/           # Dev environment setup (Python, Node, AWS, Podman, AI tools)
 ├── ClaudeAgents/       # Claude Code specialized agents & MCPs
 ├── KiroAgents/         # Kiro CLI (formerly Amazon Q Developer) agents & MCPs
+├── OpenCode/           # OpenCode setup with MCPs & LM Studio (GLM4.7-Air)
 ├── Hooks/              # Testing & security automation hooks for Claude/Kiro
 └── iTerm2/            # iTerm2 configurations and themes
 ```
@@ -46,6 +47,13 @@ cd KiroAgents
 ./install_mcps.sh  # Optional
 ```
 
+**OpenCode (with LM Studio + GLM4.7-Air):**
+```bash
+cd OpenCode
+./install_mcps.sh           # Same MCPs as Claude/Kiro
+./configure_lmstudio.sh     # Set up local GLM4.7-Air model
+```
+
 **Testing & Security Hooks:**
 ```bash
 cd Hooks
@@ -79,6 +87,7 @@ python3 --version && node --version && claude --version
 ### AI Coding Assistants
 - **Claude Code** - 16 specialized agents with MCPs
 - **Kiro CLI** (formerly Amazon Q Developer) - AWS-native AI assistant
+- **OpenCode** - Terminal AI with LM Studio for local models (GLM4.7-Air)
 
 ### 16 Specialized Agents
 **Development:** python-backend, frontend-engineer, cdk-expert-ts, cdk-expert-python, data-scientist
@@ -87,12 +96,13 @@ python3 --version && node --version && claude --version
 **Architecture:** architecture-expert, ui-ux-designer
 **Management:** documentation-engineer, product-manager, project-coordinator
 
-### 7 MCP Servers
+### 8 MCP Servers
 - **filesystem** - File operations
 - **sequential-thinking** - Complex problem-solving
 - **puppeteer** & **playwright** - Browser automation
 - **memory** - Knowledge graph across sessions
-- **aws** & **dynamodb** - AWS service interactions
+- **context7** - Real-time, up-to-date library documentation
+- **aws-kb** & **dynamodb** - AWS service interactions
 
 ---
 
@@ -112,6 +122,7 @@ Each directory has detailed documentation:
 - **[Terminal/](Terminal/README.md)** - Installation scripts, tools, troubleshooting
 - **[ClaudeAgents/](ClaudeAgents/README.md)** - Agent descriptions, MCPs, workflows
 - **[KiroAgents/](KiroAgents/README.md)** - Kiro CLI agents setup and configuration
+- **[OpenCode/](OpenCode/README.md)** - OpenCode with LM Studio & GLM4.7-Air
 - **[Hooks/](Hooks/)** - Testing & security automation hooks
 
 ---
@@ -151,8 +162,9 @@ source ~/.bashrc  # or source ~/.zshrc
 
 **MCPs not loading:**
 ```bash
-cat ~/.claude/config.json    # Check Claude config
-cat ~/.kiro/settings/mcp.json  # Check Kiro config
+cat ~/.claude/config.json         # Check Claude config
+cat ~/.kiro/settings/mcp.json     # Check Kiro config
+cat ~/.config/opencode/mcp.json   # Check OpenCode config
 ```
 
 More help in each directory's README.
