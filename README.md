@@ -4,7 +4,8 @@
 my-configs/
 ├── Terminal/           # Dev environment setup (Python, Node, AWS, Podman, AI tools)
 ├── ClaudeAgents/       # Claude Code specialized agents & MCPs
-├── QAgents/           # Amazon Q Developer agents & MCPs
+├── KiroAgents/         # Kiro CLI (formerly Amazon Q Developer) agents & MCPs
+├── Hooks/              # Testing & security automation hooks for Claude/Kiro
 └── iTerm2/            # iTerm2 configurations and themes
 ```
 
@@ -38,13 +39,20 @@ cd ClaudeAgents
 ./install_agents.sh
 ```
 
-**Amazon Q Developer:**
+**Kiro CLI (formerly Amazon Q Developer):**
 ```bash
-cd QAgents
-./install_mcps.sh
+cd KiroAgents
+./install_agents.sh
+./install_mcps.sh  # Optional
 ```
 
-📖 **[ClaudeAgents →](ClaudeAgents/README.md)** | **[QAgents →](QAgents/README.md)**
+**Testing & Security Hooks:**
+```bash
+cd Hooks
+./install_hooks.sh  # Sets up post-code hooks for test & security automation
+```
+
+📖 **[ClaudeAgents →](ClaudeAgents/README.md)** | **[KiroAgents →](KiroAgents/README.md)**
 
 ### 3. Post-Installation
 
@@ -69,11 +77,11 @@ python3 --version && node --version && claude --version
 - **LazyVim** - Modern Neovim with LSP
 
 ### AI Coding Assistants
-- **Claude Code** - 15 specialized agents with MCPs
-- **Amazon Q Developer** - AWS-native AI assistant
+- **Claude Code** - 16 specialized agents with MCPs
+- **Kiro CLI** (formerly Amazon Q Developer) - AWS-native AI assistant
 
-### 15 Specialized Agents
-**Development:** python-backend, frontend-engineer, cdk-expert, data-scientist
+### 16 Specialized Agents
+**Development:** python-backend, frontend-engineer, cdk-expert-ts, cdk-expert-python, data-scientist
 **Testing:** test-coordinator, python-test-engineer, typescript-test-engineer
 **DevOps:** devops-engineer, linux-specialist, code-reviewer
 **Architecture:** architecture-expert, ui-ux-designer
@@ -103,7 +111,8 @@ Each directory has detailed documentation:
 
 - **[Terminal/](Terminal/README.md)** - Installation scripts, tools, troubleshooting
 - **[ClaudeAgents/](ClaudeAgents/README.md)** - Agent descriptions, MCPs, workflows
-- **[QAgents/](QAgents/README.md)** - Q Developer setup and configuration
+- **[KiroAgents/](KiroAgents/README.md)** - Kiro CLI agents setup and configuration
+- **[Hooks/](Hooks/)** - Testing & security automation hooks
 
 ---
 
@@ -142,8 +151,8 @@ source ~/.bashrc  # or source ~/.zshrc
 
 **MCPs not loading:**
 ```bash
-cat ~/.claude/config.json  # Check Claude config
-cat ~/.aws/amazonq/mcp-config.json  # Check Q config
+cat ~/.claude/config.json    # Check Claude config
+cat ~/.kiro/settings/mcp.json  # Check Kiro config
 ```
 
 More help in each directory's README.
