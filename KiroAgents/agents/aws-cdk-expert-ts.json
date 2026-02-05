@@ -1,6 +1,6 @@
 {
-    "name": "aws-cdk-expert",
-    "description": "AWS CDK TypeScript specialist for infrastructure as code. Implements architecture designs with CloudWatch monitoring, CloudTrail auditing, Secrets Manager, ECR, and CloudWatch Synthetics canaries. Consults documentation-engineer for CDK-specific docs.",
+    "name": "aws-cdk-expert-ts",
+    "description": "AWS CDK TypeScript specialist for infrastructure as code. Implements architecture designs with CloudWatch monitoring, CloudTrail auditing, Secrets Manager, ECR, and CloudWatch Synthetics canaries. Use for TypeScript/JavaScript CDK projects.",
     "tools": [
         "fs_read",
         "fs_write",

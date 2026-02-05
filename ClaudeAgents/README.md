@@ -73,11 +73,17 @@ MCPs extend Claude's capabilities by providing access to external tools and data
 - CloudWatch RUM monitoring
 - **Auto-runs tests after code changes**
 
-#### **cdk-expert**
+#### **cdk-expert-ts**
 - AWS CDK TypeScript infrastructure as code
 - Fargate ECS, Lambda, Step Functions patterns
 - Reusable constructs and best practices
 - **Auto-runs CDK tests after changes**
+
+#### **cdk-expert-python**
+- AWS CDK Python infrastructure as code
+- Same patterns as TypeScript version but for Python CDK projects
+- Type-safe Python constructs with dataclasses
+- **Auto-runs pytest CDK tests after changes**
 
 #### **data-scientist**
 - Pandas, NumPy, scikit-learn for data analysis
@@ -197,10 +203,26 @@ User: "Add user authentication with Cognito"
 
 Agents work together seamlessly:
 
-- **architecture-expert** → designs system → **cdk-expert** implements infrastructure
+- **architecture-expert** → designs system → **cdk-expert-ts** or **cdk-expert-python** implements infrastructure
 - **product-manager** → defines requirements → **ui-ux-designer** creates designs → **frontend-engineer** builds UI
 - **test-coordinator** → plans testing → **test engineers** write tests → **developers** implement
 - **documentation-engineer** → updates docs after all changes
+
+## 🧪 Testing & Security Hooks
+
+Automated testing and security scanning hooks are available in `/Hooks/`:
+
+```bash
+# Install the post-code hook
+./Hooks/install_hooks.sh
+```
+
+The hook automatically runs after code changes:
+- **pytest** - Python tests
+- **jest/mocha** - JavaScript/TypeScript tests
+- **bandit** - Python security scanning
+- **pip-audit** - Python package vulnerability checks
+- **npm audit** - Node.js package vulnerability checks
 
 ## 🛠️ Maintenance
 
