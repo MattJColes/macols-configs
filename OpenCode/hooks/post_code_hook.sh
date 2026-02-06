@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# Post-Code Hook for Kiro CLI
+# Post-Code Hook for OpenCode
 #
-# This hook runs automatically after coding tasks complete to:
+# This hook runs automatically after file write/edit tool calls to:
 # 1. Run project tests (pytest, jest, mocha)
 # 2. Run security scans (bandit for Python)
 # 3. Check for package vulnerabilities (pip-audit, npm audit)
 #
-# Called by Kiro CLI's postTask hook system.
+# Called by the OpenCode plugin (post_code_hook_plugin.mjs).
 # Stdin may or may not contain data depending on the caller.
 #
 # Install this hook using: ./install_hooks.sh

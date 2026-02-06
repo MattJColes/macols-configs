@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Install Post-Code Hooks for Claude Code
+# Install Post-Code Hooks for Kiro CLI
 #
 # This script sets up hooks that run automatically after coding tasks:
 # - Tests (pytest, jest/mocha)
@@ -19,7 +19,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HOOK_SCRIPT="$SCRIPT_DIR/post_code_hook.sh"
+HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -39,9 +39,14 @@ log_error() {
 
 echo ""
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║        Post-Code Hook Installer for Claude Code           ║${NC}"
+echo -e "${CYAN}║          Post-Code Hook Installer for Kiro CLI            ║${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
+
+if [ ! -f "$HOOK_SCRIPT" ]; then
+    log_error "Hook script not found at $HOOK_SCRIPT"
+    exit 1
+fi
 
 # Make hook script executable
 chmod +x "$HOOK_SCRIPT"
@@ -111,73 +116,42 @@ if [ ${#MISSING_TOOLS[@]} -gt 0 ]; then
     echo ""
 fi
 
-# Claude Code hooks configuration
+# Kiro CLI hooks configuration
 echo ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${CYAN}Claude Code Hook Configuration${NC}"
+echo -e "${CYAN}Kiro CLI Hook Configuration${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-local_claude_config_dir="$HOME/.claude"
-mkdir -p "$local_claude_config_dir"
+local_kiro_config_dir="$HOME/.kiro/settings"
+mkdir -p "$local_kiro_config_dir"
 
-SETTINGS_FILE="$local_claude_config_dir/settings.json"
+HOOKS_FILE="$local_kiro_config_dir/hooks.json"
 
-# Write hooks config to settings.json (clean deploy - replaces hooks key)
-log_info "Writing hooks configuration to $SETTINGS_FILE"
+# Clean existing hooks config for a fresh install
+if [ -f "$HOOKS_FILE" ]; then
+    log_info "Clearing existing hooks config: $HOOKS_FILE"
+    rm -f "$HOOKS_FILE"
+fi
 
-if command -v node &> /dev/null; then
-    MCP_SETTINGS_FILE="$SETTINGS_FILE" \
-    MCP_HOOK_SCRIPT="$HOOK_SCRIPT" \
-    node -e '
-const fs = require("fs");
-const env = process.env;
+log_info "Writing hooks configuration to $HOOKS_FILE"
 
-let existing = {};
-if (fs.existsSync(env.MCP_SETTINGS_FILE)) {
-    try { existing = JSON.parse(fs.readFileSync(env.MCP_SETTINGS_FILE, "utf8")); } catch(e) {}
-}
-
-// Clean deploy - replace entire hooks key
-existing.hooks = {
-    PostToolUse: [
-        {
-            matcher: "Edit|Write|NotebookEdit",
-            hooks: [
-                {
-                    type: "command",
-                    command: env.MCP_HOOK_SCRIPT
-                }
-            ]
-        }
-    ]
-};
-
-fs.writeFileSync(env.MCP_SETTINGS_FILE, JSON.stringify(existing, null, 2) + "\n");
-'
-    log_success "Hooks configuration written to $SETTINGS_FILE"
-else
-    log_error "Node.js required for config generation"
-    echo ""
-    echo -e "${BLUE}Manually add this to $SETTINGS_FILE:${NC}"
-    echo ""
-    cat << EOF
+cat > "$HOOKS_FILE" << EOF
 {
   "hooks": {
-    "PostToolUse": [
+    "postTask": [
       {
-        "matcher": "Edit|Write|NotebookEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOOK_SCRIPT"
-          }
-        ]
+        "name": "test-and-security-scan",
+        "description": "Run tests and security scans after code changes",
+        "command": "$HOOK_SCRIPT",
+        "enabled": true,
+        "triggers": ["fs_write", "execute_bash"]
       }
     ]
   }
 }
 EOF
-fi
+
+log_success "Hooks configuration written to $HOOKS_FILE"
 
 # Project-level example
 echo ""
@@ -186,20 +160,16 @@ echo -e "${CYAN}Project-Level Hook Configuration${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 echo ""
-echo -e "${BLUE}For project-level configuration, create .claude/settings.json in your project:${NC}"
+echo -e "${BLUE}For project-level configuration, create .kiro/hooks.json in your project:${NC}"
 echo ""
 cat << 'EOF'
 {
   "hooks": {
-    "PostToolUse": [
+    "postTask": [
       {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c './scripts/run_tests.sh'"
-          }
-        ]
+        "name": "run-tests",
+        "command": "./scripts/run_tests.sh",
+        "enabled": true
       }
     ]
   }
