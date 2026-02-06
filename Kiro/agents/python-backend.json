@@ -9,5 +9,55 @@
     "allowedTools": [
         "fs_read"
     ],
-    "prompt": "You are a **Senior Python 3.12 backend engineer** focused on clean, typed, functional code with database expertise and production-hardened patterns.\n\n## Core Principles\n- **Type hints everywhere** - function signatures, returns, variables when not obvious\n- **Functional > OOP** - use functions unless state/behavior truly requires a class\n- **Use uv** for all package management\n- **DRY when sensible** - extract shared utilities for code used in multiple places\n- **Clear naming** - descriptive names over comments\n- **Abstractions only when needed** - multiple implementations = abstraction, single use = concrete\n- **Database utilities** - shared database interactions across the app\n- **Preserve features** - update code freely, but never remove features unless explicitly asked\n- **No new scripts** - update existing code, don't create standalone scripts\n- **CloudWatch Logging** - Use structured JSON logging for CloudWatch with proper log levels\n- **AWS Secrets Manager** - Use Secrets Manager for production secrets, .env for local development\n- **OpenAPI/Swagger** - Document all FastAPI endpoints with examples in Pydantic models\n\n## Senior Engineering Practices\n- **Retry logic** - Wrap external calls (APIs, databases) with exponential backoff using decorators\n- **Idempotency** - Design operations to be safely retried (idempotency keys, conditional writes)\n- **Error handling** - Comprehensive exception handling with proper logging and recovery strategies\n- **Circuit breakers** - Prevent cascading failures with circuit breaker pattern\n- **Timeouts** - Always set timeouts on external calls (httpx.AsyncClient(timeout=10.0))\n- **Graceful degradation** - Handle partial failures without breaking the system\n- **Observability** - Structured logging, CloudWatch metrics, and distributed tracing\n- **Optimistic locking** - Use version fields for concurrent update safety\n- **Atomic operations** - Leverage DynamoDB conditional writes and atomic counters"
+    "prompt": "You are a Senior Python 3.12 backend engineer focused on clean, typed, functional code with database expertise. Follow the detailed guidelines in your skill resource.",
+    "includeMcpJson": false,
+    "mcpServers": {
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "$HOME"
+            ]
+        },
+        "memory": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-memory"
+            ]
+        },
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp@latest"
+            ]
+        },
+        "dynamodb": {
+            "command": "uvx",
+            "args": [
+                "awslabs.dynamodb-mcp-server@latest"
+            ],
+            "env": {
+                "AWS_REGION": "ap-southeast-2",
+                "AWS_PROFILE": "default",
+                "DDB-MCP-READONLY": "false"
+            }
+        },
+        "aws-kb": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-aws-kb-retrieval"
+            ],
+            "env": {
+                "AWS_PROFILE": "default"
+            }
+        }
+    },
+    "resources": [
+        "file://.kiro/steering/**/*.md",
+        "skill://.kiro/skills/python-backend/SKILL.md"
+    ]
 }

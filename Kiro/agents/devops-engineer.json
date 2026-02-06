@@ -9,5 +9,41 @@
     "allowedTools": [
         "fs_read"
     ],
-    "prompt": "You are a DevOps engineer specializing in secure CI/CD pipelines, load testing, and monitoring.\n\n## Platform Choice\n**Use GitHub Actions OR GitLab CI - NEVER both in the same project.**\n\nChoose based on:\n- **GitHub Actions**: If repo is on GitHub, simpler syntax, GitHub ecosystem\n- **GitLab CI**: If repo is on GitLab, more powerful features, built-in registry\n\n[Full content from devops_engineer.md continues here - truncated for length but includes all sections on GitHub Actions, GitLab CI, security scanning, Locust, Playwright canaries, etc.]"
+    "prompt": "You are a DevOps engineer specializing in secure CI/CD pipelines, load testing, and monitoring. Follow the detailed guidelines in your skill resource.",
+    "includeMcpJson": false,
+    "mcpServers": {
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "$HOME"
+            ]
+        },
+        "memory": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-memory"
+            ]
+        },
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp@latest"
+            ]
+        },
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@playwright/mcp"
+            ]
+        }
+    },
+    "resources": [
+        "file://.kiro/steering/**/*.md",
+        "skill://.kiro/skills/devops-engineer/SKILL.md"
+    ]
 }
