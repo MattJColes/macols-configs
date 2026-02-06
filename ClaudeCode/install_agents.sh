@@ -11,10 +11,15 @@ echo -e "${GREEN}Installing Claude Code Agents...${NC}\n"
 
 # Create user-level agents directory
 AGENTS_DIR="$HOME/.claude/agents"
-mkdir -p "$AGENTS_DIR"
-
-# Create system-level directory
 SYSTEM_DIR="$HOME/.claude"
+
+# Clean existing agents for a fresh install
+if [ -d "$AGENTS_DIR" ]; then
+    echo -e "${YELLOW}Clearing existing agents in: $AGENTS_DIR${NC}"
+    rm -rf "$AGENTS_DIR"
+fi
+
+mkdir -p "$AGENTS_DIR"
 mkdir -p "$SYSTEM_DIR"
 
 echo -e "${YELLOW}Creating agents in: $AGENTS_DIR${NC}\n"
@@ -1814,37 +1819,3 @@ echo "  claude /agents    # Interactive management"
 echo "  claude /config    # View settings"
 
 echo -e "\n${GREEN}Done! 🎉${NC}"
-
-# Optional MCP installation
-echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}MCP Server Installation (Optional)${NC}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
-
-echo "Would you like to install Model Context Protocol (MCP) servers?"
-echo "MCPs enable agents to interact with external tools (GitHub, AWS, databases, etc.)"
-echo ""
-
-# Auto-skip if SKIP_MCP_PROMPT is set or stdin is not a terminal
-if [ -n "${SKIP_MCP_PROMPT:-}" ] || [ ! -t 0 ]; then
-    echo -e "${YELLOW}Skipping MCP installation (non-interactive mode).${NC}"
-    REPLY="n"
-else
-    read -p "Install MCP servers now? (y/n) " -r REPLY
-    echo
-fi
-
-if echo "$REPLY" | grep -q "^[Yy]$"; then
-    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-    if [ -f "$SCRIPT_DIR/install_mcps.sh" ]; then
-        echo -e "\n${GREEN}Running MCP installer...${NC}\n"
-        bash "$SCRIPT_DIR/install_mcps.sh"
-    else
-        echo -e "${RED}Error: install_mcps.sh not found in $SCRIPT_DIR${NC}"
-        echo "You can install MCPs later by running: bash $SCRIPT_DIR/install_mcps.sh"
-    fi
-else
-    echo -e "\n${YELLOW}Skipping MCP installation.${NC}"
-    echo "You can install MCPs later by running:"
-    echo "  bash $(cd "$(dirname "$0")" && pwd)/install_mcps.sh"
-fi
