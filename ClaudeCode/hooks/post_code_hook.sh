@@ -41,8 +41,7 @@ fi
 REPORT_FILE="${REPORT_FILE:-/tmp/code_review_report.md}"
 MAX_TEST_TIME="${MAX_TEST_TIME:-120}"  # 2 minutes default
 
-# Track overall status
-OVERALL_STATUS=0
+# Track issues found
 declare -a ISSUES_FOUND=()
 declare -a MESSAGES=()
 
@@ -52,7 +51,6 @@ add_message() {
 
 add_issue() {
     ISSUES_FOUND+=("$1")
-    OVERALL_STATUS=1
 }
 
 # Detect project type
