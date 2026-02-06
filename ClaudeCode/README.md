@@ -4,6 +4,8 @@ This directory contains specialized AI agents, skills, hooks, and Model Context 
 
 ## Quick Install
 
+> **Note:** Each installer performs a clean deploy — it removes and replaces its target directory/config. Running `install_agents.sh` clears `~/.claude/agents/` and `~/.claude/skills/`, `install_skills.sh` clears `~/.claude/skills/`, and `install_hooks.sh` replaces the `hooks` key in `~/.claude/settings.json`.
+
 ```bash
 # Install agents (markdown-based)
 ./install_agents.sh
@@ -15,7 +17,7 @@ This directory contains specialized AI agents, skills, hooks, and Model Context 
 ./install_skills.sh --skills-only --project
 
 # Install hooks
-cd hooks && ./install_hooks.sh
+./install_hooks.sh
 ```
 
 ## Directory Structure
