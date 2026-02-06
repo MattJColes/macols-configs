@@ -142,20 +142,19 @@ if (fs.existsSync(env.MCP_SETTINGS_FILE)) {
     try { existing = JSON.parse(fs.readFileSync(env.MCP_SETTINGS_FILE, "utf8")); } catch(e) {}
 }
 
-// Clean deploy - replace entire hooks key
-existing.hooks = {
-    PostToolUse: [
-        {
-            matcher: "Edit|Write|NotebookEdit",
-            hooks: [
-                {
-                    type: "command",
-                    command: env.MCP_HOOK_SCRIPT
-                }
-            ]
-        }
-    ]
-};
+// Merge - preserve existing hooks, only replace PostToolUse
+if (!existing.hooks) existing.hooks = {};
+existing.hooks.PostToolUse = [
+    {
+        matcher: "Edit|Write|NotebookEdit",
+        hooks: [
+            {
+                type: "command",
+                command: env.MCP_HOOK_SCRIPT
+            }
+        ]
+    }
+];
 
 fs.writeFileSync(env.MCP_SETTINGS_FILE, JSON.stringify(existing, null, 2) + "\n");
 '

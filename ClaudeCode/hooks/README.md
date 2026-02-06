@@ -47,4 +47,4 @@ Or use Claude Code's `/hooks` command for interactive configuration.
 ## Environment Variables
 
 - `REPORT_FILE` - Custom path for the report (default: `/tmp/code_review_report.md`)
-- `MAX_TEST_TIME` - Timeout for test runs in seconds (default: `300`)
+- `MAX_TEST_TIME` - Timeout for test runs in seconds (default: `120`)
