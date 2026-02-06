@@ -68,7 +68,6 @@ echo -e "\n${YELLOW}Agents directory: $AGENTS_DIR${NC}"
 
 echo -e "\n${GREEN}Usage with Kiro CLI:${NC}"
 echo "  kiro chat                                 # Start Kiro chat session"
-echo "  q chat                                    # Alternative (backwards compatible)"
 echo "  /agent list                               # List available agents"
 echo "  /agent use code-reviewer                  # Use specific agent"
 echo ""
