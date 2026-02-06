@@ -63,6 +63,7 @@ echo "  • ui-ux-designer          - Design systems and user experience"
 echo "  • architecture-expert     - System architecture and design patterns"
 echo "  • test-coordinator        - Test strategy and coordination"
 echo "  • project-coordinator     - Project management and team coordination"
+echo "  • security-specialist     - Threat modeling, OWASP, and AWS security hardening"
 
 echo -e "\n${YELLOW}Agents directory: $AGENTS_DIR${NC}"
 
