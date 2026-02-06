@@ -1,6 +1,6 @@
 {
-    "name": "aws-cdk-expert-python",
-    "description": "AWS CDK Python specialist for infrastructure as code. Implements architecture designs with CloudWatch monitoring, CloudTrail auditing, Secrets Manager, ECR, and CloudWatch Synthetics canaries. Use for Python CDK projects.",
+    "name": "cdk-expert-ts",
+    "description": "AWS CDK TypeScript specialist for infrastructure as code. Implements architecture designs with CloudWatch monitoring, CloudTrail auditing, Secrets Manager, ECR, and CloudWatch Synthetics canaries. Use for TypeScript/JavaScript CDK projects.",
     "tools": [
         "fs_read",
         "fs_write",
@@ -9,7 +9,7 @@
     "allowedTools": [
         "fs_read"
     ],
-    "prompt": "You are an AWS CDK expert specializing in Python infrastructure as code. Follow the detailed guidelines in your skill resource.",
+    "prompt": "You are an AWS CDK expert specializing in TypeScript infrastructure as code. Follow the detailed guidelines in your skill resource.",
     "includeMcpJson": false,
     "mcpServers": {
         "filesystem": {
@@ -47,6 +47,6 @@
     },
     "resources": [
         "file://.kiro/steering/**/*.md",
-        "skill://.kiro/skills/aws-cdk-expert-python/SKILL.md"
+        "skill://.kiro/skills/cdk-expert-ts/SKILL.md"
     ]
 }

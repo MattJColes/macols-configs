@@ -67,8 +67,8 @@ Each agent only starts the MCP servers it needs. All agents get `filesystem` + `
 | Agent | context7 | seq-thinking | puppeteer | playwright | dynamodb | aws-kb |
 |---|---|---|---|---|---|---|
 | architecture-expert | Y | Y | - | - | - | Y |
-| aws-cdk-expert-ts | Y | - | - | - | - | Y |
-| aws-cdk-expert-python | Y | - | - | - | - | Y |
+| cdk-expert-ts | Y | - | - | - | - | Y |
+| cdk-expert-python | Y | - | - | - | - | Y |
 | code-reviewer | - | - | - | - | - | - |
 | data-scientist | Y | - | - | - | Y | Y |
 | devops-engineer | Y | - | - | Y | - | - |
@@ -93,8 +93,8 @@ Each agent only starts the MCP servers it needs. All agents get `filesystem` + `
 ### Development
 - **python-backend** - Python 3.12, FastAPI, DynamoDB, Cognito auth
 - **frontend-engineer** - TypeScript, React, Tailwind CSS
-- **aws-cdk-expert-ts** - AWS CDK TypeScript infrastructure
-- **aws-cdk-expert-python** - AWS CDK Python infrastructure
+- **cdk-expert-ts** - AWS CDK TypeScript infrastructure
+- **cdk-expert-python** - AWS CDK Python infrastructure
 - **data-scientist** - Pandas, ML, ETL pipelines, data lakes
 - **linux-specialist** - Shell scripting, system administration
 

@@ -11,13 +11,14 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 printf "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
-printf "${GREEN}OpenCode Skills Installer${NC}\n"
+printf "${GREEN}OpenCode Skills & Agents Installer${NC}\n"
 printf "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
 echo ""
 
-# Default installation path
+# Default installation paths
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
 SKILLS_DIR="$OPENCODE_CONFIG_DIR/skills"
+AGENTS_DIR="$OPENCODE_CONFIG_DIR/agents"
 
 usage() {
     cat << EOF
@@ -46,16 +47,17 @@ list_skills() {
     echo ""
 }
 
-install_skills() {
+install_to_dir() {
     target_dir="$1"
+    label="$2"
 
-    # Clean existing skills for a fresh install
+    # Clean existing for a fresh install
     if [ -d "$target_dir" ]; then
-        printf "${YELLOW}Clearing existing skills in: $target_dir${NC}\n"
+        printf "${YELLOW}Clearing existing ${label} in: $target_dir${NC}\n"
         rm -rf "$target_dir"
     fi
 
-    printf "${BLUE}Installing skills to: $target_dir${NC}\n"
+    printf "${BLUE}Installing ${label} to: $target_dir${NC}\n"
     mkdir -p "$target_dir"
 
     count=0
@@ -72,7 +74,7 @@ install_skills() {
         fi
     done
 
-    printf "\n${GREEN}✓ Installed %d skills${NC}\n" "$count"
+    printf "\n${GREEN}✓ Installed %d ${label}${NC}\n" "$count"
 }
 
 # Parse arguments
@@ -100,11 +102,13 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# Install skills
+# Install skills and agents
 if [ "$PROJECT_INSTALL" = true ]; then
-    install_skills "./.opencode/skills"
+    install_to_dir "./.opencode/skills" "skills"
+    install_to_dir "./.opencode/agents" "agents"
 else
-    install_skills "$SKILLS_DIR"
+    install_to_dir "$SKILLS_DIR" "skills"
+    install_to_dir "$AGENTS_DIR" "agents"
 fi
 
 # Summary
@@ -114,8 +118,8 @@ printf "${GREEN}Installation Complete!${NC}\n"
 printf "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
 echo ""
 
-printf "${YELLOW}Skills Usage:${NC}\n"
-echo "  Skills are automatically available to OpenCode agents."
+printf "${YELLOW}Skills & Agents Usage:${NC}\n"
+echo "  Skills and agents are automatically available to OpenCode."
 echo "  Agents can load skills on-demand via the skill tool."
 echo ""
 echo "  Available skills:"
@@ -141,11 +145,13 @@ echo "  Use --list to see all available skills with descriptions"
 echo ""
 
 printf "${YELLOW}Next Steps:${NC}\n"
-echo "  • Restart OpenCode to load skills"
+echo "  • Restart OpenCode to load skills and agents"
 if [ "$PROJECT_INSTALL" = true ]; then
     echo "  • Skills installed to: ./.opencode/skills/"
+    echo "  • Agents installed to: ./.opencode/agents/"
 else
     echo "  • Skills installed to: $SKILLS_DIR"
+    echo "  • Agents installed to: $AGENTS_DIR"
 fi
 echo ""
 

@@ -1,5 +1,5 @@
 ---
-name: aws-cdk-expert-ts
+name: cdk-expert-ts
 description: AWS CDK TypeScript specialist for infrastructure as code. Implements architecture designs with CloudWatch monitoring, CloudTrail auditing, Secrets Manager, ECR, and CloudWatch Synthetics canaries. Use for TypeScript/JavaScript CDK projects.
 ---
 

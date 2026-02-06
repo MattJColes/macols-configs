@@ -1,5 +1,5 @@
 ---
-name: aws-cdk-expert-python
+name: cdk-expert-python
 description: AWS CDK Python specialist for infrastructure as code. Implements architecture designs with CloudWatch monitoring, CloudTrail auditing, Secrets Manager, ECR, and CloudWatch Synthetics canaries. Use for Python CDK projects.
 ---
 

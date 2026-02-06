@@ -57,8 +57,8 @@ MCP_SERVERS = {
 # Agent-to-MCP mapping (beyond the common filesystem + memory)
 AGENT_MCPS = {
     "architecture-expert":      ["context7", "sequential-thinking", "aws-kb"],
-    "aws-cdk-expert-ts":        ["context7", "aws-kb"],
-    "aws-cdk-expert-python":    ["context7", "aws-kb"],
+    "cdk-expert-ts":        ["context7", "aws-kb"],
+    "cdk-expert-python":    ["context7", "aws-kb"],
     "code-reviewer":            [],
     "data-scientist":           ["context7", "dynamodb", "aws-kb"],
     "devops-engineer":          ["context7", "playwright"],
@@ -78,8 +78,8 @@ AGENT_MCPS = {
 # Brief role summaries for the slimmed-down prompt field
 BRIEF_PROMPTS = {
     "architecture-expert": "You are a pragmatic AWS solutions architect. Follow the detailed guidelines in your skill resource for security, scalability, cost-effectiveness, and caching strategies.",
-    "aws-cdk-expert-ts": "You are an AWS CDK expert specializing in TypeScript infrastructure as code. Follow the detailed guidelines in your skill resource.",
-    "aws-cdk-expert-python": "You are an AWS CDK expert specializing in Python infrastructure as code. Follow the detailed guidelines in your skill resource.",
+    "cdk-expert-ts": "You are an AWS CDK expert specializing in TypeScript infrastructure as code. Follow the detailed guidelines in your skill resource.",
+    "cdk-expert-python": "You are an AWS CDK expert specializing in Python infrastructure as code. Follow the detailed guidelines in your skill resource.",
     "code-reviewer": "You are a senior engineer reviewing for security, architecture, and unnecessary complexity. Follow the detailed guidelines in your skill resource.",
     "data-scientist": "You are a data scientist and data engineer with deep expertise in AWS data services, big data processing, and machine learning. Follow the detailed guidelines in your skill resource.",
     "devops-engineer": "You are a DevOps engineer specializing in secure CI/CD pipelines, load testing, and monitoring. Follow the detailed guidelines in your skill resource.",
