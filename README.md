@@ -35,29 +35,28 @@ cd Terminal
 **Claude Code:**
 ```bash
 cd ClaudeCode
-./install_mcps.sh
-./install_agents.sh
-./install_skills.sh             # Optional: install slash-command skills
-cd hooks && ./install_hooks.sh  # Optional: test & security hooks
+./install_agents.sh             # Installs agents and skills
+./install_hooks.sh              # Optional: test & security hooks
 ```
 
 **Kiro CLI:**
 ```bash
 cd Kiro
-./install_agents.sh
+./install_agents.sh             # Installs agents and skills
 ./install_mcps.sh               # Optional
-cd hooks && ./install_hooks.sh  # Optional: test & security hooks
+./install_hooks.sh              # Optional: test & security hooks
 ```
 
 **OpenCode (with LM Studio + GLM4.7-Air):**
 ```bash
 cd OpenCode
-./install_skills.sh         # Install 17 agent skills
-./install_mcps.sh           # Same MCPs as Claude/Kiro
-./configure_lmstudio.sh     # Set up local GLM4.7-Air model
+./install_skills.sh             # Install 17 agent skills
+./install_mcps.sh               # Same MCPs as Claude/Kiro
+./install_hooks.sh              # Optional: test & security hooks
+./configure_lmstudio.sh         # Set up local GLM4.7-Air model
 ```
 
-**[ClaudeCode](ClaudeCode/README.md)** | **[Kiro](Kiro/README.md)**
+**[ClaudeCode](ClaudeCode/README.md)** | **[Kiro](Kiro/README.md)** | **[OpenCode](OpenCode/README.md)**
 
 ### 3. Post-Installation
 
@@ -82,24 +81,26 @@ python3 --version && node --version && claude --version
 - **LazyVim** - Modern Neovim with LSP
 
 ### AI Coding Assistants
-- **Claude Code** - 16 specialized agents + skills with MCPs
-- **Kiro CLI** - AWS-native AI assistant with 16 agents
+- **Claude Code** - 17 specialized agents + skills with MCPs
+- **Kiro CLI** - AWS-native AI assistant with 17 agents
 - **OpenCode** - Terminal AI with 17 skills, MCPs & LM Studio for local models (GLM4.7-Air)
 
-### 16 Specialized Agents
+### 17 Specialized Agents
 **Development:** python-backend, frontend-engineer, cdk-expert-ts, cdk-expert-python, data-scientist
 **Testing:** test-coordinator, python-test-engineer, typescript-test-engineer
 **DevOps:** devops-engineer, linux-specialist, code-reviewer
 **Architecture:** architecture-expert, ui-ux-designer
+**Security:** security-specialist
 **Management:** documentation-engineer, product-manager, project-coordinator
 
-### 8 MCP Servers
+### 8 Core MCP Servers
 - **filesystem** - File operations
 - **sequential-thinking** - Complex problem-solving
 - **puppeteer** & **playwright** - Browser automation
 - **memory** - Knowledge graph across sessions
 - **context7** - Real-time, up-to-date library documentation
 - **aws-kb** & **dynamodb** - AWS service interactions
+- **github** & **gitlab** - Optional: repository operations (require access tokens)
 
 ---
 
