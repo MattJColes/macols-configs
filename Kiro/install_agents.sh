@@ -8,25 +8,29 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}Installing Kiro CLI Agents...${NC}\n"
-
-# Kiro CLI agents directory
-AGENTS_DIR="$HOME/.kiro/agents"
-mkdir -p "$AGENTS_DIR"
-
-echo -e "${YELLOW}Installing agents to: $AGENTS_DIR${NC}\n"
+echo -e "${GREEN}Installing Kiro CLI Agents & Skills...${NC}\n"
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SOURCE_AGENTS_DIR="$SCRIPT_DIR/agents"
+SOURCE_SKILLS_DIR="$SCRIPT_DIR/skills"
 
-# Check if agents directory exists
+# Kiro CLI directories
+AGENTS_DIR="$HOME/.kiro/agents"
+SKILLS_DIR="$HOME/.kiro/skills"
+mkdir -p "$AGENTS_DIR" "$SKILLS_DIR"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Install Agents
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+echo -e "${YELLOW}Installing agents to: $AGENTS_DIR${NC}\n"
+
 if [ ! -d "$SOURCE_AGENTS_DIR" ]; then
   echo -e "${RED}Error: agents directory not found at $SOURCE_AGENTS_DIR${NC}"
   exit 1
 fi
 
-# Count JSON files
 AGENT_COUNT=$(find "$SOURCE_AGENTS_DIR" -name "*.json" -type f | wc -l)
 
 if [ "$AGENT_COUNT" -eq 0 ]; then
@@ -36,85 +40,116 @@ fi
 
 echo -e "${BLUE}Found $AGENT_COUNT agent(s) to install${NC}\n"
 
-# Copy all JSON agent files
 echo -e "${GREEN}Installing agents:${NC}"
 for agent_file in "$SOURCE_AGENTS_DIR"/*.json; do
   agent_name=$(basename "$agent_file")
-  cp "$agent_file" "$AGENTS_DIR/$agent_name"
+  # Copy and expand $HOME in filesystem MCP args
+  sed "s|\\\$HOME|$HOME|g" "$agent_file" > "$AGENTS_DIR/$agent_name"
   echo -e "  ${GREEN}✓${NC} $agent_name"
 done
 
-echo -e "\n${GREEN}✓ Successfully installed $AGENT_COUNT agents${NC}\n"
+echo -e "\n${GREEN}✓ Installed $AGENT_COUNT agents${NC}\n"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Install Skills
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if [ -d "$SOURCE_SKILLS_DIR" ]; then
+  echo -e "${YELLOW}Installing skills to: $SKILLS_DIR${NC}\n"
+
+  SKILL_COUNT=0
+  echo -e "${GREEN}Installing skills:${NC}"
+  for skill_dir in "$SOURCE_SKILLS_DIR"/*/; do
+    skill_name=$(basename "$skill_dir")
+    mkdir -p "$SKILLS_DIR/$skill_name"
+    cp "$skill_dir/SKILL.md" "$SKILLS_DIR/$skill_name/SKILL.md"
+    echo -e "  ${GREEN}✓${NC} $skill_name"
+    SKILL_COUNT=$((SKILL_COUNT + 1))
+  done
+
+  echo -e "\n${GREEN}✓ Installed $SKILL_COUNT skills${NC}\n"
+else
+  echo -e "${YELLOW}No skills directory found, skipping skills installation.${NC}\n"
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Summary
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}Installation Complete!${NC}"
+echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+
+echo -e "${YELLOW}Architecture:${NC}"
+echo "  Agents use per-agent MCP configs (only load MCPs they need)"
+echo "  Skills use progressive loading (metadata at startup, full content on-demand)"
+echo ""
 
 echo -e "${YELLOW}Installed agents:${NC}"
-echo "  • code-reviewer           - Security, architecture, and complexity review"
-echo "  • frontend-engineer       - TypeScript/React development"
-echo "  • python-backend          - Python 3.12 backend with databases"
-echo "  • aws-cdk-expert-ts       - AWS CDK TypeScript infrastructure as code"
-echo "  • aws-cdk-expert-python   - AWS CDK Python infrastructure as code"
+echo "  • architecture-expert     - AWS architecture, caching, scaling"
+echo "  • aws-cdk-expert-ts       - AWS CDK TypeScript infrastructure"
+echo "  • aws-cdk-expert-python   - AWS CDK Python infrastructure"
+echo "  • code-reviewer           - Security, architecture, complexity review"
+echo "  • data-scientist          - Pandas, ML, ETL, data lakes"
 echo "  • devops-engineer         - CI/CD pipelines and security scanning"
+echo "  • documentation-engineer  - README, ARCHITECTURE docs, Mermaid"
+echo "  • frontend-engineer       - TypeScript/React development"
 echo "  • linux-specialist        - Shell scripting and system administration"
-echo "  • python-test-engineer    - Python testing with pytest"
-echo "  • typescript-test-engineer - TypeScript testing with Jest/Playwright"
 echo "  • product-manager         - Feature tracking and preservation"
-echo "  • documentation-engineer  - README, DEVELOPMENT, ARCHITECTURE docs"
-echo "  • data-scientist          - Pandas, data analysis, and ML"
-echo "  • ui-ux-designer          - Design systems and user experience"
-echo "  • architecture-expert     - System architecture and design patterns"
+echo "  • project-coordinator     - Project management and coordination"
+echo "  • python-backend          - Python 3.12 backend with databases"
+echo "  • python-test-engineer    - Python testing with pytest"
+echo "  • security-specialist     - Threat modeling, OWASP, AWS hardening"
 echo "  • test-coordinator        - Test strategy and coordination"
-echo "  • project-coordinator     - Project management and team coordination"
-echo "  • security-specialist     - Threat modeling, OWASP, and AWS security hardening"
+echo "  • typescript-test-engineer - TypeScript testing with Jest/Playwright"
+echo "  • ui-ux-designer          - Design systems and user experience"
 
-echo -e "\n${YELLOW}Agents directory: $AGENTS_DIR${NC}"
+echo -e "\n${YELLOW}Directories:${NC}"
+echo "  Agents: $AGENTS_DIR"
+echo "  Skills: $SKILLS_DIR"
 
-echo -e "\n${GREEN}Usage with Kiro CLI:${NC}"
-echo "  kiro chat                                 # Start Kiro chat session"
-echo "  /agent list                               # List available agents"
-echo "  /agent use code-reviewer                  # Use specific agent"
-echo ""
-echo "  Example prompts:"
-echo "    \"Use code-reviewer to review my changes\""
-echo "    \"Switch to frontend-engineer agent\""
-echo "    \"Use python-backend to help with the API\""
+echo -e "\n${GREEN}Usage:${NC}"
+echo "  kiro chat                    # Start Kiro chat session"
+echo "  /agent list                  # List available agents"
+echo "  /agent use code-reviewer     # Use specific agent"
 
-echo -e "\n${GREEN}Managing agents:${NC}"
-echo "  View installed agents:   ls $AGENTS_DIR"
-echo "  Remove all agents:       rm -rf $AGENTS_DIR"
-echo "  Reinstall:               bash $0"
+echo -e "\n${GREEN}Managing:${NC}"
+echo "  Reinstall:  bash $0"
+echo "  Remove all: rm -rf $AGENTS_DIR $SKILLS_DIR"
 
-echo -e "\n${GREEN}Done! 🎉${NC}"
-echo -e "${BLUE}Tip: Kiro will automatically suggest relevant agents based on your task${NC}"
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Optional MCP package installation
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# Optional MCP installation
 echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}MCP Server Installation (Optional)${NC}"
+echo -e "${BLUE}MCP Package Installation (Optional)${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
 
-echo "Would you like to install Model Context Protocol (MCP) servers?"
-echo "MCPs enable agents to interact with external tools (GitHub, AWS, databases, etc.)"
+echo "Agents now include per-agent MCP server configs."
+echo "MCP npm packages must be available for npx to run them."
 echo ""
 
 # Auto-skip if SKIP_MCP_PROMPT is set or stdin is not a terminal
 if [ -n "${SKIP_MCP_PROMPT:-}" ] || [ ! -t 0 ]; then
-    echo -e "${YELLOW}Skipping MCP installation (non-interactive mode).${NC}"
+    echo -e "${YELLOW}Skipping MCP package installation (non-interactive mode).${NC}"
     REPLY="n"
 else
-    read -p "Install MCP servers now? (y/n) " -r REPLY
+    read -p "Install MCP npm packages now? (y/n) " -r REPLY
     echo
 fi
 
 if echo "$REPLY" | grep -q "^[Yy]$"; then
-    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
     if [ -f "$SCRIPT_DIR/install_mcps.sh" ]; then
-        echo -e "\n${GREEN}Running MCP installer...${NC}\n"
+        echo -e "\n${GREEN}Running MCP package installer...${NC}\n"
         bash "$SCRIPT_DIR/install_mcps.sh"
     else
         echo -e "${RED}Error: install_mcps.sh not found in $SCRIPT_DIR${NC}"
         echo "You can install MCPs later by running: bash $SCRIPT_DIR/install_mcps.sh"
     fi
 else
-    echo -e "\n${YELLOW}Skipping MCP installation.${NC}"
-    echo "You can install MCPs later by running:"
-    echo "  bash $(cd "$(dirname "$0")" && pwd)/install_mcps.sh"
+    echo -e "\n${YELLOW}Skipping MCP package installation.${NC}"
+    echo "You can install MCP packages later by running:"
+    echo "  bash $SCRIPT_DIR/install_mcps.sh"
 fi
+
+echo -e "\n${GREEN}Done! 🎉${NC}"
