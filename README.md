@@ -5,7 +5,7 @@ my-configs/
 ├── Terminal/           # Dev environment setup (Python, Node, AWS, Podman, AI tools)
 ├── ClaudeCode/         # Claude Code agents, skills, hooks & MCPs
 ├── Kiro/               # Kiro CLI agents, hooks, steering & MCPs
-├── OpenCode/           # OpenCode setup with MCPs & LM Studio (GLM4.7-Air)
+├── OpenCode/           # OpenCode skills, MCPs & LM Studio (GLM4.7-Air)
 └── .github/            # Security scanning & dependabot
 ```
 
@@ -52,6 +52,7 @@ cd hooks && ./install_hooks.sh  # Optional: test & security hooks
 **OpenCode (with LM Studio + GLM4.7-Air):**
 ```bash
 cd OpenCode
+./install_skills.sh         # Install 17 agent skills
 ./install_mcps.sh           # Same MCPs as Claude/Kiro
 ./configure_lmstudio.sh     # Set up local GLM4.7-Air model
 ```
@@ -83,7 +84,7 @@ python3 --version && node --version && claude --version
 ### AI Coding Assistants
 - **Claude Code** - 16 specialized agents + skills with MCPs
 - **Kiro CLI** - AWS-native AI assistant with 16 agents
-- **OpenCode** - Terminal AI with LM Studio for local models (GLM4.7-Air)
+- **OpenCode** - Terminal AI with 17 skills, MCPs & LM Studio for local models (GLM4.7-Air)
 
 ### 16 Specialized Agents
 **Development:** python-backend, frontend-engineer, cdk-expert-ts, cdk-expert-python, data-scientist

@@ -260,6 +260,7 @@ echo -e "\n${YELLOW}Configuration:${NC}"
 echo "  Location: $OPENCODE_MCP_CONFIG"
 
 echo -e "\n${YELLOW}Next Steps:${NC}"
+echo "  - Run ./install_skills.sh to install agent skills"
 echo "  - Ensure AWS credentials are configured (~/.aws/credentials)"
 echo "  - Configure DynamoDB MCP by setting AWS_REGION if needed"
 if [ "$INSTALL_GITHUB" = true ] && [ -z "$GITHUB_TOKEN_VALUE" ]; then

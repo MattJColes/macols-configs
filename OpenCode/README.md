@@ -1,22 +1,62 @@
 # OpenCode Configuration
 
-OpenCode setup with MCP servers and LM Studio integration for local model inference.
+OpenCode setup with skills, MCP servers, and LM Studio integration for local model inference.
 
 ## Overview
 
-This folder provides configuration scripts for [OpenCode](https://github.com/opencode-ai/opencode), a terminal-based AI coding assistant. The setup mirrors the MCP configuration used by Claude Code and Kiro CLI, ensuring consistency across all three AI assistants.
+This folder provides configuration scripts for [OpenCode](https://github.com/opencode-ai/opencode), a terminal-based AI coding assistant. The setup includes skills (reusable agent behaviors) and MCP servers, mirroring the configuration used by Claude Code and Kiro CLI for consistency across all three AI assistants.
 
 ## Quick Start
 
 ```bash
-# 1. Install MCPs (same as Claude Code/Kiro)
+# 1. Install skills (agent behaviors)
+./install_skills.sh
+
+# 2. Install MCPs (tool integrations)
 ./install_mcps.sh
 
-# 2. Configure LM Studio with GLM4.7-Air
+# 3. Configure LM Studio with GLM4.7-Air
 ./configure_lmstudio.sh
 
-# 3. Start OpenCode
+# 4. Start OpenCode
 opencode-glm  # Uses local GLM4.7-Air
+```
+
+## Skills
+
+Skills provide reusable agent behaviors that OpenCode agents can load on-demand. They are installed to `~/.config/opencode/skills/` (global) or `.opencode/skills/` (project-level).
+
+| Skill | Description |
+|-------|-------------|
+| `architecture-expert` | System design, AWS infrastructure, and technical decisions |
+| `cdk-expert-python` | AWS CDK with Python |
+| `cdk-expert-ts` | AWS CDK with TypeScript |
+| `code-reviewer` | Code quality, security, and best practices |
+| `data-scientist` | Data analysis, ML models, and visualization |
+| `devops-engineer` | CI/CD, Docker, and infrastructure automation |
+| `documentation-engineer` | README, API docs, and user guides |
+| `frontend-engineer` | React, TypeScript, and Tailwind CSS |
+| `linux-specialist` | Shell scripting and system administration |
+| `product-manager` | Feature planning, requirements, and roadmaps |
+| `project-coordinator` | Task orchestration and Memory Bank management |
+| `python-backend` | FastAPI, AWS Lambda, and Python services |
+| `python-test-engineer` | pytest and test automation |
+| `security-specialist` | Threat modeling, OWASP, and AWS security |
+| `test-coordinator` | Test strategy, coverage, and coordination |
+| `typescript-test-engineer` | Jest, Playwright, and React Testing Library |
+| `ui-ux-designer` | Wireframes, design systems, and accessibility |
+
+Install skills:
+
+```bash
+# Install globally
+./install_skills.sh
+
+# Install to current project
+./install_skills.sh --project
+
+# List available skills
+./install_skills.sh --list
 ```
 
 ## MCP Servers
@@ -89,6 +129,7 @@ lmstudio-status
 |------|----------|---------|
 | `config.json` | `~/.config/opencode/` | Main OpenCode settings |
 | `mcp.json` | `~/.config/opencode/` | MCP server definitions |
+| `skills/` | `~/.config/opencode/` | Agent skill definitions |
 
 ## Environment Variables
 
@@ -105,7 +146,8 @@ lmstudio-status
 |---------|-------------|----------|----------|
 | Config Location | `~/.claude/` | `~/.kiro/` | `~/.config/opencode/` |
 | MCP Format | `config.json` | `settings/mcp.json` | `mcp.json` |
-| Agent Format | Markdown | JSON | Built-in |
+| Skills Format | `SKILL.md` | `SKILL.md` | `SKILL.md` |
+| Skills Location | `~/.claude/skills/` | `~/.kiro/skills/` | `~/.config/opencode/skills/` |
 | Default Model | Claude | Kiro | Configurable |
 | Local Models | No | No | Yes (LM Studio) |
 
