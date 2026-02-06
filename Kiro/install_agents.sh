@@ -128,39 +128,4 @@ echo -e "\n${GREEN}Managing:${NC}"
 echo "  Reinstall:  bash $0"
 echo "  Remove all: rm -rf $AGENTS_DIR $SKILLS_DIR"
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Optional MCP package installation
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}MCP Package Installation (Optional)${NC}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
-
-echo "Agents now include per-agent MCP server configs."
-echo "MCP npm packages must be available for npx to run them."
-echo ""
-
-# Auto-skip if SKIP_MCP_PROMPT is set or stdin is not a terminal
-if [ -n "${SKIP_MCP_PROMPT:-}" ] || [ ! -t 0 ]; then
-    echo -e "${YELLOW}Skipping MCP package installation (non-interactive mode).${NC}"
-    REPLY="n"
-else
-    read -p "Install MCP npm packages now? (y/n) " -r REPLY
-    echo
-fi
-
-if echo "$REPLY" | grep -q "^[Yy]$"; then
-    if [ -f "$SCRIPT_DIR/install_mcps.sh" ]; then
-        echo -e "\n${GREEN}Running MCP package installer...${NC}\n"
-        bash "$SCRIPT_DIR/install_mcps.sh"
-    else
-        echo -e "${RED}Error: install_mcps.sh not found in $SCRIPT_DIR${NC}"
-        echo "You can install MCPs later by running: bash $SCRIPT_DIR/install_mcps.sh"
-    fi
-else
-    echo -e "\n${YELLOW}Skipping MCP package installation.${NC}"
-    echo "You can install MCP packages later by running:"
-    echo "  bash $SCRIPT_DIR/install_mcps.sh"
-fi
-
 echo -e "\n${GREEN}Done! 🎉${NC}"
