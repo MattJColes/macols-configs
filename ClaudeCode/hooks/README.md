@@ -10,6 +10,8 @@ Post-code hooks for Claude Code that automatically run tests and security scans 
 
 ## Installation
 
+> **Note:** Running `install_hooks.sh` replaces the entire `hooks` key in `~/.claude/settings.json`. Any pre-existing hooks will be removed.
+
 ```bash
 ./install_hooks.sh
 ```
