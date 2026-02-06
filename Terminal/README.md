@@ -40,12 +40,11 @@ Automated scripts to set up a complete development environment for macOS and Ubu
 - Specialized agents for different development tasks
 - MCP (Model Context Protocol) server support
 
-#### **Kiro CLI** (formerly Amazon Q Developer CLI)
+#### **Kiro CLI**
 - AWS-native AI coding assistant by AWS
 - Deep AWS service integration
 - Code generation and debugging
-- Backwards compatible with Q Developer CLI
-- Enhanced features and improved performance
+- Steering file and agent-based workflows
 
 ### Editor Setup
 
@@ -215,7 +214,7 @@ p10k configure
 | Tool | Best For |
 |------|----------|
 | Claude Code | General development, specialized agents |
-| Kiro CLI | AWS services, cloud architecture, Q Developer successor |
+| Kiro CLI | AWS services, cloud architecture, AI coding assistant |
 
 ### Editor
 
@@ -246,7 +245,7 @@ After installation, configuration files are located at:
 ~/.config/nvim/              # Neovim/LazyVim configuration
 ~/.aws/                      # AWS CLI configuration
 ~/.claude/                   # Claude Code configuration
-~/.local/bin/                # Local binaries (Q Developer, etc.)
+~/.local/bin/                # Local binaries (Kiro CLI, etc.)
 ```
 
 ## 🚦 Getting Started
@@ -289,7 +288,7 @@ cd ../KiroAgents
 ./install_agents.sh  # Installs agents and optionally MCPs
 ```
 
-**Note**: If you have legacy Amazon Q Developer CLI configurations, they will be automatically migrated when you first run Kiro CLI.
+**Note**: Kiro CLI stores configuration in `~/.kiro/`. Install agents and MCPs from the `../Kiro/` directory.
 
 ### 5. Initialize Podman (if using containers)
 ```bash
@@ -311,7 +310,6 @@ claude
 
 # Use Kiro CLI
 kiro chat
-# or use 'q chat' (backwards compatible)
 ```
 
 ## 🔄 Updating Tools
@@ -382,17 +380,14 @@ source ~/.bashrc  # or source ~/.zshrc
 
 - [Claude Code Docs](https://docs.claude.com/en/docs/claude-code)
 - [Kiro CLI Docs](https://kiro.dev/docs/cli/)
-- [Amazon Q Developer](https://aws.amazon.com/q/developer/) (legacy)
 - [LazyVim Docs](https://www.lazyvim.org/)
 - [Podman Docs](https://podman.io/)
 - [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
 
 ## 🔗 Related Directories
 
-- **`../ClaudeAgents/`** - Claude Code specialized agents and MCPs
-- **`../KiroAgents/`** - Kiro CLI agents and MCPs (recommended)
-- **`../QAgents/`** - Amazon Q Developer CLI agents and MCPs (legacy)
-- **`../iTerm2/`** - iTerm2-specific configurations (if exists)
+- **`../ClaudeCode/`** - Claude Code agents, skills, hooks and MCPs
+- **`../Kiro/`** - Kiro CLI agents, hooks, steering and MCPs
 
 ## ⚡ Quick Reference
 
@@ -422,7 +417,6 @@ claude code
 
 # Kiro CLI
 kiro chat
-q chat           # backwards compatible
 /agent list      # list available agents
 /agent use <agent-name>
 

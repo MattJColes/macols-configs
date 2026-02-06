@@ -61,9 +61,9 @@ npm install -g aws-cdk
 echo "Installing uv..."
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install Q Developer CLI
-echo "Installing Q Developer CLI..."
-brew install --cask amazon-q
+# Install Kiro CLI
+echo "Installing Kiro CLI..."
+brew install --cask kiro
 
 # Install Claude Code
 echo "Installing Claude Code..."

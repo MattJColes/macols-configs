@@ -1,13 +1,12 @@
-## 📂 Structure
+## Structure
 
 ```
 my-configs/
 ├── Terminal/           # Dev environment setup (Python, Node, AWS, Podman, AI tools)
-├── ClaudeAgents/       # Claude Code specialized agents & MCPs
-├── KiroAgents/         # Kiro CLI (formerly Amazon Q Developer) agents & MCPs
+├── ClaudeCode/         # Claude Code agents, skills, hooks & MCPs
+├── Kiro/               # Kiro CLI agents, hooks, steering & MCPs
 ├── OpenCode/           # OpenCode setup with MCPs & LM Studio (GLM4.7-Air)
-├── Hooks/              # Testing & security automation hooks for Claude/Kiro
-└── iTerm2/            # iTerm2 configurations and themes
+└── .github/            # Security scanning & dependabot
 ```
 
 ### 1. Set Up Terminal Environment
@@ -29,22 +28,25 @@ cd Terminal
 ./install_ohmyzsh_p10k.sh
 ```
 
-📖 **[Terminal Setup Details →](Terminal/README.md)**
+**[Terminal Setup Details](Terminal/README.md)**
 
 ### 2. Configure AI Agents
 
 **Claude Code:**
 ```bash
-cd ClaudeAgents
+cd ClaudeCode
 ./install_mcps.sh
 ./install_agents.sh
+./install_skills.sh             # Optional: install slash-command skills
+cd hooks && ./install_hooks.sh  # Optional: test & security hooks
 ```
 
-**Kiro CLI (formerly Amazon Q Developer):**
+**Kiro CLI:**
 ```bash
-cd KiroAgents
+cd Kiro
 ./install_agents.sh
-./install_mcps.sh  # Optional
+./install_mcps.sh               # Optional
+cd hooks && ./install_hooks.sh  # Optional: test & security hooks
 ```
 
 **OpenCode (with LM Studio + GLM4.7-Air):**
@@ -54,13 +56,7 @@ cd OpenCode
 ./configure_lmstudio.sh     # Set up local GLM4.7-Air model
 ```
 
-**Testing & Security Hooks:**
-```bash
-cd Hooks
-./install_hooks.sh  # Sets up post-code hooks for test & security automation
-```
-
-📖 **[ClaudeAgents →](ClaudeAgents/README.md)** | **[KiroAgents →](KiroAgents/README.md)**
+**[ClaudeCode](ClaudeCode/README.md)** | **[Kiro](Kiro/README.md)**
 
 ### 3. Post-Installation
 
@@ -85,8 +81,8 @@ python3 --version && node --version && claude --version
 - **LazyVim** - Modern Neovim with LSP
 
 ### AI Coding Assistants
-- **Claude Code** - 16 specialized agents with MCPs
-- **Kiro CLI** (formerly Amazon Q Developer) - AWS-native AI assistant
+- **Claude Code** - 16 specialized agents + skills with MCPs
+- **Kiro CLI** - AWS-native AI assistant with 16 agents
 - **OpenCode** - Terminal AI with LM Studio for local models (GLM4.7-Air)
 
 ### 16 Specialized Agents
@@ -106,28 +102,27 @@ python3 --version && node --version && claude --version
 
 ---
 
-✅ **Auto-testing** - Agents run tests after code changes and attempt fixes
-✅ **Commit suggestions** - Professional commit messages auto-generated
-✅ **Audit logging** - GDPR/SOC2 compliant user action tracking (Python)
-✅ **Sequential thinking** - Break down complex problems systematically
-✅ **Persistent memory** - Context retained across sessions
-✅ **Podman first** - Secure rootless containers throughout
+- **Auto-testing** - Agents run tests after code changes and attempt fixes
+- **Commit suggestions** - Professional commit messages auto-generated
+- **Audit logging** - GDPR/SOC2 compliant user action tracking (Python)
+- **Sequential thinking** - Break down complex problems systematically
+- **Persistent memory** - Context retained across sessions
+- **Podman first** - Secure rootless containers throughout
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 Each directory has detailed documentation:
 
 - **[Terminal/](Terminal/README.md)** - Installation scripts, tools, troubleshooting
-- **[ClaudeAgents/](ClaudeAgents/README.md)** - Agent descriptions, MCPs, workflows
-- **[KiroAgents/](KiroAgents/README.md)** - Kiro CLI agents setup and configuration
+- **[ClaudeCode/](ClaudeCode/README.md)** - Agents, skills, hooks, MCPs, workflows
+- **[Kiro/](Kiro/README.md)** - Kiro CLI agents, hooks, steering, MCPs
 - **[OpenCode/](OpenCode/README.md)** - OpenCode with LM Studio & GLM4.7-Air
-- **[Hooks/](Hooks/)** - Testing & security automation hooks
 
 ---
 
-## 🔧 Example Workflow
+## Example Workflow
 
 ```bash
 # Start Claude Code
@@ -148,7 +143,7 @@ You: "Add user authentication with Cognito"
 
 ---
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 **Podman not working (macOS):**
 ```bash

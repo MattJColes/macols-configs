@@ -86,11 +86,11 @@ if ! grep -q '/opt/nvim-linux-x86_64/bin' ~/.bashrc; then
     echo 'export PATH="$PATH:/opt/nvim-linux-x86_64/bin"' >> ~/.bashrc
 fi
 
-# Install Q Developer CLI
-echo "Installing Q Developer CLI..."
-curl -L "https://desktop-release.q.us-east-1.amazonaws.com/latest/amazon-q.deb" -o "/tmp/amazon-q.deb"
-sudo dpkg -i /tmp/amazon-q.deb || sudo apt-get install -f -y
-rm /tmp/amazon-q.deb
+# Install Kiro CLI
+echo "Installing Kiro CLI..."
+curl -L "https://desktop-release.q.us-east-1.amazonaws.com/latest/amazon-q.deb" -o "/tmp/kiro.deb"
+sudo dpkg -i /tmp/kiro.deb || sudo apt-get install -f -y
+rm /tmp/kiro.deb
 
 # Install Claude Code
 echo "Installing Claude Code..."
