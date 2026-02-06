@@ -18,8 +18,6 @@ echo ""
 # Default installation paths
 CLAUDE_DIR="$HOME/.claude"
 SKILLS_DIR="$CLAUDE_DIR/skills"
-CONFIG_FILE="$CLAUDE_DIR/settings.json"
-
 usage() {
     cat << EOF
 Usage: $0 [OPTIONS]

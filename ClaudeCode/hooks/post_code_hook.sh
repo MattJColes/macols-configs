@@ -270,7 +270,8 @@ run_npm_audit() {
 generate_report() {
     log_section "Summary Report"
 
-    local report_content="# Code Review Report
+    local report_content
+    report_content="# Code Review Report
 
 Generated: $(date)
 Project: $(pwd)
