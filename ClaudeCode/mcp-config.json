@@ -39,9 +39,26 @@
       "command": "uvx",
       "args": ["awslabs.dynamodb-mcp-server@latest"],
       "env": {
-        "AWS_REGION": "us-east-1",
+        "AWS_REGION": "ap-southeast-2",
         "AWS_PROFILE": "default",
         "DDB-MCP-READONLY": "false"
+      }
+    }
+  },
+  "optionalMcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": ""
+      }
+    },
+    "gitlab": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-gitlab"],
+      "env": {
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "",
+        "GITLAB_API_URL": "https://gitlab.com"
       }
     }
   }

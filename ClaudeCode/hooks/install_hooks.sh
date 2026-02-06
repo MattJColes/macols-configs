@@ -120,10 +120,47 @@ echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━�
 local_claude_config_dir="$HOME/.claude"
 mkdir -p "$local_claude_config_dir"
 
-echo ""
-echo -e "${BLUE}Add this to your Claude Code settings (~/.claude/settings.json):${NC}"
-echo ""
-cat << EOF
+SETTINGS_FILE="$local_claude_config_dir/settings.json"
+
+# Write hooks config to settings.json (clean deploy - replaces hooks key)
+log_info "Writing hooks configuration to $SETTINGS_FILE"
+
+if command -v node &> /dev/null; then
+    MCP_SETTINGS_FILE="$SETTINGS_FILE" \
+    MCP_HOOK_SCRIPT="$HOOK_SCRIPT" \
+    node -e '
+const fs = require("fs");
+const env = process.env;
+
+let existing = {};
+if (fs.existsSync(env.MCP_SETTINGS_FILE)) {
+    try { existing = JSON.parse(fs.readFileSync(env.MCP_SETTINGS_FILE, "utf8")); } catch(e) {}
+}
+
+// Clean deploy - replace entire hooks key
+existing.hooks = {
+    PostToolUse: [
+        {
+            matcher: "Edit|Write|NotebookEdit",
+            hooks: [
+                {
+                    type: "command",
+                    command: env.MCP_HOOK_SCRIPT
+                }
+            ]
+        }
+    ]
+};
+
+fs.writeFileSync(env.MCP_SETTINGS_FILE, JSON.stringify(existing, null, 2) + "\n");
+'
+    log_success "Hooks configuration written to $SETTINGS_FILE"
+else
+    log_error "Node.js required for config generation"
+    echo ""
+    echo -e "${BLUE}Manually add this to $SETTINGS_FILE:${NC}"
+    echo ""
+    cat << EOF
 {
   "hooks": {
     "PostToolUse": [
@@ -140,8 +177,7 @@ cat << EOF
   }
 }
 EOF
-echo ""
-log_info "Or use Claude Code's /hooks command to configure hooks interactively"
+fi
 
 # Project-level example
 echo ""
@@ -178,9 +214,8 @@ echo ""
 echo "Hook script location: $HOOK_SCRIPT"
 echo ""
 echo "Next steps:"
-echo "  1. Add hook configuration to Claude Code settings"
-echo "  2. Install missing tools (if any)"
-echo "  3. Test by making a code change in your project"
+echo "  1. Install missing tools (if any)"
+echo "  2. Test by making a code change in your project"
 echo ""
 echo "To run the hook manually:"
 echo "  $HOOK_SCRIPT"
