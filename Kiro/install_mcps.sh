@@ -149,6 +149,12 @@ if [ "$WRITE_GLOBAL_CONFIG" = true ]; then
     KIRO_MCP_CONFIG="$KIRO_SETTINGS_DIR/mcp.json"
     mkdir -p "$KIRO_SETTINGS_DIR"
 
+    # Clean existing MCP config for a fresh install
+    if [ -f "$KIRO_MCP_CONFIG" ]; then
+        echo -e "${YELLOW}Clearing existing MCP config: $KIRO_MCP_CONFIG${NC}"
+        rm -f "$KIRO_MCP_CONFIG"
+    fi
+
     echo -e "${YELLOW}Writing minimal global MCP config: $KIRO_MCP_CONFIG${NC}\n"
     echo -e "${BLUE}Note: This is a fallback for the kiro_default agent only.${NC}"
     echo -e "${BLUE}Custom agents use their own per-agent mcpServers config.${NC}\n"

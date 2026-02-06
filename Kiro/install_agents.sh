@@ -18,6 +18,17 @@ SOURCE_SKILLS_DIR="$SCRIPT_DIR/skills"
 # Kiro CLI directories
 AGENTS_DIR="$HOME/.kiro/agents"
 SKILLS_DIR="$HOME/.kiro/skills"
+
+# Clean existing agents and skills for a fresh install
+if [ -d "$AGENTS_DIR" ]; then
+    echo -e "${YELLOW}Clearing existing agents in: $AGENTS_DIR${NC}"
+    rm -rf "$AGENTS_DIR"
+fi
+if [ -d "$SKILLS_DIR" ]; then
+    echo -e "${YELLOW}Clearing existing skills in: $SKILLS_DIR${NC}"
+    rm -rf "$SKILLS_DIR"
+fi
+
 mkdir -p "$AGENTS_DIR" "$SKILLS_DIR"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

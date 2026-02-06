@@ -120,10 +120,17 @@ echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━�
 local_kiro_config_dir="$HOME/.kiro/settings"
 mkdir -p "$local_kiro_config_dir"
 
-echo ""
-echo -e "${BLUE}Add this to your Kiro CLI settings (~/.kiro/settings/hooks.json):${NC}"
-echo ""
-cat << EOF
+HOOKS_FILE="$local_kiro_config_dir/hooks.json"
+
+# Clean existing hooks config for a fresh install
+if [ -f "$HOOKS_FILE" ]; then
+    log_info "Clearing existing hooks config: $HOOKS_FILE"
+    rm -f "$HOOKS_FILE"
+fi
+
+log_info "Writing hooks configuration to $HOOKS_FILE"
+
+cat > "$HOOKS_FILE" << EOF
 {
   "hooks": {
     "postTask": [
@@ -138,6 +145,8 @@ cat << EOF
   }
 }
 EOF
+
+log_success "Hooks configuration written to $HOOKS_FILE"
 
 # Project-level example
 echo ""
@@ -170,9 +179,8 @@ echo ""
 echo "Hook script location: $HOOK_SCRIPT"
 echo ""
 echo "Next steps:"
-echo "  1. Add hook configuration to Kiro CLI settings"
-echo "  2. Install missing tools (if any)"
-echo "  3. Test by making a code change in your project"
+echo "  1. Install missing tools (if any)"
+echo "  2. Test by making a code change in your project"
 echo ""
 echo "To run the hook manually:"
 echo "  $HOOK_SCRIPT"
