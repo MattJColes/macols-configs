@@ -122,6 +122,12 @@ OPENCODE_MCP_CONFIG="$OPENCODE_CONFIG_DIR/mcp.json"
 
 mkdir -p "$OPENCODE_CONFIG_DIR"
 
+# Clean existing MCP config for a fresh install
+if [ -f "$OPENCODE_MCP_CONFIG" ]; then
+    echo -e "${YELLOW}Clearing existing MCP config: $OPENCODE_MCP_CONFIG${NC}"
+    rm -f "$OPENCODE_MCP_CONFIG"
+fi
+
 echo -e "${YELLOW}Configuring MCP servers for OpenCode...${NC}\n"
 
 # Prompt for GitHub token if GitHub MCP is being installed

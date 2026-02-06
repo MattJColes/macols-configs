@@ -78,6 +78,12 @@ fi
 # Create config directory if it doesn't exist
 mkdir -p "$OPENCODE_CONFIG_DIR"
 
+# Clean existing config for a fresh install
+if [ -f "$OPENCODE_CONFIG_FILE" ]; then
+    echo -e "${YELLOW}Clearing existing config: $OPENCODE_CONFIG_FILE${NC}"
+    rm -f "$OPENCODE_CONFIG_FILE"
+fi
+
 # Prompt for custom model name
 echo -e "${BLUE}Model Configuration:${NC}"
 read -p "$(echo -e "${YELLOW}Enter GLM model identifier [${GLM_MODEL}]: ${NC}")" MODEL_INPUT
