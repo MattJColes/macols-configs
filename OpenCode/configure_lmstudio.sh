@@ -10,7 +10,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 echo -e "${GREEN}============================================${NC}"
-echo -e "${GREEN}  OpenCode + LM Studio + GLM4.7-Air Setup   ${NC}"
+echo -e "${GREEN}  OpenCode + LM Studio + GLM-4.7-Flash Setup ${NC}"
 echo -e "${GREEN}============================================${NC}\n"
 
 # Default LM Studio configuration
@@ -18,9 +18,9 @@ LMSTUDIO_HOST="${LMSTUDIO_HOST:-localhost}"
 LMSTUDIO_PORT="${LMSTUDIO_PORT:-1234}"
 LMSTUDIO_API_URL="http://${LMSTUDIO_HOST}:${LMSTUDIO_PORT}/v1"
 
-# GLM4.7-Air model identifier (as shown in LM Studio)
-# Common identifiers: glm-4-9b-chat, glm4-air, THUDM/glm-4-9b-chat
-GLM_MODEL="${GLM_MODEL:-glm-4-9b-chat}"
+# GLM-4.7-Flash model identifier (as shown in LM Studio)
+# Common identifiers: glm-4.7-flash, zai-org/glm-4.7-flash
+GLM_MODEL="${GLM_MODEL:-glm-4.7-flash}"
 
 # OpenCode configuration paths
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
@@ -49,7 +49,7 @@ if curl -s --connect-timeout 5 "${LMSTUDIO_API_URL}/models" > /dev/null 2>&1; th
             fi
         done
     else
-        echo -e "  ${YELLOW}No models loaded. Please load GLM4.7-Air in LM Studio.${NC}"
+        echo -e "  ${YELLOW}No models loaded. Please load GLM-4.7-Flash in LM Studio.${NC}"
     fi
     echo
 else
@@ -59,9 +59,9 @@ else
     echo -e "${BLUE}LM Studio Setup Instructions:${NC}"
     echo "  1. Download LM Studio from https://lmstudio.ai/"
     echo "  2. Install and launch LM Studio"
-    echo "  3. Download GLM4.7-Air model:"
-    echo "     - Search for 'THUDM/glm-4-9b-chat' or 'glm-4'"
-    echo "     - Download the GGUF quantized version (Q4_K_M recommended)"
+    echo "  3. Download GLM-4.7-Flash model:"
+    echo "     - Search for 'zai-org/glm-4.7-flash' or 'glm-4.7-flash'"
+    echo "     - Download the GGUF quantized version (Q4_K_M or Q5_K_M recommended)"
     echo "  4. Load the model in LM Studio"
     echo "  5. Start the local server (default: localhost:1234)"
     echo "  6. Re-run this script"
@@ -105,54 +105,51 @@ echo -e "${BLUE}Creating OpenCode configuration...${NC}"
 
 cat > "$OPENCODE_CONFIG_FILE" << EOF
 {
-  "provider": "openai-compatible",
-  "model": "${GLM_MODEL}",
-  "apiBase": "${LMSTUDIO_API_URL}",
-  "apiKey": "lm-studio",
-  "temperature": 0.7,
-  "maxTokens": 4096,
-  "providers": {
+  "\$schema": "https://opencode.ai/config.json",
+  "model": "lmstudio/${GLM_MODEL}",
+  "small_model": "lmstudio/${GLM_MODEL}",
+  "theme": "opencode",
+  "autoupdate": true,
+  "provider": {
     "lmstudio": {
-      "name": "LM Studio (GLM4.7-Air)",
-      "type": "openai-compatible",
-      "apiBase": "${LMSTUDIO_API_URL}",
-      "apiKey": "lm-studio",
+      "api": "${LMSTUDIO_API_URL}",
       "models": {
         "${GLM_MODEL}": {
-          "name": "GLM4.7-Air (9B)",
-          "contextLength": 131072,
-          "description": "THUDM GLM-4-9B-Chat - Efficient multilingual model"
+          "name": "GLM-4.7-Flash",
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "limit": {
+            "context": 131072,
+            "output": 4096
+          }
         }
+      },
+      "options": {
+        "apiKey": "lm-studio",
+        "timeout": 300000
       }
     },
     "anthropic": {
-      "name": "Anthropic Claude",
-      "type": "anthropic",
-      "apiKey": "\${ANTHROPIC_API_KEY}",
-      "models": {
-        "claude-sonnet-4-20250514": {
-          "name": "Claude Sonnet 4",
-          "contextLength": 200000
-        }
+      "options": {
+        "apiKey": "{env:ANTHROPIC_API_KEY}",
+        "timeout": 600000
       }
     }
   },
-  "features": {
-    "mcp": {
-      "enabled": true,
-      "configPath": "${OPENCODE_MCP_CONFIG}"
-    },
-    "codeExecution": {
-      "enabled": true,
-      "timeout": 30000
-    },
-    "webSearch": {
-      "enabled": false
-    }
+  "permission": {
+    "edit": "ask",
+    "bash": "ask",
+    "webfetch": "ask"
   },
-  "ui": {
-    "theme": "auto",
-    "showTokenCount": true
+  "tools": {
+    "bash": true,
+    "read": true,
+    "write": true,
+    "edit": true,
+    "glob": true,
+    "grep": true
   }
 }
 EOF
@@ -172,8 +169,8 @@ if ! grep -q "# OpenCode LM Studio aliases" "$SHELL_RC" 2>/dev/null; then
     cat >> "$SHELL_RC" << 'EOF'
 
 # OpenCode LM Studio aliases
-alias opencode-glm='OPENCODE_PROVIDER=lmstudio opencode'
-alias opencode-claude='OPENCODE_PROVIDER=anthropic opencode'
+alias opencode-glm='opencode --model lmstudio/glm-4.7-flash'
+alias opencode-claude='opencode --model anthropic/claude-sonnet-4-5'
 alias lmstudio-status='curl -s http://localhost:1234/v1/models | jq .'
 EOF
     echo -e "${GREEN}OK Shell aliases added to ${SHELL_RC}${NC}"
@@ -216,16 +213,16 @@ echo "  API URL: ${LMSTUDIO_API_URL}"
 echo "  Config: ${OPENCODE_CONFIG_FILE}"
 echo "  MCP Config: ${OPENCODE_MCP_CONFIG}"
 
-echo -e "\n${YELLOW}GLM4.7-Air Model Setup:${NC}"
+echo -e "\n${YELLOW}GLM-4.7-Flash Model Setup:${NC}"
 echo "  1. Open LM Studio"
 echo "  2. Go to 'Discover' or 'Search'"
-echo "  3. Search for: THUDM/glm-4-9b-chat"
+echo "  3. Search for: zai-org/glm-4.7-flash"
 echo "  4. Download a quantized version (recommended: Q4_K_M or Q5_K_M)"
 echo "  5. Load the model"
 echo "  6. Start the local server (Settings -> Local Server -> Start)"
 
 echo -e "\n${YELLOW}Usage:${NC}"
-echo "  # Start OpenCode with GLM4.7-Air"
+echo "  # Start OpenCode with GLM-4.7-Flash"
 echo "  opencode-glm"
 echo ""
 echo "  # Or use the quick-start script"
@@ -240,7 +237,7 @@ echo "  lmstudio-status"
 echo -e "\n${YELLOW}Environment Variables:${NC}"
 echo "  LMSTUDIO_HOST - LM Studio host (default: localhost)"
 echo "  LMSTUDIO_PORT - LM Studio port (default: 1234)"
-echo "  GLM_MODEL     - Model identifier (default: glm-4-9b-chat)"
+echo "  GLM_MODEL     - Model identifier (default: glm-4.7-flash)"
 
 echo -e "\n${BLUE}Note: Restart your terminal or run 'source ${SHELL_RC}' to use aliases.${NC}"
 

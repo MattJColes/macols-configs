@@ -47,11 +47,11 @@ list_skills() {
     echo ""
 }
 
-install_to_dir() {
+install_skills_to_dir() {
     target_dir="$1"
     label="$2"
 
-    # Clean existing for a fresh install
+    # Clean existing skills for a fresh install
     if [ -d "$target_dir" ]; then
         printf "${YELLOW}Clearing existing ${label} in: $target_dir${NC}\n"
         rm -rf "$target_dir"
@@ -70,6 +70,38 @@ install_to_dir() {
             cp "$skill_dir/SKILL.md" "$target_skill_dir/SKILL.md"
 
             printf "  ${GREEN}✓${NC} %s\n" "$skill_name"
+            count=$((count + 1))
+        fi
+    done
+
+    printf "\n${GREEN}✓ Installed %d ${label}${NC}\n" "$count"
+}
+
+install_agents_to_dir() {
+    target_dir="$1"
+    label="$2"
+
+    # Clean existing agents for a fresh install
+    if [ -d "$target_dir" ]; then
+        printf "${YELLOW}Clearing existing ${label} in: $target_dir${NC}\n"
+        rm -rf "$target_dir"
+    fi
+
+    printf "${BLUE}Installing ${label} to: $target_dir${NC}\n"
+    mkdir -p "$target_dir"
+
+    count=0
+    for agent_file in "$SCRIPT_DIR/agents"/*.md; do
+        if [ -f "$agent_file" ]; then
+            agent_name=$(basename "$agent_file")
+            # Skip README files
+            if [ "$agent_name" = "README.md" ]; then
+                continue
+            fi
+            cp "$agent_file" "$target_dir/$agent_name"
+            display_name=$(basename "$agent_name" .md)
+
+            printf "  ${GREEN}✓${NC} %s\n" "$display_name"
             count=$((count + 1))
         fi
     done
@@ -104,11 +136,11 @@ done
 
 # Install skills and agents
 if [ "$PROJECT_INSTALL" = true ]; then
-    install_to_dir "./.opencode/skills" "skills"
-    install_to_dir "./.opencode/agents" "agents"
+    install_skills_to_dir "./.opencode/skills" "skills"
+    install_agents_to_dir "./.opencode/agents" "agents"
 else
-    install_to_dir "$SKILLS_DIR" "skills"
-    install_to_dir "$AGENTS_DIR" "agents"
+    install_skills_to_dir "$SKILLS_DIR" "skills"
+    install_agents_to_dir "$AGENTS_DIR" "agents"
 fi
 
 # Summary
@@ -122,24 +154,28 @@ printf "${YELLOW}Skills & Agents Usage:${NC}\n"
 echo "  Skills and agents are automatically available to OpenCode."
 echo "  Agents can load skills on-demand via the skill tool."
 echo ""
-echo "  Available skills:"
-echo "    architecture-expert    - System design and AWS architecture"
-echo "    cdk-expert-python      - AWS CDK with Python"
-echo "    cdk-expert-ts          - AWS CDK with TypeScript"
-echo "    code-reviewer          - Code quality and security review"
-echo "    data-scientist         - Data analysis and ML"
-echo "    devops-engineer        - CI/CD and containerization"
-echo "    documentation-engineer - Technical documentation"
-echo "    frontend-engineer      - React/TypeScript frontend"
-echo "    linux-specialist       - Shell scripting and system admin"
-echo "    product-manager        - Feature planning and roadmaps"
-echo "    project-coordinator    - Task orchestration and Memory Bank"
-echo "    python-backend         - Python API development"
-echo "    python-test-engineer   - Python testing with pytest"
-echo "    security-specialist    - Application security"
-echo "    test-coordinator       - Test strategy and coverage"
-echo "    typescript-test-engineer - TypeScript/React testing"
-echo "    ui-ux-designer         - UI/UX design and accessibility"
+echo "  Available as skills (/):"
+echo "    /architecture-expert    - System design and AWS architecture"
+echo "    /cdk-expert-python      - AWS CDK with Python"
+echo "    /cdk-expert-ts          - AWS CDK with TypeScript"
+echo "    /code-reviewer          - Code quality and security review"
+echo "    /data-scientist         - Data analysis and ML"
+echo "    /devops-engineer        - CI/CD and containerization"
+echo "    /documentation-engineer - Technical documentation"
+echo "    /frontend-engineer      - React/TypeScript frontend"
+echo "    /linux-specialist       - Shell scripting and system admin"
+echo "    /product-manager        - Feature planning and roadmaps"
+echo "    /project-coordinator    - Task orchestration and Memory Bank"
+echo "    /python-backend         - Python API development"
+echo "    /python-test-engineer   - Python testing with pytest"
+echo "    /security-specialist    - Application security"
+echo "    /test-coordinator       - Test strategy and coverage"
+echo "    /typescript-test-engineer - TypeScript/React testing"
+echo "    /ui-ux-designer         - UI/UX design and accessibility"
+echo ""
+echo "  Available as agents (via Task tool):"
+echo "    • Same specialized agents as above"
+echo "    • Use Task tool with subagent_type matching agent names"
 echo ""
 echo "  Use --list to see all available skills with descriptions"
 echo ""

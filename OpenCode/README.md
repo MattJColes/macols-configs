@@ -9,22 +9,38 @@ This folder provides configuration scripts for [OpenCode](https://github.com/ope
 ## Quick Start
 
 ```bash
-# 1. Install skills (agent behaviors)
+# 1. Install agents (specialized assistants)
+./install_agents.sh
+
+# 2. Install skills (agent behaviors - includes agents)
 ./install_skills.sh
 
-# 2. Install MCPs (tool integrations)
+# 3. Install MCPs (tool integrations)
 ./install_mcps.sh
 
-# 3. Configure LM Studio with GLM4.7-Air
+# 4. Configure LM Studio with GLM-4.7-Flash
 ./configure_lmstudio.sh
 
-# 4. Start OpenCode
-opencode-glm  # Uses local GLM4.7-Air
+# 5. Start OpenCode
+opencode-glm  # Uses local GLM-4.7-Flash
 ```
+
+## Agents
+
+Agents are specialized assistants that handle specific types of tasks. They are installed to `~/.config/opencode/agents/` and can be invoked as skills or via the Task tool.
+
+```bash
+# Install agents
+./install_agents.sh
+```
+
+See [agents/README.md](agents/README.md) for detailed agent documentation.
 
 ## Skills
 
 Skills provide reusable agent behaviors that OpenCode agents can load on-demand. They are installed to `~/.config/opencode/skills/` (global) or `.opencode/skills/` (project-level).
+
+**Note:** Running `./install_skills.sh` will also install agents automatically.
 
 | Skill | Description |
 |-------|-------------|
@@ -79,21 +95,21 @@ The following MCP servers are configured (identical to Claude Code and Kiro):
 - `github` - GitHub repository operations (requires PAT)
 - `gitlab` - GitLab repository operations (requires PAT)
 
-## LM Studio + GLM4.7-Air Setup
+## LM Studio + GLM-4.7-Flash Setup
 
 ### Prerequisites
 
 1. **LM Studio** - Download from [lmstudio.ai](https://lmstudio.ai/)
-2. **GLM4.7-Air Model** - THUDM/glm-4-9b-chat
+2. **GLM-4.7-Flash Model** - zai-org/glm-4.7-flash
 
 ### Model Installation
 
 1. Open LM Studio
-2. Search for `THUDM/glm-4-9b-chat`
+2. Search for `zai-org/glm-4.7-flash`
 3. Download a quantized version:
-   - **Q4_K_M** - Balanced (recommended, ~5GB VRAM)
-   - **Q5_K_M** - Higher quality (~6GB VRAM)
-   - **Q8_0** - Best quality (~9GB VRAM)
+   - **Q4_K_M** - Balanced (recommended, ~3GB VRAM)
+   - **Q5_K_M** - Higher quality (~4GB VRAM)
+   - **Q8_0** - Best quality (~5GB VRAM)
 4. Load the model
 5. Start the local server (port 1234)
 
@@ -113,7 +129,7 @@ This creates:
 ### Usage
 
 ```bash
-# Start with GLM4.7-Air (local)
+# Start with GLM-4.7-Flash (local)
 opencode-glm
 
 # Start with Claude (requires ANTHROPIC_API_KEY)
@@ -129,6 +145,8 @@ lmstudio-status
 |------|----------|---------|
 | `config.json` | `~/.config/opencode/` | Main OpenCode settings |
 | `mcp.json` | `~/.config/opencode/` | MCP server definitions |
+| `opencode.md` | `~/.config/opencode/` | System-level agent configuration |
+| `agents/` | `~/.config/opencode/` | Agent definitions |
 | `skills/` | `~/.config/opencode/` | Agent skill definitions |
 
 ## Environment Variables
@@ -137,7 +155,7 @@ lmstudio-status
 |----------|---------|-------------|
 | `LMSTUDIO_HOST` | `localhost` | LM Studio server host |
 | `LMSTUDIO_PORT` | `1234` | LM Studio server port |
-| `GLM_MODEL` | `glm-4-9b-chat` | Model identifier |
+| `GLM_MODEL` | `glm-4.7-flash` | Model identifier |
 | `ANTHROPIC_API_KEY` | - | For Claude fallback |
 
 ## Comparison: Claude Code vs Kiro vs OpenCode
@@ -146,6 +164,8 @@ lmstudio-status
 |---------|-------------|----------|----------|
 | Config Location | `~/.claude/` | `~/.kiro/` | `~/.config/opencode/` |
 | MCP Format | `config.json` | `settings/mcp.json` | `mcp.json` |
+| Agents Format | `.md` | `.md` | `.md` |
+| Agents Location | `~/.claude/agents/` | `~/.kiro/agents/` | `~/.config/opencode/agents/` |
 | Skills Format | `SKILL.md` | `SKILL.md` | `SKILL.md` |
 | Skills Location | `~/.claude/skills/` | `~/.kiro/skills/` | `~/.config/opencode/skills/` |
 | Default Model | Claude | Kiro | Configurable |
@@ -177,13 +197,14 @@ Ensure the model identifier matches exactly what LM Studio shows. Check with:
 curl http://localhost:1234/v1/models | jq '.data[].id'
 ```
 
-## Why GLM4.7-Air?
+## Why GLM-4.7-Flash?
 
-GLM-4-9B-Chat (GLM4.7-Air) offers:
+GLM-4.7-Flash offers:
 - **131K context window** - Handle large codebases
+- **Faster inference** - Optimized for speed and efficiency
+- **Smaller model size** - 4.7B parameters, runs on less powerful hardware
+- **Strong coding ability** - Specialized for code generation tasks
 - **Multilingual support** - Chinese and English
-- **Efficient inference** - Runs on consumer GPUs
-- **Strong coding ability** - Competitive with larger models
 - **Open weights** - No API costs for local use
 
 ## Related Configurations
