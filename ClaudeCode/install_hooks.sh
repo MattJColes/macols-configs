@@ -20,6 +20,7 @@ NC='\033[0m' # No Color
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
+TASK_HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_task_hook.sh"
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -48,8 +49,14 @@ if [ ! -f "$HOOK_SCRIPT" ]; then
     exit 1
 fi
 
-# Make hook script executable
+if [ ! -f "$TASK_HOOK_SCRIPT" ]; then
+    log_error "Task hook script not found at $TASK_HOOK_SCRIPT"
+    exit 1
+fi
+
+# Make hook scripts executable
 chmod +x "$HOOK_SCRIPT"
+chmod +x "$TASK_HOOK_SCRIPT"
 
 # Check for required tools and provide installation instructions
 echo -e "${BLUE}Checking for required tools...${NC}\n"
@@ -133,6 +140,7 @@ log_info "Writing hooks configuration to $SETTINGS_FILE"
 if command -v node &> /dev/null; then
     MCP_SETTINGS_FILE="$SETTINGS_FILE" \
     MCP_HOOK_SCRIPT="$HOOK_SCRIPT" \
+    MCP_TASK_HOOK_SCRIPT="$TASK_HOOK_SCRIPT" \
     node -e '
 const fs = require("fs");
 const env = process.env;
@@ -151,6 +159,16 @@ existing.hooks = {
                 {
                     type: "command",
                     command: env.MCP_HOOK_SCRIPT
+                }
+            ]
+        }
+    ],
+    TaskCompleted: [
+        {
+            hooks: [
+                {
+                    type: "command",
+                    command: env.MCP_TASK_HOOK_SCRIPT
                 }
             ]
         }
@@ -175,6 +193,16 @@ else
           {
             "type": "command",
             "command": "$HOOK_SCRIPT"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$TASK_HOOK_SCRIPT"
           }
         ]
       }
@@ -216,12 +244,16 @@ echo -e "${GREEN}╔════════════════════
 echo -e "${GREEN}║                    Setup Complete!                         ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
-echo "Hook script location: $HOOK_SCRIPT"
+echo "Hook script locations:"
+echo "  PostToolUse: $HOOK_SCRIPT"
+echo "  TaskCompleted: $TASK_HOOK_SCRIPT"
 echo ""
 echo "Next steps:"
 echo "  1. Install missing tools (if any)"
-echo "  2. Test by making a code change in your project"
+echo "  2. Test by making a code change (PostToolUse hook)"
+echo "  3. Test by completing a task (TaskCompleted hook)"
 echo ""
-echo "To run the hook manually:"
-echo "  $HOOK_SCRIPT"
+echo "To run the hooks manually:"
+echo "  PostToolUse:    $HOOK_SCRIPT"
+echo "  TaskCompleted:  echo '{\"task_id\":\"test\",\"task_subject\":\"Test\"}' | $TASK_HOOK_SCRIPT"
 echo ""

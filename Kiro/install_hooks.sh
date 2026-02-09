@@ -20,6 +20,7 @@ NC='\033[0m' # No Color
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
+TASK_HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_task_hook.sh"
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -48,8 +49,14 @@ if [ ! -f "$HOOK_SCRIPT" ]; then
     exit 1
 fi
 
-# Make hook script executable
+if [ ! -f "$TASK_HOOK_SCRIPT" ]; then
+    log_error "Task hook script not found at $TASK_HOOK_SCRIPT"
+    exit 1
+fi
+
+# Make hook scripts executable
 chmod +x "$HOOK_SCRIPT"
+chmod +x "$TASK_HOOK_SCRIPT"
 
 # Check for required tools and provide installation instructions
 echo -e "${BLUE}Checking for required tools...${NC}\n"
@@ -146,6 +153,14 @@ cat > "$HOOKS_FILE" << EOF
         "enabled": true,
         "triggers": ["fs_write", "execute_bash"]
       }
+    ],
+    "stop": [
+      {
+        "name": "comprehensive-validation",
+        "description": "Run full test suite when session stops",
+        "command": "$TASK_HOOK_SCRIPT",
+        "enabled": true
+      }
     ]
   }
 }
@@ -181,12 +196,16 @@ echo -e "${GREEN}╔════════════════════
 echo -e "${GREEN}║                    Setup Complete!                         ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
-echo "Hook script location: $HOOK_SCRIPT"
+echo "Hook script locations:"
+echo "  postTask: $HOOK_SCRIPT"
+echo "  stop:     $TASK_HOOK_SCRIPT"
 echo ""
 echo "Next steps:"
 echo "  1. Install missing tools (if any)"
-echo "  2. Test by making a code change in your project"
+echo "  2. Test by making a code change (postTask hook)"
+echo "  3. Test by stopping a session (stop hook)"
 echo ""
-echo "To run the hook manually:"
-echo "  $HOOK_SCRIPT"
+echo "To run the hooks manually:"
+echo "  postTask: $HOOK_SCRIPT"
+echo "  stop:     echo '{\"hook_event_name\":\"stop\",\"cwd\":\".\"}' | $TASK_HOOK_SCRIPT"
 echo ""
