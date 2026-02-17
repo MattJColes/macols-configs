@@ -159,6 +159,11 @@ existing.hooks = {
                 {
                     type: "command",
                     command: env.MCP_HOOK_SCRIPT
+                },
+                {
+                    type: "agent",
+                    prompt: "A source file was just edited. Read the file at the path in tool_input.file_path and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. Only flag real issues with specific line references. Be concise and skip style preferences.",
+                    timeout: 60
                 }
             ]
         }
@@ -193,6 +198,11 @@ else
           {
             "type": "command",
             "command": "$HOOK_SCRIPT"
+          },
+          {
+            "type": "agent",
+            "prompt": "A source file was just edited. Read the file at the path in tool_input.file_path and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. Only flag real issues with specific line references. Be concise and skip style preferences.",
+            "timeout": 60
           }
         ]
       }
@@ -231,6 +241,11 @@ cat << 'EOF'
           {
             "type": "command",
             "command": "bash -c './scripts/run_tests.sh'"
+          },
+          {
+            "type": "agent",
+            "prompt": "A source file was just edited. Read the file at tool_input.file_path and check for bugs, logic errors, and security issues. Only flag real issues, be concise.",
+            "timeout": 60
           }
         ]
       }

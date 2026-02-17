@@ -145,21 +145,15 @@ log_info "Writing hooks configuration to $HOOKS_FILE"
 cat > "$HOOKS_FILE" << EOF
 {
   "hooks": {
-    "postTask": [
+    "postToolUse": [
       {
-        "name": "test-and-security-scan",
-        "description": "Run tests and security scans after code changes",
-        "command": "$HOOK_SCRIPT",
-        "enabled": true,
-        "triggers": ["fs_write", "execute_bash"]
+        "matcher": "fs_write|write",
+        "command": "$HOOK_SCRIPT"
       }
     ],
     "stop": [
       {
-        "name": "comprehensive-validation",
-        "description": "Run full test suite when session stops",
-        "command": "$TASK_HOOK_SCRIPT",
-        "enabled": true
+        "command": "$TASK_HOOK_SCRIPT"
       }
     ]
   }
@@ -180,11 +174,10 @@ echo ""
 cat << 'EOF'
 {
   "hooks": {
-    "postTask": [
+    "postToolUse": [
       {
-        "name": "run-tests",
-        "command": "./scripts/run_tests.sh",
-        "enabled": true
+        "matcher": "fs_write|write",
+        "command": "./scripts/run_tests.sh"
       }
     ]
   }
@@ -197,15 +190,15 @@ echo -e "${GREEN}║                    Setup Complete!                         
 echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 echo "Hook script locations:"
-echo "  postTask: $HOOK_SCRIPT"
-echo "  stop:     $TASK_HOOK_SCRIPT"
+echo "  postToolUse: $HOOK_SCRIPT"
+echo "  stop:        $TASK_HOOK_SCRIPT"
 echo ""
 echo "Next steps:"
 echo "  1. Install missing tools (if any)"
-echo "  2. Test by making a code change (postTask hook)"
+echo "  2. Test by making a code change (postToolUse hook)"
 echo "  3. Test by stopping a session (stop hook)"
 echo ""
 echo "To run the hooks manually:"
-echo "  postTask: $HOOK_SCRIPT"
-echo "  stop:     echo '{\"hook_event_name\":\"stop\",\"cwd\":\".\"}' | $TASK_HOOK_SCRIPT"
+echo "  postToolUse: echo '{\"hook_event_name\":\"postToolUse\",\"cwd\":\".\",\"tool_name\":\"fs_write\",\"tool_input\":{}}' | $HOOK_SCRIPT"
+echo "  stop:        echo '{\"hook_event_name\":\"stop\",\"cwd\":\".\"}' | $TASK_HOOK_SCRIPT"
 echo ""
