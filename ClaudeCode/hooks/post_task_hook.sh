@@ -21,7 +21,7 @@
 # Install this hook using: ./install_hooks.sh
 #
 
-set -euo pipefail
+set -eo pipefail
 
 # Read hook input from stdin (required - Claude Code sends JSON)
 HOOK_INPUT=$(cat)
@@ -406,12 +406,17 @@ main() {
     if [ ${#CRITICAL_ISSUES[@]} -gt 0 ]; then
         local reason="Stop blocked — critical issues found:"
         for issue in "${CRITICAL_ISSUES[@]}"; do
-            reason="$reason\n  - $issue"
+            reason="${reason}"$'\n'"  - ${issue}"
         done
-        reason="$reason\n\nPlease fix these issues before stopping."
+        reason="${reason}"$'\n\n'"Please fix these issues before stopping."
 
         # Stop hooks use JSON stdout with decision: "block" to prevent stopping
-        printf '{"decision": "block", "reason": "%s"}\n' "$(echo -e "$reason" | sed 's/"/\\"/g')"
+        if command -v jq &> /dev/null; then
+            jq -n --arg reason "$reason" '{"decision": "block", "reason": $reason}'
+        else
+            # Safe fallback: use python for JSON encoding
+            python3 -c "import json,sys; print(json.dumps({'decision':'block','reason':sys.argv[1]}))" "$reason"
+        fi
         exit 0
     fi
 
