@@ -23,14 +23,10 @@ set -euo pipefail
 HOOK_INPUT=$(cat)
 
 # Parse task metadata from the hook input
-TASK_ID=""
 TASK_SUBJECT=""
-TASK_DESCRIPTION=""
 
 if command -v jq &> /dev/null; then
-    TASK_ID=$(echo "$HOOK_INPUT" | jq -r '.task_id // empty' 2>/dev/null || true)
     TASK_SUBJECT=$(echo "$HOOK_INPUT" | jq -r '.task_subject // empty' 2>/dev/null || true)
-    TASK_DESCRIPTION=$(echo "$HOOK_INPUT" | jq -r '.task_description // empty' 2>/dev/null || true)
 fi
 
 # Configuration - longer timeout for comprehensive testing
