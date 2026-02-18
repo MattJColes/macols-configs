@@ -8,6 +8,12 @@ Post-code hooks for Kiro CLI that automatically run tests and security scans aft
 - **Security Scanning**: bandit for Python, npm audit for Node.js, pip-audit for Python packages
 - **Project Detection**: Automatically detects project type and runs relevant checks
 
+## Kiro Hook Events
+
+Kiro CLI supports these hook events: `agentSpawn`, `userPromptSubmit`, `preToolUse`, `postToolUse`, `stop`.
+
+> **Note:** Kiro hooks are command-based only (shell scripts). There is no `type: "agent"` equivalent — hooks cannot directly spawn LLM subagents. To run agents automatically, use Kiro's built-in subagent system in your custom agent configurations.
+
 ## Installation
 
 ```bash
@@ -21,13 +27,15 @@ Add to `~/.kiro/settings/hooks.json`:
 ```json
 {
   "hooks": {
-    "postTask": [
+    "postToolUse": [
       {
-        "name": "test-and-security-scan",
-        "description": "Run tests and security scans after code changes",
-        "command": "/path/to/Kiro/hooks/post_code_hook.sh",
-        "enabled": true,
-        "triggers": ["fs_write", "execute_bash"]
+        "matcher": "fs_write|write",
+        "command": "/path/to/Kiro/hooks/post_code_hook.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": "/path/to/Kiro/hooks/post_task_hook.sh"
       }
     ]
   }
@@ -37,7 +45,7 @@ Add to `~/.kiro/settings/hooks.json`:
 ## Manual Execution
 
 ```bash
-./post_code_hook.sh
+echo '{"hook_event_name":"postToolUse","cwd":".","tool_name":"fs_write","tool_input":{}}' | ./post_code_hook.sh
 ```
 
 ## Environment Variables
