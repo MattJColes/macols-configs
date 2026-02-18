@@ -15,7 +15,7 @@
 # Install this hook using: ./install_hooks.sh
 #
 
-set -euo pipefail
+set -eo pipefail
 
 # Read hook input from stdin (required - Claude Code sends JSON)
 HOOK_INPUT=$(cat)
@@ -364,7 +364,7 @@ main() {
     local project_info
     project_info=$(detect_project_type)
     local has_python has_node has_cdk
-    IFS=':' read -r has_python has_node has_cdk <<< "$project_info"
+    IFS=':' read -r has_python has_node has_cdk <<< "$project_info" || true
 
     local ran_something=false
 

@@ -181,11 +181,6 @@ existing.hooks = {
                 {
                     type: "command",
                     command: env.HOOK_SCRIPT
-                },
-                {
-                    type: "agent",
-                    prompt: "A file was just edited. Hook input: $ARGUMENTS. Check tool_input.file_path — if the file is not a source code file (e.g. it ends in .md, .json, .toml, .yaml, .yml, .txt, .cfg, .ini, .lock), return {\\\"ok\\\": true} immediately. Otherwise, read the file and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. If no real issues are found, return {\\\"ok\\\": true}. If real issues are found, return {\\\"ok\\\": false, \\\"reason\\\": \\\"concise description with specific line references\\\"}. Skip style preferences.",
-                    timeout: 60
                 }
             ]
         }
@@ -220,11 +215,6 @@ else
           {
             "type": "command",
             "command": "$HOOK_SCRIPT"
-          },
-          {
-            "type": "agent",
-            "prompt": "A file was just edited. Hook input: \$ARGUMENTS. Check tool_input.file_path — if the file is not a source code file (e.g. it ends in .md, .json, .toml, .yaml, .yml, .txt, .cfg, .ini, .lock), return {\"ok\": true} immediately. Otherwise, read the file and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. If no real issues are found, return {\"ok\": true}. If real issues are found, return {\"ok\": false, \"reason\": \"concise description with specific line references\"}. Skip style preferences.",
-            "timeout": 60
           }
         ]
       }
@@ -263,11 +253,6 @@ cat << 'EOF'
           {
             "type": "command",
             "command": "bash -c './scripts/run_tests.sh'"
-          },
-          {
-            "type": "agent",
-            "prompt": "A file was just edited. Hook input: \$ARGUMENTS. Check tool_input.file_path — if not a source code file, return {\"ok\": true} immediately. Otherwise, read the file and check for bugs, logic errors, and security issues. Return {\"ok\": true} if no real issues, or {\"ok\": false, \"reason\": \"concise description with line references\"} if issues found.",
-            "timeout": 60
           }
         ]
       }
