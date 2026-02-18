@@ -32,6 +32,15 @@ fi
 # Configuration - longer timeout for comprehensive testing
 MAX_TEST_TIME="${MAX_TEST_TIME:-300}"  # 5 minutes default for full test suite
 
+# macOS compatibility: use gtimeout (brew install coreutils) or fall back to no timeout
+if command -v gtimeout &> /dev/null; then
+    TIMEOUT_CMD="gtimeout"
+elif command -v timeout &> /dev/null; then
+    TIMEOUT_CMD="timeout"
+else
+    TIMEOUT_CMD=""
+fi
+
 # Track issues found
 declare -a CRITICAL_ISSUES=()
 declare -a WARNINGS=()
@@ -65,9 +74,28 @@ detect_project_type() {
     echo "${has_python}:${has_node}:${has_cdk}"
 }
 
+# Find the project's Python/pytest from a virtualenv if present
+find_python_pytest() {
+    for venv_dir in .ven .venv venv env; do
+        if [ -f "$venv_dir/bin/pytest" ]; then
+            echo "$venv_dir/bin/pytest"
+            return 0
+        fi
+    done
+    # Fall back to system pytest
+    if command -v pytest &> /dev/null; then
+        echo "pytest"
+        return 0
+    fi
+    echo ""
+}
+
 # Run Python tests
 run_python_tests() {
-    if ! command -v pytest &> /dev/null; then
+    local pytest_bin
+    pytest_bin=$(find_python_pytest)
+
+    if [ -z "$pytest_bin" ]; then
         add_warning "pytest not installed - skipping Python tests"
         return 0
     fi
@@ -81,7 +109,9 @@ run_python_tests() {
     fi
 
     local test_output
-    if test_output=$(timeout "$MAX_TEST_TIME" pytest -v --tb=short 2>&1); then
+    local pytest_cmd
+    pytest_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }$pytest_bin -v --tb=short"
+    if test_output=$(eval "$pytest_cmd" 2>&1); then
         add_warning "Python tests: PASSED"
     else
         local exit_code=$?
@@ -110,7 +140,9 @@ run_node_tests() {
     fi
 
     local test_output
-    if test_output=$(timeout "$MAX_TEST_TIME" npm test 2>&1); then
+    local npm_cmd
+    npm_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }npm test"
+    if test_output=$(eval "$npm_cmd" 2>&1); then
         add_warning "Node.js tests: PASSED"
     else
         local exit_code=$?
