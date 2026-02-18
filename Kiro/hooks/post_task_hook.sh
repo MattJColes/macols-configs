@@ -4,8 +4,10 @@
 #
 # This hook runs on the "stop" event to provide comprehensive validation:
 # 1. Run ALL project tests (pytest, jest/mocha) without file filtering
-# 2. Run comprehensive security scans (bandit for Python)
-# 3. Check for package vulnerabilities (pip-audit, npm audit)
+# 2. Run linters (ruff for Python, eslint for JS/TS)
+# 3. Run type checking (mypy for Python)
+# 4. Run comprehensive security scans (bandit for Python)
+# 5. Check for package vulnerabilities (pip-audit, npm audit)
 #
 # EXIT CODES:
 # - 0: All checks passed
@@ -211,6 +213,89 @@ run_pip_audit() {
     fi
 }
 
+# Run ruff linter
+run_ruff_check() {
+    if ! command -v ruff &> /dev/null; then
+        return 0
+    fi
+
+    local ruff_output
+    if ruff_output=$(ruff check . 2>&1); then
+        add_warning "Ruff: PASSED"
+    else
+        local error_count
+        error_count=$(echo "$ruff_output" | grep -cE "^.+:[0-9]+:[0-9]+:" || echo "0")
+        if [ "$error_count" -gt 0 ]; then
+            add_critical_issue "Ruff: $error_count linting issues"
+            local tail_output
+            tail_output=$(echo "$ruff_output" | head -10)
+            add_critical_issue "Ruff output:\n$tail_output"
+        fi
+    fi
+}
+
+# Run mypy type checker
+run_mypy_check() {
+    if ! command -v mypy &> /dev/null; then
+        return 0
+    fi
+
+    local target=""
+    for dir in src app lib lambda functions; do
+        if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
+            target="$target $dir"
+        fi
+    done
+    if [ -z "$target" ]; then
+        return 0
+    fi
+
+    local mypy_output
+    if mypy_output=$(timeout "$MAX_TEST_TIME" mypy --no-error-summary $target 2>&1); then
+        add_warning "Mypy: PASSED"
+    else
+        local exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            add_critical_issue "Mypy: TIMED OUT after ${MAX_TEST_TIME}s"
+        else
+            local error_count
+            error_count=$(echo "$mypy_output" | grep -c ": error:" || echo "0")
+            if [ "$error_count" -gt 0 ]; then
+                add_critical_issue "Mypy: $error_count type errors"
+                local tail_output
+                tail_output=$(echo "$mypy_output" | grep ": error:" | head -10)
+                add_critical_issue "Mypy output:\n$tail_output"
+            fi
+        fi
+    fi
+}
+
+# Run ESLint
+run_eslint_check() {
+    if ! command -v npx &> /dev/null; then
+        return 0
+    fi
+
+    local eslint_output
+    if eslint_output=$(timeout 60 npx eslint --no-warn-on-unmatched-pattern . 2>&1); then
+        add_warning "ESLint: PASSED"
+    else
+        local exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            add_critical_issue "ESLint: TIMED OUT"
+        else
+            local error_count
+            error_count=$(echo "$eslint_output" | grep -cE "^.+:[0-9]+:[0-9]+" || echo "0")
+            if [ "$error_count" -gt 0 ]; then
+                add_critical_issue "ESLint: $error_count issues"
+                local tail_output
+                tail_output=$(echo "$eslint_output" | head -10)
+                add_critical_issue "ESLint output:\n$tail_output"
+            fi
+        fi
+    fi
+}
+
 # Run npm audit
 run_npm_audit() {
     if [ ! -f "package.json" ] || [ ! -d "node_modules" ]; then
@@ -246,12 +331,15 @@ main() {
         run_python_tests || true
         run_bandit_scan || true
         run_pip_audit || true
+        run_ruff_check || true
+        run_mypy_check || true
         ran_something=true
     fi
 
     if [ "$has_node" = "true" ]; then
         run_node_tests || true
         run_npm_audit || true
+        run_eslint_check || true
         ran_something=true
     fi
 

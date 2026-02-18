@@ -4,8 +4,10 @@
 #
 # This hook runs automatically after file write/edit tool calls to:
 # 1. Run project tests (pytest, jest, mocha)
-# 2. Run security scans (bandit for Python)
-# 3. Check for package vulnerabilities (pip-audit, npm audit)
+# 2. Run linters (ruff for Python, eslint for JS/TS)
+# 3. Run type checking (mypy for Python)
+# 4. Run security scans (bandit for Python)
+# 5. Check for package vulnerabilities (pip-audit, npm audit)
 #
 # Called by the OpenCode plugin (post_code_hook_plugin.mjs).
 # Stdin may or may not contain data depending on the caller.
@@ -217,6 +219,107 @@ run_pip_audit() {
     fi
 }
 
+# Run ruff linter
+run_ruff_check() {
+    if ! command -v ruff &> /dev/null; then
+        return 0
+    fi
+
+    local target="."
+    if [ -n "$FILE_PATH" ] && [[ "$FILE_PATH" == *.py ]]; then
+        target="$FILE_PATH"
+    fi
+
+    local ruff_output
+    if ruff_output=$(ruff check "$target" 2>&1); then
+        add_message "Ruff: PASSED"
+    else
+        local error_count
+        error_count=$(echo "$ruff_output" | grep -cE "^.+:[0-9]+:[0-9]+:" || echo "0")
+        if [ "$error_count" -gt 0 ]; then
+            add_issue "Ruff: $error_count linting issues"
+            local tail_output
+            tail_output=$(echo "$ruff_output" | head -10)
+            add_message "$tail_output"
+        fi
+    fi
+}
+
+# Run mypy type checker
+run_mypy_check() {
+    if ! command -v mypy &> /dev/null; then
+        return 0
+    fi
+
+    local target
+    if [ -n "$FILE_PATH" ] && [[ "$FILE_PATH" == *.py ]]; then
+        target="$FILE_PATH"
+    else
+        # Find src dirs with Python files
+        target=""
+        for dir in src app lib lambda functions; do
+            if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
+                target="$target $dir"
+            fi
+        done
+        if [ -z "$target" ]; then
+            return 0
+        fi
+    fi
+
+    local mypy_output
+    if mypy_output=$(timeout "$MAX_TEST_TIME" mypy --no-error-summary $target 2>&1); then
+        add_message "Mypy: PASSED"
+    else
+        local exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            add_issue "Mypy: TIMED OUT after ${MAX_TEST_TIME}s"
+        else
+            local error_count
+            error_count=$(echo "$mypy_output" | grep -c ": error:" || echo "0")
+            if [ "$error_count" -gt 0 ]; then
+                add_issue "Mypy: $error_count type errors"
+                local tail_output
+                tail_output=$(echo "$mypy_output" | grep ": error:" | head -10)
+                add_message "$tail_output"
+            fi
+        fi
+    fi
+}
+
+# Run ESLint
+run_eslint_check() {
+    if ! command -v npx &> /dev/null; then
+        return 0
+    fi
+
+    local target
+    if [ -n "$FILE_PATH" ] && [[ "$FILE_PATH" == *.ts || "$FILE_PATH" == *.js || "$FILE_PATH" == *.tsx || "$FILE_PATH" == *.jsx ]]; then
+        target="$FILE_PATH"
+    else
+        target="."
+    fi
+
+    local eslint_output
+    if eslint_output=$(timeout 60 npx eslint --no-warn-on-unmatched-pattern "$target" 2>&1); then
+        add_message "ESLint: PASSED"
+    else
+        local exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            add_issue "ESLint: TIMED OUT"
+        else
+            local error_count
+            error_count=$(echo "$eslint_output" | grep -cE "^.+:[0-9]+:[0-9]+" || echo "0")
+            if [ "$error_count" -gt 0 ]; then
+                add_issue "ESLint: $error_count issues"
+                local tail_output
+                tail_output=$(echo "$eslint_output" | head -10)
+                add_message "$tail_output"
+            fi
+        fi
+    fi
+}
+
 # Run npm audit
 run_npm_audit() {
     if [ ! -f "package.json" ] || [ ! -d "node_modules" ]; then
@@ -253,6 +356,8 @@ main() {
             run_python_tests || true
             run_bandit_scan || true
             run_pip_audit || true
+            run_ruff_check || true
+            run_mypy_check || true
             ran_something=true
         fi
     fi
@@ -261,6 +366,7 @@ main() {
         if [ -z "$FILE_PATH" ] || [[ "$FILE_PATH" == *.ts ]] || [[ "$FILE_PATH" == *.js ]] || [[ "$FILE_PATH" == *.tsx ]] || [[ "$FILE_PATH" == *.jsx ]]; then
             run_node_tests || true
             run_npm_audit || true
+            run_eslint_check || true
             ran_something=true
         fi
     fi

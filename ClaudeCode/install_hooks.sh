@@ -4,6 +4,8 @@
 #
 # This script sets up hooks that run automatically after coding tasks:
 # - Tests (pytest, jest/mocha)
+# - Linters (ruff for Python, eslint for JS/TS)
+# - Type checking (mypy for Python)
 # - Security scans (bandit)
 # - Package vulnerability checks (pip-audit, npm audit)
 #
@@ -87,6 +89,20 @@ if command -v python3 &> /dev/null || command -v python &> /dev/null; then
         log_warning "pip-audit not found (vulnerability scanning)"
         MISSING_TOOLS+=("pip-audit (pip install pip-audit)")
     fi
+
+    if command -v mypy &> /dev/null; then
+        log_success "mypy found"
+    else
+        log_warning "mypy not found (type checking)"
+        MISSING_TOOLS+=("mypy (pip install mypy)")
+    fi
+
+    if command -v ruff &> /dev/null; then
+        log_success "ruff found"
+    else
+        log_warning "ruff not found (linting)"
+        MISSING_TOOLS+=("ruff (pip install ruff)")
+    fi
 else
     log_warning "Python not found - Python checks will be skipped"
 fi
@@ -99,6 +115,12 @@ if command -v node &> /dev/null; then
         log_success "npm found"
     else
         log_warning "npm not found"
+    fi
+
+    if command -v npx &> /dev/null; then
+        log_success "npx found (for eslint)"
+    else
+        log_warning "npx not found - ESLint checks will be skipped"
     fi
 else
     log_warning "Node.js not found - JavaScript checks will be skipped"
@@ -119,7 +141,7 @@ if [ ${#MISSING_TOOLS[@]} -gt 0 ]; then
     done
     echo ""
     echo "Install all Python tools with:"
-    echo "  pip install pytest bandit pip-audit"
+    echo "  pip install pytest bandit pip-audit mypy ruff"
     echo ""
 fi
 
