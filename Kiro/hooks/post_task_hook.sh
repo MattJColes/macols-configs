@@ -23,11 +23,9 @@ set -euo pipefail
 HOOK_INPUT=$(cat)
 
 # Parse hook metadata from the hook input
-HOOK_EVENT=""
 CWD=""
 
 if command -v jq &> /dev/null; then
-    HOOK_EVENT=$(echo "$HOOK_INPUT" | jq -r '.hook_event_name // empty' 2>/dev/null || true)
     CWD=$(echo "$HOOK_INPUT" | jq -r '.cwd // empty' 2>/dev/null || true)
 fi
 
