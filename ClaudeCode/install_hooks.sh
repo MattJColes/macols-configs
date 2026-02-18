@@ -138,16 +138,16 @@ SETTINGS_FILE="$local_claude_config_dir/settings.json"
 log_info "Writing hooks configuration to $SETTINGS_FILE"
 
 if command -v node &> /dev/null; then
-    MCP_SETTINGS_FILE="$SETTINGS_FILE" \
-    MCP_HOOK_SCRIPT="$HOOK_SCRIPT" \
-    MCP_TASK_HOOK_SCRIPT="$TASK_HOOK_SCRIPT" \
+    SETTINGS_FILE="$SETTINGS_FILE" \
+    HOOK_SCRIPT="$HOOK_SCRIPT" \
+    TASK_HOOK_SCRIPT="$TASK_HOOK_SCRIPT" \
     node -e '
 const fs = require("fs");
 const env = process.env;
 
 let existing = {};
-if (fs.existsSync(env.MCP_SETTINGS_FILE)) {
-    try { existing = JSON.parse(fs.readFileSync(env.MCP_SETTINGS_FILE, "utf8")); } catch(e) {}
+if (fs.existsSync(env.SETTINGS_FILE)) {
+    try { existing = JSON.parse(fs.readFileSync(env.SETTINGS_FILE, "utf8")); } catch(e) {}
 }
 
 // Clean deploy - replace entire hooks key
@@ -158,7 +158,7 @@ existing.hooks = {
             hooks: [
                 {
                     type: "command",
-                    command: env.MCP_HOOK_SCRIPT
+                    command: env.HOOK_SCRIPT
                 },
                 {
                     type: "agent",
@@ -168,19 +168,19 @@ existing.hooks = {
             ]
         }
     ],
-    TaskCompleted: [
+    Stop: [
         {
             hooks: [
                 {
                     type: "command",
-                    command: env.MCP_TASK_HOOK_SCRIPT
+                    command: env.TASK_HOOK_SCRIPT
                 }
             ]
         }
     ]
 };
 
-fs.writeFileSync(env.MCP_SETTINGS_FILE, JSON.stringify(existing, null, 2) + "\n");
+fs.writeFileSync(env.SETTINGS_FILE, JSON.stringify(existing, null, 2) + "\n");
 '
     log_success "Hooks configuration written to $SETTINGS_FILE"
 else
@@ -207,7 +207,7 @@ else
         ]
       }
     ],
-    "TaskCompleted": [
+    "Stop": [
       {
         "hooks": [
           {
@@ -236,7 +236,7 @@ cat << 'EOF'
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|NotebookEdit",
         "hooks": [
           {
             "type": "command",
@@ -261,14 +261,14 @@ echo -e "${GREEN}╚════════════════════
 echo ""
 echo "Hook script locations:"
 echo "  PostToolUse: $HOOK_SCRIPT"
-echo "  TaskCompleted: $TASK_HOOK_SCRIPT"
+echo "  Stop: $TASK_HOOK_SCRIPT"
 echo ""
 echo "Next steps:"
 echo "  1. Install missing tools (if any)"
 echo "  2. Test by making a code change (PostToolUse hook)"
-echo "  3. Test by completing a task (TaskCompleted hook)"
+echo "  3. Test by completing a task (Stop hook)"
 echo ""
 echo "To run the hooks manually:"
-echo "  PostToolUse:    $HOOK_SCRIPT"
-echo "  TaskCompleted:  echo '{\"task_id\":\"test\",\"task_subject\":\"Test\"}' | $TASK_HOOK_SCRIPT"
+echo "  PostToolUse: $HOOK_SCRIPT"
+echo "  Stop:        echo '{\"task_id\":\"test\",\"task_subject\":\"Test\"}' | $TASK_HOOK_SCRIPT"
 echo ""
