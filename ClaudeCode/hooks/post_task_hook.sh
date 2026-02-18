@@ -28,12 +28,11 @@ HOOK_INPUT=$(cat)
 
 # Parse metadata from the hook input
 # Stop hook provides: session_id, transcript_path, cwd, permission_mode, hook_event_name, stop_hook_active
+# We only need stop_hook_active to prevent infinite loops
 STOP_HOOK_ACTIVE="false"
-SESSION_ID=""
 
 if command -v jq &> /dev/null; then
     STOP_HOOK_ACTIVE=$(echo "$HOOK_INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null || echo "false")
-    SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // empty' 2>/dev/null || true)
 else
     # Simple fallback without jq
     if echo "$HOOK_INPUT" | grep -q '"stop_hook_active"[[:space:]]*:[[:space:]]*true'; then
