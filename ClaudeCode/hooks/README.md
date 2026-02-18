@@ -45,7 +45,7 @@ Add to `~/.claude/settings.json`:
           },
           {
             "type": "agent",
-            "prompt": "A source file was just edited. Read the file at the path in tool_input.file_path and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. Only flag real issues with specific line references. Be concise and skip style preferences.",
+            "prompt": "A file was just edited. Check tool_input.file_path — if the file is not a source code file (e.g. it ends in .md, .json, .toml, .yaml, .yml, .txt, .cfg, .ini, .lock), respond with SKIPPED and stop. Otherwise, read the file and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. Only flag real issues with specific line references. Be concise and skip style preferences.",
             "timeout": 60
           }
         ]
@@ -65,5 +65,4 @@ Or use Claude Code's `/hooks` command for interactive configuration.
 
 ## Environment Variables
 
-- `REPORT_FILE` - Custom path for the report (default: `/tmp/code_review_report.md`)
-- `MAX_TEST_TIME` - Timeout for test runs in seconds (default: `120`)
+- `MAX_TEST_TIME` - Timeout for test runs in seconds (default: `120` for PostToolUse, `300` for Stop)

@@ -184,7 +184,7 @@ existing.hooks = {
                 },
                 {
                     type: "agent",
-                    prompt: "A source file was just edited. Read the file at the path in tool_input.file_path and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. Only flag real issues with specific line references. Be concise and skip style preferences.",
+                    prompt: "A file was just edited. Check tool_input.file_path — if the file is not a source code file (e.g. it ends in .md, .json, .toml, .yaml, .yml, .txt, .cfg, .ini, .lock), respond with SKIPPED and stop. Otherwise, read the file and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. Only flag real issues with specific line references. Be concise and skip style preferences.",
                     timeout: 60
                 }
             ]
@@ -223,7 +223,7 @@ else
           },
           {
             "type": "agent",
-            "prompt": "A source file was just edited. Read the file at the path in tool_input.file_path and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. Only flag real issues with specific line references. Be concise and skip style preferences.",
+            "prompt": "A file was just edited. Check tool_input.file_path — if the file is not a source code file (e.g. it ends in .md, .json, .toml, .yaml, .yml, .txt, .cfg, .ini, .lock), respond with SKIPPED and stop. Otherwise, read the file and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. Only flag real issues with specific line references. Be concise and skip style preferences.",
             "timeout": 60
           }
         ]
@@ -292,5 +292,5 @@ echo "  3. Test by completing a task (Stop hook)"
 echo ""
 echo "To run the hooks manually:"
 echo "  PostToolUse: $HOOK_SCRIPT"
-echo "  Stop:        echo '{\"task_id\":\"test\",\"task_subject\":\"Test\"}' | $TASK_HOOK_SCRIPT"
+echo "  Stop:        echo '{\"session_id\":\"test\",\"stop_hook_active\":false}' | $TASK_HOOK_SCRIPT"
 echo ""

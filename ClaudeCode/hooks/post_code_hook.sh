@@ -24,6 +24,9 @@ HOOK_INPUT=$(cat)
 FILE_PATH=""
 if command -v jq &> /dev/null; then
     FILE_PATH=$(echo "$HOOK_INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)
+else
+    # Simple fallback without jq: extract file_path value from JSON
+    FILE_PATH=$(echo "$HOOK_INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"//;s/"$//' || true)
 fi
 
 # Skip non-source files to avoid unnecessary test runs
@@ -40,8 +43,16 @@ if [ -n "$FILE_PATH" ]; then
 fi
 
 # Configuration
-REPORT_FILE="${REPORT_FILE:-/tmp/code_review_report.md}"
 MAX_TEST_TIME="${MAX_TEST_TIME:-120}"  # 2 minutes default
+
+# macOS compatibility: use gtimeout (brew install coreutils) or fall back to no timeout
+if command -v gtimeout &> /dev/null; then
+    TIMEOUT_CMD="gtimeout"
+elif command -v timeout &> /dev/null; then
+    TIMEOUT_CMD="timeout"
+else
+    TIMEOUT_CMD=""
+fi
 
 # Track issues found
 declare -a ISSUES_FOUND=()
@@ -92,7 +103,8 @@ run_python_tests() {
     fi
 
     local test_output
-    if test_output=$(timeout "$MAX_TEST_TIME" pytest -v --tb=short 2>&1); then
+    local pytest_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }pytest -v --tb=short"
+    if test_output=$(eval "$pytest_cmd" 2>&1); then
         add_message "Python tests: PASSED"
     else
         local exit_code=$?
@@ -121,7 +133,8 @@ run_node_tests() {
     fi
 
     local test_output
-    if test_output=$(timeout "$MAX_TEST_TIME" npm test 2>&1); then
+    local npm_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }npm test"
+    if test_output=$(eval "$npm_cmd" 2>&1); then
         add_message "Node.js tests: PASSED"
     else
         local exit_code=$?
@@ -167,14 +180,19 @@ run_bandit_scan() {
     fi
 
     local src_dirs=""
-    for dir in src app lib lambda functions .; do
+    for dir in src app lib lambda functions; do
         if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
             src_dirs="$src_dirs $dir"
         fi
     done
 
+    # Fall back to current directory only if no named source dirs found
     if [ -z "$src_dirs" ]; then
-        return 0
+        if find . -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
+            src_dirs="."
+        else
+            return 0
+        fi
     fi
 
     local bandit_output
@@ -266,7 +284,8 @@ run_mypy_check() {
     fi
 
     local mypy_output
-    if mypy_output=$(timeout "$MAX_TEST_TIME" mypy --no-error-summary $target 2>&1); then
+    local mypy_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }mypy --no-error-summary $target"
+    if mypy_output=$(eval "$mypy_cmd" 2>&1); then
         add_message "Mypy: PASSED"
     else
         local exit_code=$?
@@ -299,7 +318,8 @@ run_eslint_check() {
     fi
 
     local eslint_output
-    if eslint_output=$(timeout 60 npx eslint --no-warn-on-unmatched-pattern "$target" 2>&1); then
+    local eslint_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD 60 }npx eslint --no-warn-on-unmatched-pattern \"$target\""
+    if eslint_output=$(eval "$eslint_cmd" 2>&1); then
         add_message "ESLint: PASSED"
     else
         local exit_code=$?

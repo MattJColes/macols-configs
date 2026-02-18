@@ -2,19 +2,21 @@
 #
 # Post-Task Hook for Claude Code
 #
-# This hook runs when a task is marked as completed to provide comprehensive validation:
+# This hook runs on the Stop event to provide comprehensive validation before Claude stops:
 # 1. Run ALL project tests (pytest, jest/mocha) without file filtering
 # 2. Run linters (ruff for Python, eslint for JS/TS)
 # 3. Run type checking (mypy for Python)
 # 4. Run comprehensive security scans (bandit for Python)
 # 5. Check for package vulnerabilities (pip-audit, npm audit)
 #
-# EXIT CODES:
-# - 0: All checks passed, allow task completion
-# - 2: Critical issues found, BLOCK task completion (errors fed back to Claude)
+# BLOCKING:
+# - Output JSON {"decision": "block", "reason": "..."} on stdout to prevent stopping
+# - No decision field = allow Claude to stop normally
 #
-# Claude Code passes JSON via stdin with task_id, task_subject, task_description.
-# Hook output on stderr is fed back to Claude as feedback.
+# Claude Code passes JSON via stdin with session_id, transcript_path, cwd,
+# permission_mode, hook_event_name, stop_hook_active.
+# The stop_hook_active field is true when Claude is already continuing from a
+# previous stop hook block — check this to prevent infinite loops.
 #
 # Install this hook using: ./install_hooks.sh
 #
@@ -24,11 +26,24 @@ set -euo pipefail
 # Read hook input from stdin (required - Claude Code sends JSON)
 HOOK_INPUT=$(cat)
 
-# Parse task metadata from the hook input
-TASK_SUBJECT=""
+# Parse metadata from the hook input
+# Stop hook provides: session_id, transcript_path, cwd, permission_mode, hook_event_name, stop_hook_active
+STOP_HOOK_ACTIVE="false"
+SESSION_ID=""
 
 if command -v jq &> /dev/null; then
-    TASK_SUBJECT=$(echo "$HOOK_INPUT" | jq -r '.task_subject // empty' 2>/dev/null || true)
+    STOP_HOOK_ACTIVE=$(echo "$HOOK_INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null || echo "false")
+    SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // empty' 2>/dev/null || true)
+else
+    # Simple fallback without jq
+    if echo "$HOOK_INPUT" | grep -q '"stop_hook_active"[[:space:]]*:[[:space:]]*true'; then
+        STOP_HOOK_ACTIVE="true"
+    fi
+fi
+
+# Prevent infinite loops: if we already blocked once, allow stop
+if [ "$STOP_HOOK_ACTIVE" = "true" ]; then
+    exit 0
 fi
 
 # Configuration - longer timeout for comprehensive testing
@@ -78,7 +93,7 @@ detect_project_type() {
 
 # Find the project's Python/pytest from a virtualenv if present
 find_python_pytest() {
-    for venv_dir in .ven .venv venv env; do
+    for venv_dir in .venv venv env; do
         if [ -f "$venv_dir/bin/pytest" ]; then
             echo "$venv_dir/bin/pytest"
             return 0
@@ -190,14 +205,19 @@ run_bandit_scan() {
     fi
 
     local src_dirs=""
-    for dir in src app lib lambda functions .; do
+    for dir in src app lib lambda functions; do
         if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
             src_dirs="$src_dirs $dir"
         fi
     done
 
+    # Fall back to current directory only if no named source dirs found
     if [ -z "$src_dirs" ]; then
-        return 0
+        if find . -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
+            src_dirs="."
+        else
+            return 0
+        fi
     fi
 
     local bandit_output
@@ -278,7 +298,8 @@ run_mypy_check() {
     fi
 
     local mypy_output
-    if mypy_output=$(timeout "$MAX_TEST_TIME" mypy --no-error-summary $target 2>&1); then
+    local mypy_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }mypy --no-error-summary $target"
+    if mypy_output=$(eval "$mypy_cmd" 2>&1); then
         add_warning "Mypy: PASSED"
     else
         local exit_code=$?
@@ -304,7 +325,8 @@ run_eslint_check() {
     fi
 
     local eslint_output
-    if eslint_output=$(timeout 60 npx eslint --no-warn-on-unmatched-pattern . 2>&1); then
+    local eslint_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD 60 }npx eslint --no-warn-on-unmatched-pattern ."
+    if eslint_output=$(eval "$eslint_cmd" 2>&1); then
         add_warning "ESLint: PASSED"
     else
         local exit_code=$?
@@ -380,20 +402,22 @@ main() {
         exit 0
     fi
 
-    # If critical issues found, BLOCK task completion
+    # If critical issues found, BLOCK stop and feed reason back to Claude
     if [ ${#CRITICAL_ISSUES[@]} -gt 0 ]; then
-        echo "Task '$TASK_SUBJECT' cannot be completed due to critical issues:" >&2
+        local reason="Stop blocked — critical issues found:"
         for issue in "${CRITICAL_ISSUES[@]}"; do
-            echo "  - $issue" >&2
+            reason="$reason\n  - $issue"
         done
-        echo "" >&2
-        echo "Please fix these issues before completing the task." >&2
-        exit 2  # Exit code 2 blocks task completion
+        reason="$reason\n\nPlease fix these issues before stopping."
+
+        # Stop hooks use JSON stdout with decision: "block" to prevent stopping
+        printf '{"decision": "block", "reason": "%s"}\n' "$(echo -e "$reason" | sed 's/"/\\"/g')"
+        exit 0
     fi
 
-    # All checks passed, allow task completion
+    # All checks passed — allow stop (no decision field = allow)
     if [ ${#WARNINGS[@]} -gt 0 ]; then
-        echo "Task '$TASK_SUBJECT' validation complete with notes:" >&2
+        echo "Validation complete with notes:" >&2
         for warning in "${WARNINGS[@]}"; do
             echo "  - $warning" >&2
         done
