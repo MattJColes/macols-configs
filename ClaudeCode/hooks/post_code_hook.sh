@@ -236,24 +236,24 @@ run_bandit_scan() {
         return 0
     fi
 
-    local src_dirs=""
+    local -a src_dirs=()
     for dir in src app lib lambda functions; do
         if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs="$src_dirs $dir"
+            src_dirs+=("$dir")
         fi
     done
 
     # Fall back to current directory only if no named source dirs found
-    if [ -z "$src_dirs" ]; then
+    if [ ${#src_dirs[@]} -eq 0 ]; then
         if find . -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs="."
+            src_dirs=(".")
         else
             return 0
         fi
     fi
 
     local bandit_output
-    bandit_output=$(bandit -r $src_dirs -f txt -ll 2>&1) || true
+    bandit_output=$(bandit -r "${src_dirs[@]}" -f txt -ll 2>&1) || true
 
     if echo "$bandit_output" | grep -qE "Severity: (High|Medium)"; then
         local high_count

@@ -162,19 +162,19 @@ run_bandit_scan() {
         return 0
     fi
 
-    local src_dirs=""
+    local -a src_dirs=()
     for dir in src app lib lambda functions .; do
         if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs="$src_dirs $dir"
+            src_dirs+=("$dir")
         fi
     done
 
-    if [ -z "$src_dirs" ]; then
+    if [ ${#src_dirs[@]} -eq 0 ]; then
         return 0
     fi
 
     local bandit_output
-    bandit_output=$(bandit -r $src_dirs -f txt -ll 2>&1) || true
+    bandit_output=$(bandit -r "${src_dirs[@]}" -f txt -ll 2>&1) || true
 
     if echo "$bandit_output" | grep -qE "Severity: (High|Medium)"; then
         local high_count
@@ -240,18 +240,18 @@ run_mypy_check() {
         return 0
     fi
 
-    local target=""
+    local -a target=()
     for dir in src app lib lambda functions; do
         if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            target="$target $dir"
+            target+=("$dir")
         fi
     done
-    if [ -z "$target" ]; then
+    if [ ${#target[@]} -eq 0 ]; then
         return 0
     fi
 
     local mypy_output
-    if mypy_output=$(timeout "$MAX_TEST_TIME" mypy --no-error-summary $target 2>&1); then
+    if mypy_output=$(timeout "$MAX_TEST_TIME" mypy --no-error-summary "${target[@]}" 2>&1); then
         add_warning "Mypy: PASSED"
     else
         local exit_code=$?

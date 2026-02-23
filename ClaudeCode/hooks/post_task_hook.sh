@@ -29,11 +29,9 @@ HOOK_INPUT=$(cat)
 # Parse metadata from the hook input
 # Stop hook provides: session_id, transcript_path, cwd, permission_mode, hook_event_name, stop_hook_active
 STOP_HOOK_ACTIVE="false"
-SESSION_ID=""
 
 if command -v jq &> /dev/null; then
     STOP_HOOK_ACTIVE=$(echo "$HOOK_INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null || echo "false")
-    SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // empty' 2>/dev/null || true)
 else
     # Simple fallback without jq
     if echo "$HOOK_INPUT" | grep -q '"stop_hook_active"[[:space:]]*:[[:space:]]*true'; then
@@ -261,24 +259,24 @@ run_bandit_scan() {
         return 0
     fi
 
-    local src_dirs=""
+    local -a src_dirs=()
     for dir in src app lib lambda functions; do
         if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs="$src_dirs $dir"
+            src_dirs+=("$dir")
         fi
     done
 
     # Fall back to current directory only if no named source dirs found
-    if [ -z "$src_dirs" ]; then
+    if [ ${#src_dirs[@]} -eq 0 ]; then
         if find . -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs="."
+            src_dirs=(".")
         else
             return 0
         fi
     fi
 
     local bandit_output
-    bandit_output=$(bandit -r $src_dirs -f txt -ll 2>&1) || true
+    bandit_output=$(bandit -r "${src_dirs[@]}" -f txt -ll 2>&1) || true
 
     if echo "$bandit_output" | grep -qE "Severity: (High|Medium)"; then
         local high_count

@@ -86,13 +86,13 @@ fi
 
 # Prompt for custom model name
 echo -e "${BLUE}Model Configuration:${NC}"
-read -p "$(echo -e "${YELLOW}Enter GLM model identifier [${GLM_MODEL}]: ${NC}")" MODEL_INPUT
+read -rp "$(echo -e "${YELLOW}Enter GLM model identifier [${GLM_MODEL}]: ${NC}")" MODEL_INPUT
 if [ -n "$MODEL_INPUT" ]; then
     GLM_MODEL="$MODEL_INPUT"
 fi
 
 # Prompt for custom port
-read -p "$(echo -e "${YELLOW}Enter LM Studio port [${LMSTUDIO_PORT}]: ${NC}")" PORT_INPUT
+read -rp "$(echo -e "${YELLOW}Enter LM Studio port [${LMSTUDIO_PORT}]: ${NC}")" PORT_INPUT
 if [ -n "$PORT_INPUT" ]; then
     LMSTUDIO_PORT="$PORT_INPUT"
     LMSTUDIO_API_URL="http://${LMSTUDIO_HOST}:${LMSTUDIO_PORT}/v1"
