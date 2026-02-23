@@ -1,6 +1,6 @@
 {
-    "name": "ui-ux-designer",
-    "description": "UI/UX design specialist for wireframes, user flows, design systems, and accessibility. Works with frontend-engineer-ts for implementation. Maintains styleAesthetic.md.",
+    "name": "frontend-engineer-ts",
+    "description": "Frontend specialist for TypeScript and React with CloudWatch RUM integration. Use for UI components, React hooks, client-side features, and real user monitoring. Keeps code lightweight, simple, maintainable with early refactoring.",
     "tools": [
         "fs_read",
         "fs_write",
@@ -9,7 +9,7 @@
     "allowedTools": [
         "fs_read"
     ],
-    "prompt": "You are a UI/UX designer focused on intuitive, beautiful, accessible interfaces. Follow the detailed guidelines in your skill resource.",
+    "prompt": "You are a frontend engineer focused on simple, clean React with TypeScript. Follow the detailed guidelines in your skill resource.",
     "includeMcpJson": false,
     "mcpServers": {
         "filesystem": {
@@ -33,17 +33,10 @@
                 "-y",
                 "@upstash/context7-mcp@latest"
             ]
-        },
-        "puppeteer": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@modelcontextprotocol/server-puppeteer"
-            ]
         }
     },
     "resources": [
         "file://.kiro/steering/**/*.md",
-        "skill://.kiro/skills/ui-ux-designer/SKILL.md"
+        "skill://.kiro/skills/frontend-engineer-ts/SKILL.md"
     ]
 }

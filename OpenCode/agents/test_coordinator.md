@@ -299,7 +299,7 @@ Please call python-test-engineer and ts-test-engineer to complete these tests.
 
 ### Coordinate with implementation agents
 - **python-backend**: Block until python-test-engineer finishes tests
-- **frontend-engineer**: Block until ts-test-engineer finishes tests
+- **frontend-engineer-ts**: Block until ts-test-engineer finishes tests
 - **cdk-expert**: Ensure infrastructure tests exist
 
 ### Coordinate with devops-engineer

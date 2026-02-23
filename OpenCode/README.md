@@ -51,7 +51,8 @@ Skills provide reusable agent behaviors that OpenCode agents can load on-demand.
 | `data-scientist` | Data analysis, ML models, and visualization |
 | `devops-engineer` | CI/CD, Docker, and infrastructure automation |
 | `documentation-engineer` | README, API docs, and user guides |
-| `frontend-engineer` | React, TypeScript, and Tailwind CSS |
+| `frontend-engineer-ts` | React, TypeScript, and Tailwind CSS |
+| `frontend-engineer-dart` | Flutter, Dart, and mobile/web apps |
 | `linux-specialist` | Shell scripting and system administration |
 | `product-manager` | Feature planning, requirements, and roadmaps |
 | `project-coordinator` | Task orchestration and Memory Bank management |

@@ -67,5 +67,5 @@ curl -H "Authorization: Bearer <token>" https://api.example.com/v1/users
 
 ## Working with Other Agents
 - **architecture-expert**: Architecture diagrams
-- **python-backend/frontend-engineer**: Code examples
+- **python-backend/frontend-engineer-ts**: Code examples
 - **product-manager**: User-facing documentation

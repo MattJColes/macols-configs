@@ -1,5 +1,5 @@
 ---
-name: frontend-engineer
+name: frontend-engineer-ts
 description: Frontend specialist for TypeScript and React with CloudWatch RUM integration. Use for UI components, React hooks, client-side features, and real user monitoring. Keeps code lightweight, simple, maintainable with early refactoring.
 ---
 

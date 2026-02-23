@@ -1,6 +1,6 @@
 {
-    "name": "frontend-engineer",
-    "description": "Frontend specialist for TypeScript and React with CloudWatch RUM integration. Use for UI components, React hooks, client-side features, and real user monitoring. Keeps code lightweight, simple, maintainable with early refactoring.",
+    "name": "frontend-engineer-dart",
+    "description": "Frontend specialist for Flutter and Dart. Use for Flutter widgets, state management, Dart packages, and mobile/web app development.",
     "tools": [
         "fs_read",
         "fs_write",
@@ -9,7 +9,7 @@
     "allowedTools": [
         "fs_read"
     ],
-    "prompt": "You are a frontend engineer focused on simple, clean React with TypeScript. Follow the detailed guidelines in your skill resource.",
+    "prompt": "You are a frontend engineer focused on clean, idiomatic Flutter and Dart. Follow the detailed guidelines in your skill resource.",
     "includeMcpJson": false,
     "mcpServers": {
         "filesystem": {
@@ -37,6 +37,6 @@
     },
     "resources": [
         "file://.kiro/steering/**/*.md",
-        "skill://.kiro/skills/frontend-engineer/SKILL.md"
+        "skill://.kiro/skills/frontend-engineer-dart/SKILL.md"
     ]
 }

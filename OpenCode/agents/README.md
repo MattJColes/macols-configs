@@ -7,7 +7,8 @@ This directory contains specialized agent definitions for OpenCode. Agents are e
 ### Development Agents
 
 - **python-backend-agent** - Python 3.12 backend and Docker specialist for Pandas, Flask, FastAPI, and AI agents
-- **frontend-engineer** - React/TypeScript frontend specialist with CloudFront + S3 deployment expertise
+- **frontend-engineer-ts** - React/TypeScript frontend specialist with CloudFront + S3 deployment expertise
+- **frontend-engineer-dart** - Flutter/Dart frontend specialist for widgets, state management, and mobile/web apps
 - **linux-specialist** - Linux and command line SME for shell scripting, system administration, and debugging
 
 ### Testing Agents

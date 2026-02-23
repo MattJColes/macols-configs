@@ -154,7 +154,7 @@ At the start of each session:
 | Data analysis | data-scientist |
 | CI/CD | devops-engineer |
 | Documentation | documentation-engineer |
-| React/TypeScript UI | frontend-engineer |
+| React/TypeScript UI | frontend-engineer-ts |
 | Shell/Linux | linux-specialist |
 | Feature planning | product-manager |
 | Python backend | python-backend |

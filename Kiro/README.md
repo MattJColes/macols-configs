@@ -25,11 +25,11 @@ Specialized AI agents with per-agent MCP configs and progressive skill loading f
 
 ```
 Kiro/
-├── agents/              # 17 agent definitions (JSON) with per-agent MCPs
+├── agents/              # 18 agent definitions (JSON) with per-agent MCPs
 │   ├── architecture-expert.json
 │   ├── code-reviewer.json
 │   └── ...
-├── skills/              # 17 SKILL.md files (progressive loading)
+├── skills/              # 18 SKILL.md files (progressive loading)
 │   ├── architecture-expert/SKILL.md
 │   ├── code-reviewer/SKILL.md
 │   └── ...
@@ -73,7 +73,8 @@ Each agent only starts the MCP servers it needs. All agents get `filesystem` + `
 | data-scientist | Y | - | - | - | Y | Y |
 | devops-engineer | Y | - | - | Y | - | - |
 | documentation-engineer | Y | - | - | - | - | - |
-| frontend-engineer | Y | - | - | - | - | - |
+| frontend-engineer-ts | Y | - | - | - | - | - |
+| frontend-engineer-dart | Y | - | - | - | - | - |
 | linux-specialist | - | - | - | - | - | - |
 | product-manager | - | - | - | - | - | - |
 | project-coordinator | - | - | - | - | - | - |
@@ -84,7 +85,7 @@ Each agent only starts the MCP servers it needs. All agents get `filesystem` + `
 | typescript-test-engineer | Y | Y | Y | Y | - | - |
 | ui-ux-designer | Y | - | Y | - | - | - |
 
-## 17 Specialized Agents
+## 18 Specialized Agents
 
 ### Architecture & Design
 - **architecture-expert** - AWS architecture, caching, scaling, design patterns
@@ -92,7 +93,8 @@ Each agent only starts the MCP servers it needs. All agents get `filesystem` + `
 
 ### Development
 - **python-backend** - Python 3.12, FastAPI, DynamoDB, Cognito auth
-- **frontend-engineer** - TypeScript, React, Tailwind CSS
+- **frontend-engineer-ts** - TypeScript, React, Tailwind CSS
+- **frontend-engineer-dart** - Flutter, Dart, mobile/web apps
 - **cdk-expert-ts** - AWS CDK TypeScript infrastructure
 - **cdk-expert-python** - AWS CDK Python infrastructure
 - **data-scientist** - Pandas, ML, ETL pipelines, data lakes

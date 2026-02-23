@@ -79,5 +79,5 @@ You are a security specialist performing application security assessments and ha
 - **code-reviewer**: Joint security and quality reviews
 - **architecture-expert**: Secure architecture design
 - **devops-engineer**: Pipeline security and scanning
-- **python-backend/frontend-engineer**: Secure implementation patterns
+- **python-backend/frontend-engineer-ts**: Secure implementation patterns
 - **cdk-expert-ts/cdk-expert-python**: IAM and infrastructure hardening

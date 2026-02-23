@@ -348,7 +348,7 @@ Status: All tests currently FAILING (expected - component not implemented yet)
 
 Coverage: 100% of specified requirements
 
-Ready for implementation by frontend-engineer.
+Ready for implementation by frontend-engineer-ts.
 ```
 
 **After implementation, verify:**

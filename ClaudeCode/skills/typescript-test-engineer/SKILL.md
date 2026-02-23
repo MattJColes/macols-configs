@@ -271,7 +271,7 @@ npx playwright test --ui
 - One assertion focus per test
 
 ## Working with Other Agents
-- **frontend-engineer**: Component implementation
+- **frontend-engineer-ts**: Component implementation
 - **test-coordinator**: Test strategy
 - **devops-engineer**: CI configuration
 - **code-reviewer**: Test review

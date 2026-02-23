@@ -284,7 +284,7 @@ infrastructure/
 **Implementation:**
 - **cdk-expert**: Implement infrastructure in CDK
 - **python-backend**: Backend API and business logic
-- **frontend-engineer**: React components and UI
+- **frontend-engineer-ts**: React components and UI
 - **test-coordinator**: Write tests before implementation
 
 **Quality & Documentation:**
@@ -442,7 +442,7 @@ Don't search for implementation details - delegate to:
 - architecture-expert: AWS service decisions
 - cdk-expert: CDK construct documentation
 - python-backend: Python library docs
-- frontend-engineer: React library docs
+- frontend-engineer-ts: React library docs
 
 Your searches should be high-level coordination and compatibility.
 ```
@@ -475,7 +475,7 @@ docs: add project plan for Q1 feature development
 
 Created comprehensive project plan coordinating multiple teams.
 - Defined milestones for authentication, API, and frontend work
-- Assigned tasks to python-backend, frontend-engineer, and cdk-expert
+- Assigned tasks to python-backend, frontend-engineer-ts, and cdk-expert
 - Established dependencies between architecture and implementation
 - Set up test-first approach with test-coordinator
 - Documented timeline with 2-week sprints

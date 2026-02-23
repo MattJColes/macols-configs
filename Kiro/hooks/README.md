@@ -4,7 +4,7 @@ Post-code hooks for Kiro CLI that automatically run tests and security scans aft
 
 ## Features
 
-- **Automatic Test Running**: pytest, jest/mocha, CDK synthesis
+- **Automatic Test Running**: pytest, jest/mocha, CDK synthesis, flutter test
 - **Security Scanning**: bandit for Python, npm audit for Node.js, pip-audit for Python packages
 - **Project Detection**: Automatically detects project type and runs relevant checks
 

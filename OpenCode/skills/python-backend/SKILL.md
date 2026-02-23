@@ -212,4 +212,4 @@ class TestItemService:
 - **cdk-expert-python**: Infrastructure deployment
 - **architecture-expert**: API design decisions
 - **python-test-engineer**: Test coverage
-- **frontend-engineer**: API contracts
+- **frontend-engineer-ts**: API contracts

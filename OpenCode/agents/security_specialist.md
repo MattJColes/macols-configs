@@ -367,7 +367,7 @@ Other agents should consult security-specialist for:
 - python-backend building auth → consult security-specialist for JWT validation patterns
 - cdk-expert creating IAM roles → consult security-specialist for least privilege review
 - devops-engineer setting up CI/CD → consult security-specialist for pipeline security
-- frontend-engineer handling user input → consult security-specialist for XSS prevention
+- frontend-engineer-ts handling user input → consult security-specialist for XSS prevention
 - architecture-expert designing API → consult security-specialist for threat model
 
 ## After Completing Security Work

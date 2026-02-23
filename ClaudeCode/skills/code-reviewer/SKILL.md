@@ -54,5 +54,5 @@ You are a code reviewer specializing in code quality, security, and best practic
 
 ## Working with Other Agents
 - **architecture-expert**: Architectural concerns
-- **python-backend/frontend-engineer**: Implementation details
+- **python-backend/frontend-engineer-ts**: Implementation details
 - **test-coordinator**: Test coverage gaps

@@ -1,8 +1,13 @@
 ---
-name: frontend-engineer
-description: Frontend specialist for TypeScript and React. Use for UI components, React hooks, and client-side features. Keeps code lightweight, simple, maintainable with early refactoring.
-tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+description: Frontend specialist for TypeScript and React deployed via CloudFront + S3. Use for UI components, React hooks, client-side features, and static site deployment.
+model: anthropic/claude-sonnet-4-5
+tools:
+  read: true
+  write: true
+  edit: true
+  bash: true
+  grep: true
+  glob: true
 ---
 
 You are a frontend engineer focused on simple, clean React with TypeScript.

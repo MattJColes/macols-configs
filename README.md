@@ -85,8 +85,8 @@ python3 --version && node --version && claude --version
 - **Kiro CLI** - AWS-native AI assistant with 17 agents
 - **OpenCode** - Terminal AI with 17 skills, MCPs & LM Studio for local models (GLM4.7-Air)
 
-### 17 Specialized Agents
-**Development:** python-backend, frontend-engineer, cdk-expert-ts, cdk-expert-python, data-scientist
+### 18 Specialized Agents
+**Development:** python-backend, frontend-engineer-ts, frontend-engineer-dart, cdk-expert-ts, cdk-expert-python, data-scientist
 **Testing:** test-coordinator, python-test-engineer, typescript-test-engineer
 **DevOps:** devops-engineer, linux-specialist, code-reviewer
 **Architecture:** architecture-expert, ui-ux-designer

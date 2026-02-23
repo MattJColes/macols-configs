@@ -166,7 +166,7 @@ xl: 1280px  /* Desktops */
 5. **Simplicity**: Remove unnecessary elements
 
 ## Working with Other Agents
-- **frontend-engineer**: Implementation details
+- **frontend-engineer-ts**: Implementation details
 - **product-manager**: User requirements
 - **documentation-engineer**: Design documentation
 - **code-reviewer**: Accessibility review

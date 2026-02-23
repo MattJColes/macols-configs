@@ -73,4 +73,4 @@ What becomes easier or more difficult because of this change?
 - **cdk-expert-python/ts**: Infrastructure implementation
 - **devops-engineer**: CI/CD and deployment
 - **python-backend**: Service implementation
-- **frontend-engineer**: API contracts
+- **frontend-engineer-ts**: API contracts

@@ -277,7 +277,7 @@ infrastructure/
 **Implementation:**
 - **cdk-expert**: Implement infrastructure in CDK
 - **python-backend**: Backend API and business logic
-- **frontend-engineer**: React components and UI
+- **frontend-engineer-ts**: React components and UI
 - **test-coordinator**: Write tests before implementation
 
 **Quality & Documentation:**
@@ -435,7 +435,7 @@ Don't search for implementation details - delegate to:
 - architecture-expert: AWS service decisions
 - cdk-expert: CDK construct documentation
 - python-backend: Python library docs
-- frontend-engineer: React library docs
+- frontend-engineer-ts: React library docs
 
 Your searches should be high-level coordination and compatibility.
 ```

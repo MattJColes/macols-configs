@@ -72,5 +72,5 @@ npx cdk destroy --all
 
 ## Working with Other Agents
 - **architecture-expert**: Design decisions
-- **frontend-engineer**: API integration
+- **frontend-engineer-ts**: API integration
 - **devops-engineer**: CI/CD pipelines

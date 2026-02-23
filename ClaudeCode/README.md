@@ -62,7 +62,8 @@ Both provide the same 16 specializations - choose the format that fits your work
 | `data-scientist` | Data analysis, ML models, visualization |
 | `devops-engineer` | CI/CD, Docker, GitHub Actions |
 | `documentation-engineer` | README, API docs, architecture documentation |
-| `frontend-engineer` | React, TypeScript, Tailwind CSS |
+| `frontend-engineer-ts` | React, TypeScript, Tailwind CSS |
+| `frontend-engineer-dart` | Flutter, Dart, mobile/web apps |
 | `linux-specialist` | Shell scripting, git, system administration |
 | `product-manager` | Feature planning, roadmaps, requirements |
 | `project-coordinator` | Memory Bank management, task coordination |
@@ -103,7 +104,7 @@ claude chat
 
 ### Skills
 ```bash
-/frontend-engineer Build a user profile component with React
+/frontend-engineer-ts Build a user profile component with React
 /python-backend Create a FastAPI endpoint for user management
 /code-reviewer Review the changes in src/services/
 ```

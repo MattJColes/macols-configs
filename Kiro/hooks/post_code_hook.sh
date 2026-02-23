@@ -3,8 +3,8 @@
 # Post-Code Hook for Kiro CLI
 #
 # This hook runs automatically after coding tasks complete to:
-# 1. Run project tests (pytest, jest, mocha)
-# 2. Run linters (ruff for Python, eslint for JS/TS)
+# 1. Run project tests (pytest, jest, mocha, flutter test)
+# 2. Run linters (ruff for Python, eslint for JS/TS, dart analyze for Dart)
 # 3. Run type checking (mypy for Python)
 # 4. Run security scans (bandit for Python)
 # 5. Check for package vulnerabilities (pip-audit, npm audit)
@@ -32,7 +32,7 @@ fi
 # Skip non-source files to avoid unnecessary test runs
 if [ -n "$FILE_PATH" ]; then
     case "$FILE_PATH" in
-        *.py|*.ts|*.js|*.jsx|*.tsx|*.mjs|*.cjs)
+        *.py|*.ts|*.js|*.jsx|*.tsx|*.mjs|*.cjs|*.dart)
             # Testable source file - continue
             ;;
         *)
@@ -63,6 +63,7 @@ detect_project_type() {
     local has_python=false
     local has_node=false
     local has_cdk=false
+    local has_flutter=false
 
     if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -f "setup.py" ]; then
         has_python=true
@@ -76,7 +77,11 @@ detect_project_type() {
         has_cdk=true
     fi
 
-    echo "${has_python}:${has_node}:${has_cdk}"
+    if [ -f "pubspec.yaml" ]; then
+        has_flutter=true
+    fi
+
+    echo "${has_python}:${has_node}:${has_cdk}:${has_flutter}"
 }
 
 # Run Python tests
@@ -158,6 +163,57 @@ run_cdk_tests() {
         else
             add_issue "CDK synth: FAILED"
             return 1
+        fi
+    fi
+}
+
+# Run Flutter tests
+run_flutter_tests() {
+    if ! command -v flutter &> /dev/null; then
+        add_message "flutter not installed - skipping Flutter tests"
+        return 0
+    fi
+
+    if [ ! -d "test" ]; then
+        add_message "No Flutter test/ directory found - skipping"
+        return 0
+    fi
+
+    local test_output
+    if test_output=$(timeout "$MAX_TEST_TIME" flutter test 2>&1); then
+        add_message "Flutter tests: PASSED"
+    else
+        local exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            add_issue "Flutter tests: TIMED OUT after ${MAX_TEST_TIME}s"
+        else
+            add_issue "Flutter tests: FAILED"
+            local tail_output
+            tail_output=$(echo "$test_output" | tail -20)
+            add_message "$tail_output"
+        fi
+        return 1
+    fi
+}
+
+# Run dart analyze
+run_dart_analyze() {
+    if ! command -v dart &> /dev/null; then
+        add_message "dart not installed - skipping Dart analysis"
+        return 0
+    fi
+
+    local analyze_output
+    if analyze_output=$(dart analyze . 2>&1); then
+        add_message "Dart analyze: PASSED"
+    else
+        local issue_count
+        issue_count=$(echo "$analyze_output" | grep -cE "^\s*(info|warning|error) " || echo "0")
+        if [ "$issue_count" -gt 0 ]; then
+            add_issue "Dart analyze: $issue_count issues"
+            local tail_output
+            tail_output=$(echo "$analyze_output" | head -10)
+            add_message "$tail_output"
         fi
     fi
 }
@@ -345,8 +401,8 @@ run_npm_audit() {
 main() {
     local project_info
     project_info=$(detect_project_type)
-    local has_python has_node has_cdk
-    IFS=':' read -r has_python has_node has_cdk <<< "$project_info"
+    local has_python has_node has_cdk has_flutter
+    IFS=':' read -r has_python has_node has_cdk has_flutter <<< "$project_info"
 
     local ran_something=false
 
@@ -374,6 +430,14 @@ main() {
     if [ "$has_cdk" = "true" ]; then
         run_cdk_tests || true
         ran_something=true
+    fi
+
+    if [ "$has_flutter" = "true" ]; then
+        if [ -z "$FILE_PATH" ] || [[ "$FILE_PATH" == *.dart ]]; then
+            run_flutter_tests || true
+            run_dart_analyze || true
+            ran_something=true
+        fi
     fi
 
     # If nothing ran, exit silently
