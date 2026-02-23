@@ -199,11 +199,12 @@ echo "  5. memory              - Knowledge graph memory"
 echo "  6. aws-kb              - AWS Knowledge Base retrieval"
 echo "  7. context7            - Real-time library documentation"
 echo "  8. dynamodb            - DynamoDB operations (via uvx, on-demand)"
+echo "  9. dart                - Dart/Flutter MCP server (project context, tools)"
 if [ "$INSTALL_GITHUB" = true ]; then
-    echo "  9. github              - GitHub repository operations"
+    echo " 10. github              - GitHub repository operations"
 fi
 if [ "$INSTALL_GITLAB" = true ]; then
-    echo " 10. gitlab              - GitLab repository operations"
+    echo " 11. gitlab              - GitLab repository operations"
 fi
 
 echo -e "\n${YELLOW}Architecture:${NC}"

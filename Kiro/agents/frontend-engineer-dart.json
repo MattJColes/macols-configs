@@ -33,6 +33,12 @@
                 "-y",
                 "@upstash/context7-mcp@latest"
             ]
+        },
+        "dart": {
+            "command": "dart",
+            "args": [
+                "mcp-server"
+            ]
         }
     },
     "resources": [

@@ -64,26 +64,26 @@ cd hooks && ./install_hooks.sh
 
 Each agent only starts the MCP servers it needs. All agents get `filesystem` + `memory`.
 
-| Agent | context7 | seq-thinking | puppeteer | playwright | dynamodb | aws-kb |
-|---|---|---|---|---|---|---|
-| architecture-expert | Y | Y | - | - | - | Y |
-| cdk-expert-ts | Y | - | - | - | - | Y |
-| cdk-expert-python | Y | - | - | - | - | Y |
-| code-reviewer | - | - | - | - | - | - |
-| data-scientist | Y | - | - | - | Y | Y |
-| devops-engineer | Y | - | - | Y | - | - |
-| documentation-engineer | Y | - | - | - | - | - |
-| frontend-engineer-ts | Y | - | - | - | - | - |
-| frontend-engineer-dart | Y | - | - | - | - | - |
-| linux-specialist | - | - | - | - | - | - |
-| product-manager | - | - | - | - | - | - |
-| project-coordinator | - | - | - | - | - | - |
-| python-backend | Y | - | - | - | Y | Y |
-| python-test-engineer | Y | - | - | - | Y | - |
-| security-specialist | Y | Y | - | - | - | Y |
-| test-coordinator | - | - | - | Y | - | - |
-| typescript-test-engineer | Y | Y | Y | Y | - | - |
-| ui-ux-designer | Y | - | Y | - | - | - |
+| Agent | context7 | seq-thinking | puppeteer | playwright | dynamodb | aws-kb | dart |
+|---|---|---|---|---|---|---|---|
+| architecture-expert | Y | Y | - | - | - | Y | - |
+| cdk-expert-ts | Y | - | - | - | - | Y | - |
+| cdk-expert-python | Y | - | - | - | - | Y | - |
+| code-reviewer | - | - | - | - | - | - | - |
+| data-scientist | Y | - | - | - | Y | Y | - |
+| devops-engineer | Y | - | - | Y | - | - | - |
+| documentation-engineer | Y | - | - | - | - | - | - |
+| frontend-engineer-ts | Y | - | - | - | - | - | - |
+| frontend-engineer-dart | Y | - | - | - | - | - | Y |
+| linux-specialist | - | - | - | - | - | - | - |
+| product-manager | - | - | - | - | - | - | - |
+| project-coordinator | - | - | - | - | - | - | - |
+| python-backend | Y | - | - | - | Y | Y | - |
+| python-test-engineer | Y | - | - | - | Y | - | - |
+| security-specialist | Y | Y | - | - | - | Y | - |
+| test-coordinator | - | - | - | Y | - | - | - |
+| typescript-test-engineer | Y | Y | Y | Y | - | - | - |
+| ui-ux-designer | Y | - | Y | - | - | - | - |
 
 ## 18 Specialized Agents
 
@@ -174,6 +174,8 @@ cd hooks && ./install_hooks.sh
 The hook automatically runs after code changes:
 - **pytest** - Python tests
 - **jest/mocha** - JavaScript/TypeScript tests
+- **flutter test** - Flutter/Dart tests
+- **dart analyze** - Dart static analysis
 - **bandit** - Python security scanning
 - **pip-audit / npm audit** - Package vulnerability checks
 

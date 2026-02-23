@@ -90,6 +90,7 @@ The following MCP servers are configured (identical to Claude Code and Kiro):
 | `aws-kb` | AWS Knowledge Base retrieval | AWS documentation |
 | `context7` | Real-time documentation | Up-to-date library docs |
 | `dynamodb` | DynamoDB operations | Data modeling |
+| `dart` | Dart/Flutter MCP server | Flutter/Dart development |
 
 ### Optional MCPs
 

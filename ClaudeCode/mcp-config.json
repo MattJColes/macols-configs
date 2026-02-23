@@ -43,6 +43,10 @@
         "AWS_PROFILE": "default",
         "DDB-MCP-READONLY": "false"
       }
+    },
+    "dart": {
+      "command": "dart",
+      "args": ["mcp-server"]
     }
   },
   "optionalMcpServers": {

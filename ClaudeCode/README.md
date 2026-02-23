@@ -85,6 +85,7 @@ Both provide the same 16 specializations - choose the format that fits your work
 | `aws-kb` | AWS Knowledge Base retrieval |
 | `context7` | Real-time library documentation |
 | `dynamodb` | DynamoDB operations |
+| `dart` | Dart/Flutter project context and tools |
 
 ## Configuration
 

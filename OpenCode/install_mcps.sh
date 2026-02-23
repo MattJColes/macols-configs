@@ -197,6 +197,10 @@ cat > "$OPENCODE_MCP_CONFIG" << EOF
         "AWS_PROFILE": "default",
         "DDB-MCP-READONLY": "false"
       }
+    },
+    "dart": {
+      "command": "dart",
+      "args": ["mcp-server"]
     }EOF
 
 # Add GitHub MCP if installed
@@ -249,11 +253,12 @@ echo "  5. memory              - Knowledge graph memory, maintains context acros
 echo "  6. aws-kb              - AWS Knowledge Base retrieval"
 echo "  7. context7            - Real-time version-specific documentation"
 echo "  8. dynamodb            - DynamoDB operations (backend, data modeling)"
+echo "  9. dart                - Dart/Flutter MCP server (project context, tools)"
 if [ "$INSTALL_GITHUB" = true ]; then
-    echo "  9. github              - GitHub repository operations, issues, PRs"
+    echo " 10. github              - GitHub repository operations, issues, PRs"
 fi
 if [ "$INSTALL_GITLAB" = true ]; then
-    echo " 10. gitlab              - GitLab repository operations, issues, MRs"
+    echo " 11. gitlab              - GitLab repository operations, issues, MRs"
 fi
 
 echo -e "\n${YELLOW}Configuration:${NC}"

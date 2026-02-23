@@ -51,6 +51,10 @@ MCP_SERVERS = {
         "env": {
             "AWS_PROFILE": "default"
         }
+    },
+    "dart": {
+        "command": "dart",
+        "args": ["mcp-server"]
     }
 }
 
@@ -64,7 +68,7 @@ AGENT_MCPS = {
     "devops-engineer":          ["context7", "playwright"],
     "documentation-engineer":   ["context7"],
     "frontend-engineer-ts":     ["context7"],
-    "frontend-engineer-dart":   ["context7"],
+    "frontend-engineer-dart":   ["context7", "dart"],
     "linux-specialist":         [],
     "product-manager":          [],
     "project-coordinator":      [],
