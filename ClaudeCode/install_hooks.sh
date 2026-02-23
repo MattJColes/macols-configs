@@ -3,8 +3,8 @@
 # Install Post-Code Hooks for Claude Code
 #
 # This script sets up hooks that run automatically after coding tasks:
-# - Tests (pytest, jest/mocha)
-# - Linters (ruff for Python, eslint for JS/TS)
+# - Tests (pytest, jest/mocha, flutter test)
+# - Linters (ruff for Python, eslint for JS/TS, dart analyze for Dart)
 # - Type checking (mypy for Python)
 # - Security scans (bandit)
 # - Package vulnerability checks (pip-audit, npm audit)
@@ -131,6 +131,19 @@ if command -v cdk &> /dev/null; then
     log_success "AWS CDK found"
 else
     log_warning "AWS CDK not found (npm install -g aws-cdk)"
+fi
+
+# Flutter/Dart
+if command -v flutter &> /dev/null; then
+    log_success "Flutter found"
+else
+    log_warning "Flutter not found - Flutter checks will be skipped"
+fi
+
+if command -v dart &> /dev/null; then
+    log_success "Dart found"
+else
+    log_warning "Dart not found - Dart analysis will be skipped"
 fi
 
 if [ ${#MISSING_TOOLS[@]} -gt 0 ]; then
