@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2059
 set -eu
 
 # Colors for output
@@ -176,6 +177,7 @@ install_mcps() {
             fi
         fi
 
+        # shellcheck disable=SC2034,SC2016
         MCP_SRC_CONFIG="$SRC_CONFIG" \
         MCP_CONFIG_FILE="$CONFIG_FILE" \
         MCP_HOME="$HOME" \

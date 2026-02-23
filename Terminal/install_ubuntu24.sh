@@ -53,6 +53,7 @@ sudo apt-get install -y podman
 echo "Installing NVM..."
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
+# shellcheck source=/dev/null
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # Install Node.js 22 via NVM
@@ -83,6 +84,7 @@ rm /tmp/nvim-linux-x86_64.tar.gz
 
 # Add nvim to PATH if not already there
 if ! grep -q '/opt/nvim-linux-x86_64/bin' ~/.bashrc; then
+    # shellcheck disable=SC2016
     echo 'export PATH="$PATH:/opt/nvim-linux-x86_64/bin"' >> ~/.bashrc
 fi
 
@@ -128,8 +130,8 @@ echo "=== Configuration ==="
 echo ""
 
 # Git configuration
-read -p "Enter your Git username: " git_username
-read -p "Enter your Git email: " git_email
+read -rp "Enter your Git username: " git_username
+read -rp "Enter your Git email: " git_email
 
 if [ -n "$git_username" ]; then
     git config --global user.name "$git_username"
@@ -159,7 +161,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "  - llama3.2      (3B - fast, lightweight)"
     echo "  - llama3.1      (8B - balanced)"
     echo ""
-    read -p "Enter model name [qwen3:30b]: " ollama_model
+    read -rp "Enter model name [qwen3:30b]: " ollama_model
     ollama_model=${ollama_model:-qwen3:30b}
 
     echo "Pulling $ollama_model..."

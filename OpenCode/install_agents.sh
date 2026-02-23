@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2059
 set -eu
 
 # Colors for output

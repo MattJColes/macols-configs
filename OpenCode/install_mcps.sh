@@ -133,7 +133,7 @@ echo -e "${YELLOW}Configuring MCP servers for OpenCode...${NC}\n"
 # Prompt for GitHub token if GitHub MCP is being installed
 GITHUB_TOKEN_VALUE=""
 if [ "$INSTALL_GITHUB" = true ]; then
-    read -p "$(echo -e "${YELLOW}Enter GitHub Personal Access Token (or press Enter to skip): ${NC}")" GITHUB_TOKEN_VALUE
+    read -rp "$(echo -e "${YELLOW}Enter GitHub Personal Access Token (or press Enter to skip): ${NC}")" GITHUB_TOKEN_VALUE
     echo
 fi
 
@@ -141,9 +141,9 @@ fi
 GITLAB_TOKEN_VALUE=""
 GITLAB_API_URL_VALUE="https://gitlab.com"
 if [ "$INSTALL_GITLAB" = true ]; then
-    read -p "$(echo -e "${YELLOW}Enter GitLab Personal Access Token (or press Enter to skip): ${NC}")" GITLAB_TOKEN_VALUE
+    read -rp "$(echo -e "${YELLOW}Enter GitLab Personal Access Token (or press Enter to skip): ${NC}")" GITLAB_TOKEN_VALUE
     echo
-    read -p "$(echo -e "${YELLOW}Enter GitLab API URL [https://gitlab.com]: ${NC}")" GITLAB_API_URL_INPUT
+    read -rp "$(echo -e "${YELLOW}Enter GitLab API URL [https://gitlab.com]: ${NC}")" GITLAB_API_URL_INPUT
     if [ -n "$GITLAB_API_URL_INPUT" ]; then
         GITLAB_API_URL_VALUE="$GITLAB_API_URL_INPUT"
     fi
