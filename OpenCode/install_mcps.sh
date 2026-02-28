@@ -114,6 +114,13 @@ fi
 echo -e "${BLUE}Installing awslabs.dynamodb-mcp-server (Python)...${NC}"
 # Python package installed via uvx on-demand, no pre-install needed
 
+# Check for Dart SDK (required for dart MCP server, built into Dart 3.9+)
+if command -v dart &> /dev/null; then
+    echo -e "${GREEN}OK Dart MCP (built into Dart SDK: $(dart --version 2>&1 | head -1))${NC}"
+else
+    echo -e "${YELLOW}Warning: Dart SDK not found - install Dart 3.9+ for Flutter/Dart MCP server${NC}"
+fi
+
 echo -e "\n${GREEN}OK All MCP servers installed${NC}\n"
 
 # Configure OpenCode

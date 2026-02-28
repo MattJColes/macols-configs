@@ -122,6 +122,13 @@ install_mcps() {
     npm install -g @upstash/context7-mcp 2>/dev/null && printf "  ${GREEN}✓${NC} context7\n" || printf "  ${YELLOW}⚠${NC} context7\n"
     printf "  ${GREEN}✓${NC} dynamodb (installed on-demand via uvx)\n"
 
+    # Check for Dart SDK (required for dart MCP server, built into Dart 3.9+)
+    if command -v dart >/dev/null 2>&1; then
+        printf "  ${GREEN}✓${NC} dart (built into Dart SDK: %s)\n" "$(dart --version 2>&1 | head -1)"
+    else
+        printf "  ${YELLOW}⚠${NC} dart (Dart SDK not found - install Dart 3.9+ for Flutter/Dart MCP)\n"
+    fi
+
     # Optional MCPs
     INSTALL_GITHUB=false
     INSTALL_GITLAB=false
@@ -311,6 +318,7 @@ if [ "$INSTALL_MCPS" = true ]; then
     echo "    • aws-kb              - AWS knowledge base retrieval"
     echo "    • context7            - Real-time library documentation"
     echo "    • dynamodb            - DynamoDB operations (via uvx)"
+    echo "    • dart                - Dart/Flutter project context and tools"
     echo ""
     printf "${YELLOW}Next Steps:${NC}\n"
     echo "  • Restart Claude Code to load the new configuration"

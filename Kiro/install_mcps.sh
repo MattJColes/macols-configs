@@ -141,6 +141,13 @@ fi
 
 echo -e "${BLUE}DynamoDB MCP (Python via uvx) - no pre-install needed${NC}"
 
+# Check for Dart SDK (required for dart MCP server, built into Dart 3.9+)
+if command -v dart &> /dev/null; then
+    echo -e "${GREEN}✓ Dart MCP (built into Dart SDK: $(dart --version 2>&1 | head -1))${NC}"
+else
+    echo -e "${YELLOW}⚠ Dart SDK not found - install Dart 3.9+ for Flutter/Dart MCP server${NC}"
+fi
+
 echo -e "\n${GREEN}✓ All MCP server packages installed${NC}\n"
 
 # Optionally write global mcp.json
@@ -177,6 +184,10 @@ if [ "$WRITE_GLOBAL_CONFIG" = true ]; then
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "dart": {
+      "command": "dart",
+      "args": ["mcp-server"]
     }
   }
 }
