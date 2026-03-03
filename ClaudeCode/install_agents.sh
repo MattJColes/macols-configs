@@ -2286,6 +2286,7 @@ EOF
 
 # System-Level Claude Configuration
 cp "$SCRIPT_DIR/CLAUDE.md" "$SYSTEM_DIR/CLAUDE.md"
+echo -e "\n${YELLOW}Copied system CLAUDE.md to: $SYSTEM_DIR${NC}\n"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Install Skills
