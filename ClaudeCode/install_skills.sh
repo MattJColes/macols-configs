@@ -301,6 +301,7 @@ if [ "$INSTALL_SKILLS" = true ]; then
     echo "    /frontend-engineer-ts   - React/TypeScript frontend"
     echo "    /frontend-engineer-dart - Flutter/Dart frontend"
     echo "    /code-reviewer          - Code quality and security review"
+    echo "    /commit                 - Test, lint, commit, and push"
     echo "    /devops-engineer      - CI/CD and containerization"
     echo "  Use --list to see all available skills"
     echo ""
