@@ -74,6 +74,8 @@ npm install -g aws-cdk
 # Install uv
 echo "Installing uv..."
 curl -LsSf https://astral.sh/uv/install.sh | sh
+# Add uv to PATH for this session
+export PATH="$HOME/.local/bin:$PATH"
 
 # Install Flutter SDK
 echo "Installing Flutter SDK..."
