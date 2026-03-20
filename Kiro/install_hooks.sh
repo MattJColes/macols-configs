@@ -21,6 +21,8 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+SHARED_DIR="$REPO_DIR/shared"
 HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
 TASK_HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_task_hook.sh"
 
@@ -46,6 +48,17 @@ echo -e "${CYAN}║          Post-Code Hook Installer for Kiro CLI            �
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
+# Validate shared libraries exist
+if [ ! -f "$SHARED_DIR/post_code_checks.sh" ]; then
+    log_error "Shared library not found at $SHARED_DIR/post_code_checks.sh"
+    exit 1
+fi
+
+if [ ! -f "$SHARED_DIR/post_task_checks.sh" ]; then
+    log_error "Shared library not found at $SHARED_DIR/post_task_checks.sh"
+    exit 1
+fi
+
 if [ ! -f "$HOOK_SCRIPT" ]; then
     log_error "Hook script not found at $HOOK_SCRIPT"
     exit 1
@@ -59,6 +72,7 @@ fi
 # Make hook scripts executable
 chmod +x "$HOOK_SCRIPT"
 chmod +x "$TASK_HOOK_SCRIPT"
+log_success "Hook scripts are executable"
 
 # Check for required tools and provide installation instructions
 echo -e "${BLUE}Checking for required tools...${NC}\n"
@@ -197,6 +211,32 @@ EOF
 
 log_success "Hooks configuration written to $HOOKS_FILE"
 
+# IDE Hook Setup Instructions
+echo ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${CYAN}Kiro IDE Hook Setup (Manual)${NC}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo -e "${BLUE}IDE hooks cannot be configured via script — use the Command Palette:${NC}"
+echo ""
+echo "  1. Open Kiro IDE"
+echo "  2. Cmd+Shift+P → 'Kiro: Open Hooks Configuration'"
+echo "  3. Select the hook event to configure"
+echo ""
+echo -e "${BLUE}Available IDE hook events:${NC}"
+echo "  - Pre Prompt Submit       (before user message is sent)"
+echo "  - Post Prompt Submit      (after user message is sent)"
+echo "  - Pre Tool Execution      (before a tool runs)"
+echo "  - Post Tool Execution     (after a tool runs) ← equivalent to CLI postToolUse"
+echo "  - Pre Task Execution      (before an agent task starts)"
+echo "  - Post Task Execution     (after an agent task completes) ← equivalent to CLI stop"
+echo "  - Pre Subtask Execution   (before a subtask starts)"
+echo "  - Post Subtask Execution  (after a subtask completes)"
+echo "  - Pre MCP Tool Execution  (before an MCP tool runs)"
+echo "  - Post MCP Tool Execution (after an MCP tool runs)"
+echo ""
+echo -e "${YELLOW}Note: Agent-type hooks ('Ask Kiro') are IDE-only. CLI only supports command hooks.${NC}"
+
 # Project-level example
 echo ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -232,6 +272,7 @@ echo "Next steps:"
 echo "  1. Install missing tools (if any)"
 echo "  2. Test by making a code change (postToolUse hook)"
 echo "  3. Test by stopping a session (stop hook)"
+echo "  4. (Optional) Configure IDE hooks via Command Palette"
 echo ""
 echo "To run the hooks manually:"
 echo "  postToolUse: echo '{\"hook_event_name\":\"postToolUse\",\"cwd\":\".\",\"tool_name\":\"fs_write\",\"tool_input\":{}}' | $HOOK_SCRIPT"

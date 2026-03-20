@@ -21,6 +21,8 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+SHARED_DIR="$REPO_DIR/shared"
 HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
 TASK_HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_task_hook.sh"
 
@@ -46,6 +48,17 @@ echo -e "${CYAN}║        Post-Code Hook Installer for Claude Code           �
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
+# Validate shared libraries exist
+if [ ! -f "$SHARED_DIR/post_code_checks.sh" ]; then
+    log_error "Shared library not found at $SHARED_DIR/post_code_checks.sh"
+    exit 1
+fi
+
+if [ ! -f "$SHARED_DIR/post_task_checks.sh" ]; then
+    log_error "Shared library not found at $SHARED_DIR/post_task_checks.sh"
+    exit 1
+fi
+
 if [ ! -f "$HOOK_SCRIPT" ]; then
     log_error "Hook script not found at $HOOK_SCRIPT"
     exit 1
@@ -59,6 +72,7 @@ fi
 # Make hook scripts executable
 chmod +x "$HOOK_SCRIPT"
 chmod +x "$TASK_HOOK_SCRIPT"
+log_success "Hook scripts are executable"
 
 # Check for required tools and provide installation instructions
 echo -e "${BLUE}Checking for required tools...${NC}\n"
