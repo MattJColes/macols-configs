@@ -23,6 +23,13 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     exit 1
 fi
 
+# Ensure Node.js is in PATH (sources NVM/fnm if needed)
+SHARED_DIR_SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=ensure_node.sh
+if [ -f "$SHARED_DIR_SELF/ensure_node.sh" ]; then
+    source "$SHARED_DIR_SELF/ensure_node.sh"
+fi
+
 # Defaults
 MAX_TEST_TIME="${MAX_TEST_TIME:-300}"
 

@@ -28,6 +28,10 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SHARED_DIR="$REPO_DIR/shared"
+
+# Ensure Node.js is in PATH (sources NVM/fnm if needed)
+# shellcheck source=../shared/ensure_node.sh
+source "$SHARED_DIR/ensure_node.sh"
 HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
 TASK_HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_task_hook.sh"
 HOOK_PLUGIN="$SCRIPT_DIR/hooks/post_code_hook_plugin.mjs"

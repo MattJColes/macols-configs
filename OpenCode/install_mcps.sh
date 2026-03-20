@@ -8,6 +8,13 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SHARED_DIR="$(cd "$SCRIPT_DIR/.." && pwd)/shared"
+
+# Ensure Node.js is in PATH (sources NVM/fnm if needed)
+# shellcheck source=../shared/ensure_node.sh
+source "$SHARED_DIR/ensure_node.sh"
+
 echo -e "${GREEN}Installing Model Context Protocol (MCP) Servers for OpenCode...${NC}\n"
 
 # Check for required dependencies
