@@ -52,10 +52,24 @@ brew install podman
 
 # Install NVM
 echo "Installing NVM..."
+# Ensure .zshrc exists so the NVM installer can append to it
+touch "$HOME/.zshrc"
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 # shellcheck source=/dev/null
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Ensure NVM is loaded in .zshrc (the installer may only update .bashrc)
+if ! grep -q 'NVM_DIR' "$HOME/.zshrc" 2>/dev/null; then
+    cat >> "$HOME/.zshrc" << 'NVMEOF'
+
+# NVM (Node Version Manager)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+NVMEOF
+    echo "Added NVM configuration to ~/.zshrc"
+fi
 
 # Install Node.js 22 via NVM
 echo "Installing Node.js 22 via NVM..."

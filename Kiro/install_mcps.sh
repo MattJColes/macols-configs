@@ -36,6 +36,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SHARED_DIR="$(cd "$SCRIPT_DIR/.." && pwd)/shared"
+
+# Ensure Node.js is in PATH (sources NVM/fnm if needed)
+# shellcheck source=../shared/ensure_node.sh
+source "$SHARED_DIR/ensure_node.sh"
+
 echo -e "${GREEN}Installing MCP Server Packages for Kiro CLI...${NC}\n"
 echo -e "${BLUE}Agents use per-agent MCP configs. This script installs the npm/Python${NC}"
 echo -e "${BLUE}packages so they're available when agents launch MCP servers via npx/uvx.${NC}\n"
