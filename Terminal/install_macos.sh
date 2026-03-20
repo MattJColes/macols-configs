@@ -18,6 +18,10 @@ echo "Xcode Command Line Tools found"
 if ! command -v brew &> /dev/null; then
     echo "Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # Add Homebrew to PATH for this session and persist in .zprofile
+    echo >> "$HOME/.zprofile"
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv zsh)"' >> "$HOME/.zprofile"
+    eval "$(/opt/homebrew/bin/brew shellenv zsh)"
 else
     echo "Homebrew already installed"
 fi
