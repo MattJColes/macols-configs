@@ -48,22 +48,5 @@
       "command": "dart",
       "args": ["mcp-server"]
     }
-  },
-  "optionalMcpServers": {
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": ""
-      }
-    },
-    "gitlab": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-gitlab"],
-      "env": {
-        "GITLAB_PERSONAL_ACCESS_TOKEN": "",
-        "GITLAB_API_URL": "https://gitlab.com"
-      }
-    }
   }
 }

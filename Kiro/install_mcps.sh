@@ -116,29 +116,6 @@ npm install -g @modelcontextprotocol/server-aws-kb-retrieval
 echo -e "${BLUE}Installing @upstash/context7-mcp...${NC}"
 npm install -g @upstash/context7-mcp
 
-# Optional MCPs
-INSTALL_GITHUB=false
-INSTALL_GITLAB=false
-
-# Auto-skip interactive prompts if stdin is not a terminal
-if [ -t 0 ]; then
-    read -p "$(echo -e "${YELLOW}Install GitHub MCP? [y/N]: ${NC}")" -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        INSTALL_GITHUB=true
-        echo -e "${BLUE}Installing @modelcontextprotocol/server-github...${NC}"
-        npm install -g @modelcontextprotocol/server-github
-    fi
-
-    read -p "$(echo -e "${YELLOW}Install GitLab MCP? [y/N]: ${NC}")" -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        INSTALL_GITLAB=true
-        echo -e "${BLUE}Installing @modelcontextprotocol/server-gitlab...${NC}"
-        npm install -g @modelcontextprotocol/server-gitlab
-    fi
-fi
-
 echo -e "${BLUE}DynamoDB MCP (Python via uvx) - no pre-install needed${NC}"
 
 # Check for Dart SDK (required for dart MCP server, built into Dart 3.9+)
@@ -211,12 +188,6 @@ echo "  6. aws-kb              - AWS Knowledge Base retrieval"
 echo "  7. context7            - Real-time library documentation"
 echo "  8. dynamodb            - DynamoDB operations (via uvx, on-demand)"
 echo "  9. dart                - Dart/Flutter MCP server (project context, tools)"
-if [ "$INSTALL_GITHUB" = true ]; then
-    echo " 10. github              - GitHub repository operations"
-fi
-if [ "$INSTALL_GITLAB" = true ]; then
-    echo " 11. gitlab              - GitLab repository operations"
-fi
 
 echo -e "\n${YELLOW}Architecture:${NC}"
 echo "  Each agent defines its own mcpServers in its JSON config."

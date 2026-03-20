@@ -129,70 +129,20 @@ install_mcps() {
         printf "  ${YELLOW}⚠${NC} dart (Dart SDK not found - install Dart 3.9+ for Flutter/Dart MCP)\n"
     fi
 
-    # Optional MCPs
-    INSTALL_GITHUB=false
-    INSTALL_GITLAB=false
-
-    printf "\n"
-    printf "${YELLOW}Install GitHub MCP? [y/N]: ${NC}"
-    read -r REPLY
-    case "$REPLY" in
-        [Yy]*)
-            INSTALL_GITHUB=true
-            npm install -g @modelcontextprotocol/server-github 2>/dev/null && printf "  ${GREEN}✓${NC} github\n" || printf "  ${YELLOW}⚠${NC} github\n"
-            ;;
-    esac
-
-    printf "${YELLOW}Install GitLab MCP? [y/N]: ${NC}"
-    read -r REPLY
-    case "$REPLY" in
-        [Yy]*)
-            INSTALL_GITLAB=true
-            npm install -g @modelcontextprotocol/server-gitlab 2>/dev/null && printf "  ${GREEN}✓${NC} gitlab\n" || printf "  ${YELLOW}⚠${NC} gitlab\n"
-            ;;
-    esac
-
     printf "\n${GREEN}✓ MCP servers installed${NC}\n"
 
     # Configure MCPs
     printf "\n${BLUE}Configuring MCP servers...${NC}\n"
     mkdir -p "$CLAUDE_DIR"
 
-    # Build config from mcp-config.json, extracting core servers
-    # and optionally adding GitHub/GitLab
     CONFIG_FILE="$CLAUDE_DIR/settings.json"
     SRC_CONFIG="$SCRIPT_DIR/mcp-config.json"
 
     if command -v node >/dev/null 2>&1; then
-        # Use node to properly merge JSON config
-        GITHUB_TOKEN=""
-        GITLAB_TOKEN=""
-        GITLAB_API_URL="https://gitlab.com"
-
-        if [ "$INSTALL_GITHUB" = true ]; then
-            printf "${YELLOW}Enter GitHub Personal Access Token (or press Enter to skip): ${NC}"
-            read -r GITHUB_TOKEN
-        fi
-
-        if [ "$INSTALL_GITLAB" = true ]; then
-            printf "${YELLOW}Enter GitLab Personal Access Token (or press Enter to skip): ${NC}"
-            read -r GITLAB_TOKEN
-            printf "${YELLOW}Enter GitLab API URL [https://gitlab.com]: ${NC}"
-            read -r GITLAB_API_URL_INPUT
-            if [ -n "$GITLAB_API_URL_INPUT" ]; then
-                GITLAB_API_URL="$GITLAB_API_URL_INPUT"
-            fi
-        fi
-
         # shellcheck disable=SC2034,SC2016
         MCP_SRC_CONFIG="$SRC_CONFIG" \
         MCP_CONFIG_FILE="$CONFIG_FILE" \
         MCP_HOME="$HOME" \
-        MCP_INSTALL_GITHUB="$INSTALL_GITHUB" \
-        MCP_INSTALL_GITLAB="$INSTALL_GITLAB" \
-        MCP_GITHUB_TOKEN="$GITHUB_TOKEN" \
-        MCP_GITLAB_TOKEN="$GITLAB_TOKEN" \
-        MCP_GITLAB_API_URL="$GITLAB_API_URL" \
         node -e '
 const fs = require("fs");
 const env = process.env;
@@ -203,23 +153,6 @@ const config = { mcpServers: { ...src.mcpServers } };
 const configStr = JSON.stringify(config);
 const expanded = configStr.replace(/\$HOME/g, env.MCP_HOME);
 const result = JSON.parse(expanded);
-
-// Add optional MCPs
-if (env.MCP_INSTALL_GITHUB === "true") {
-    result.mcpServers.github = {
-        ...src.optionalMcpServers.github,
-        env: { GITHUB_PERSONAL_ACCESS_TOKEN: env.MCP_GITHUB_TOKEN }
-    };
-}
-if (env.MCP_INSTALL_GITLAB === "true") {
-    result.mcpServers.gitlab = {
-        ...src.optionalMcpServers.gitlab,
-        env: {
-            GITLAB_PERSONAL_ACCESS_TOKEN: env.MCP_GITLAB_TOKEN,
-            GITLAB_API_URL: env.MCP_GITLAB_API_URL
-        }
-    };
-}
 
 // Merge with existing settings if present
 let existing = {};
