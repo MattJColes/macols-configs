@@ -5,6 +5,15 @@ set -e
 echo "=== macOS Development Environment Setup ==="
 echo ""
 
+# Install Xcode Command Line Tools (required by Homebrew, Flutter, etc.)
+if ! xcode-select -p &> /dev/null; then
+    echo "Installing Xcode Command Line Tools..."
+    xcode-select --install
+    echo "Please complete the Xcode CLT installation prompt, then re-run this script."
+    exit 1
+fi
+echo "Xcode Command Line Tools found"
+
 # Install Homebrew
 if ! command -v brew &> /dev/null; then
     echo "Installing Homebrew..."
@@ -17,9 +26,9 @@ fi
 echo "Updating Homebrew..."
 brew update
 
-# Install Python 3.12
-echo "Installing Python 3.12..."
-brew install python@3.12
+# Install Python 3.13
+echo "Installing Python 3.13..."
+brew install python@3.13
 
 # Install htop
 echo "Installing htop..."
@@ -62,17 +71,21 @@ npm install -g aws-cdk
 echo "Installing uv..."
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install Kiro CLI
-echo "Installing Kiro CLI..."
-brew install --cask kiro
+# Install Flutter SDK
+echo "Installing Flutter SDK..."
+brew install --cask flutter
+
+# Install Python dev tools
+echo "Installing Python dev tools..."
+uv tool install pytest
+uv tool install ruff
+uv tool install mypy
+uv tool install bandit
+uv tool install pip-audit
 
 # Install Claude Code
 echo "Installing Claude Code..."
-npm install -g @anthropic-ai/claude-code
-
-# Install Ollama
-echo "Installing Ollama..."
-brew install ollama
+curl -fsSL https://claude.ai/install.sh | bash
 
 # Install LazyVim dependencies
 echo "Installing LazyVim dependencies..."
@@ -124,36 +137,6 @@ echo ""
 echo "Configuring AWS CLI..."
 aws configure
 
-# Start Ollama service
-echo ""
-echo "Starting Ollama service..."
-brew services start ollama
-
-# Wait for Ollama to be ready
-echo "Waiting for Ollama service to start..."
-sleep 3
-
-# Ollama model configuration
-echo ""
-echo "=== Ollama Model Setup ==="
-read -p "Pull an Ollama model now? [y/N]: " -r REPLY
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo ""
-    echo "Popular models:"
-    echo "  - qwen3:30b     (30B - powerful, recommended)"
-    echo "  - qwen2.5-coder (7B - coding focused)"
-    echo "  - deepseek-r1   (7B - reasoning focused)"
-    echo "  - llama3.2      (3B - fast, lightweight)"
-    echo "  - llama3.1      (8B - balanced)"
-    echo ""
-    read -rp "Enter model name [qwen3:30b]: " ollama_model
-    ollama_model=${ollama_model:-qwen3:30b}
-
-    echo "Pulling $ollama_model..."
-    ollama pull "$ollama_model"
-    echo "Model $ollama_model installed successfully!"
-fi
-
 echo ""
 echo "=== Installation Complete ==="
 echo ""
@@ -161,11 +144,11 @@ echo "Next steps:"
 echo "1. Start a new terminal session to load updated PATH"
 echo "2. Run 'nvim' to complete LazyVim setup"
 echo "3. Initialize Podman: podman machine init && podman machine start"
-echo "4. Pull additional models: ollama pull <model-name>"
-echo "5. Verify installations:"
+echo "4. Verify installations:"
 echo "   - python3 --version"
 echo "   - node --version"
 echo "   - aws --version"
 echo "   - claude --version"
-echo "   - q --version"
-echo "   - ollama --version"
+echo "   - flutter --version"
+echo "   - dart --version"
+echo "   - ruff --version"
