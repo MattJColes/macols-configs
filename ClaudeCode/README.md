@@ -4,7 +4,7 @@ This directory contains specialized AI agents, skills, hooks, and Model Context 
 
 ## Quick Install
 
-> **Note:** Each installer performs a clean deploy — it removes and replaces its target directory/config. Running `install_agents.sh` clears `~/.claude/agents/` and `~/.claude/skills/`, `install_skills.sh` clears `~/.claude/skills/`, and `install_hooks.sh` replaces the `hooks` key in `~/.claude/settings.json`.
+> **Note:** Each installer performs a clean deploy — it removes and replaces its target directory/config. Running `install_agents.sh` clears `~/.claude/agents/` and `~/.claude/skills/`, `install_skills.sh` clears `~/.claude/skills/`, `install_hooks.sh` replaces the `hooks` key in `~/.claude/settings.json`, and `install_mcps.sh` re-registers each server in `mcp-config.json` at user scope in `~/.claude.json` (removes any existing entry with the same name first).
 
 ```bash
 # Install agents (markdown-based)
@@ -18,6 +18,9 @@ This directory contains specialized AI agents, skills, hooks, and Model Context 
 
 # Install hooks
 ./install_hooks.sh
+
+# Install MCP servers
+./install_mcps.sh
 ```
 
 ## Directory Structure
@@ -73,7 +76,7 @@ Both provide the same 16 specializations - choose the format that fits your work
 | `typescript-test-engineer` | Jest, Playwright, React Testing Library |
 | `ui-ux-designer` | Wireframes, design systems, accessibility |
 
-## 8 MCP Servers
+## MCP Servers
 
 | MCP | Purpose |
 |-----|---------|
@@ -84,12 +87,11 @@ Both provide the same 16 specializations - choose the format that fits your work
 | `memory` | Persistent knowledge graph across sessions |
 | `aws-kb` | AWS Knowledge Base retrieval |
 | `context7` | Real-time library documentation |
-| `dynamodb` | DynamoDB operations |
 | `dart` | Dart/Flutter project context and tools |
 
 ## Configuration
 
-MCP configuration: `~/.claude/config.json`
+MCP configuration: `~/.claude.json` (top-level `mcpServers` key, written by `install_mcps.sh`)
 Agent storage: `~/.claude/agents/`
 Skill storage: `~/.claude/skills/`
 Knowledge graph: `~/.claude/memory`

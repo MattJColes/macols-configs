@@ -35,15 +35,6 @@
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
     },
-    "dynamodb": {
-      "command": "uvx",
-      "args": ["awslabs.dynamodb-mcp-server@latest"],
-      "env": {
-        "AWS_REGION": "ap-southeast-2",
-        "AWS_PROFILE": "default",
-        "DDB-MCP-READONLY": "false"
-      }
-    },
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]

@@ -36,6 +36,7 @@ cd Terminal
 ```bash
 cd ClaudeCode
 ./install_agents.sh             # Installs agents and skills
+./install_mcps.sh               # MCP servers (filesystem, memory, playwright, etc.)
 ./install_hooks.sh              # Optional: test & security hooks
 ```
 
