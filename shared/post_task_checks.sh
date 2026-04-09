@@ -66,6 +66,12 @@ detect_project_type() {
     if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -f "setup.py" ]; then
         has_python=true
     fi
+    # Also detect monorepo sub-projects with their own pyproject.toml
+    if [ "$has_python" = "false" ]; then
+        if find . -maxdepth 3 -name "pyproject.toml" -not -path "*/.venv/*" -not -path "*/node_modules/*" 2>/dev/null | grep -q .; then
+            has_python=true
+        fi
+    fi
 
     if [ -f "package.json" ]; then
         has_node=true
@@ -82,23 +88,69 @@ detect_project_type() {
     echo "${has_python}:${has_node}:${has_cdk}:${has_flutter}"
 }
 
-# Find the project's Python/pytest from a virtualenv if present
-find_python_pytest() {
+# Find a tool binary from a virtualenv, walking up to repo root.
+# Usage: find_venv_bin <tool_name>  e.g. find_venv_bin pytest
+find_venv_bin() {
+    local tool="$1"
+    # Check cwd first
     for venv_dir in .venv venv env; do
-        if [ -f "$venv_dir/bin/pytest" ]; then
-            echo "$venv_dir/bin/pytest"
+        if [ -f "$venv_dir/bin/$tool" ]; then
+            echo "$(pwd)/$venv_dir/bin/$tool"
             return 0
         fi
     done
-    if command -v pytest &> /dev/null; then
-        echo "pytest"
+    # Walk up to repo root looking for a shared venv
+    local search_dir="$PWD"
+    while [ "$search_dir" != "/" ]; do
+        for venv_dir in .venv venv env; do
+            if [ -f "$search_dir/$venv_dir/bin/$tool" ]; then
+                echo "$search_dir/$venv_dir/bin/$tool"
+                return 0
+            fi
+        done
+        search_dir="$(dirname "$search_dir")"
+    done
+    # Fall back to PATH
+    if command -v "$tool" &> /dev/null; then
+        echo "$tool"
         return 0
     fi
     echo ""
 }
 
-# Run Python tests
+# Convenience alias for backward compat
+find_python_pytest() {
+    find_venv_bin pytest
+}
+
+# Discover Python sub-projects. Returns directories containing pyproject.toml
+# that also have a test/ or tests/ directory (i.e. testable sub-projects).
+# Falls back to "." if no sub-projects found but root has test files.
+find_python_projects() {
+    local -a projects=()
+
+    # Find sub-projects by pyproject.toml that have test directories
+    while IFS= read -r toml; do
+        local dir
+        dir="$(dirname "$toml")"
+        # Skip root-level pyproject.toml (handled as fallback)
+        [ "$dir" = "." ] && continue
+        if [ -d "$dir/test" ] || [ -d "$dir/tests" ]; then
+            projects+=("$dir")
+        fi
+    done < <(find . -maxdepth 4 -name "pyproject.toml" -not -path "*/.venv/*" -not -path "*/node_modules/*" 2>/dev/null | sort)
+
+    # If no sub-projects found, fall back to root
+    if [ ${#projects[@]} -eq 0 ]; then
+        projects=(".")
+    fi
+
+    echo "${projects[@]}"
+}
+
+# Run Python tests — monorepo-aware: runs pytest from each sub-project directory
 run_python_tests() {
+    local root_dir="$PWD"
     local pytest_bin
     pytest_bin=$(find_python_pytest)
 
@@ -107,27 +159,46 @@ run_python_tests() {
         return 0
     fi
 
-    if [ ! -d "tests" ] && [ ! -d "test" ]; then
-        if ! find . -maxdepth 3 -name "test_*.py" -o -name "*_test.py" 2>/dev/null | grep -q .; then
-            add_warning "No Python test files found - skipping"
-            return 0
-        fi
-    fi
+    local -a projects
+    read -ra projects <<< "$(find_python_projects)"
 
-    local test_output
-    local pytest_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }$pytest_bin -v --tb=short"
-    if test_output=$(eval "$pytest_cmd" 2>&1); then
-        add_warning "Python tests: PASSED"
-    else
-        local exit_code=$?
-        if [ $exit_code -eq 124 ]; then
-            add_critical_issue "Python tests: TIMED OUT after ${MAX_TEST_TIME}s"
-        else
-            add_critical_issue "Python tests: FAILED"
-            local tail_output
-            tail_output=$(echo "$test_output" | tail -10)
-            add_critical_issue "Test output:\n$tail_output"
+    local any_failed=false
+
+    for project_dir in "${projects[@]}"; do
+        local label="$project_dir"
+        [ "$project_dir" = "." ] && label="root"
+
+        cd "$root_dir/$project_dir" || continue
+
+        # Check test directory exists
+        if [ ! -d "tests" ] && [ ! -d "test" ]; then
+            if ! find . -maxdepth 3 -name "test_*.py" -o -name "*_test.py" 2>/dev/null | grep -q .; then
+                cd "$root_dir"
+                continue
+            fi
         fi
+
+        local test_output
+        local pytest_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }$pytest_bin -v --tb=short"
+        if test_output=$(eval "$pytest_cmd" 2>&1); then
+            add_warning "Python tests ($label): PASSED"
+        else
+            local exit_code=$?
+            if [ $exit_code -eq 124 ]; then
+                add_critical_issue "Python tests ($label): TIMED OUT after ${MAX_TEST_TIME}s"
+            else
+                add_critical_issue "Python tests ($label): FAILED"
+                local tail_output
+                tail_output=$(echo "$test_output" | tail -10)
+                add_critical_issue "Test output:\n$tail_output"
+            fi
+            any_failed=true
+        fi
+
+        cd "$root_dir"
+    done
+
+    if [ "$any_failed" = true ]; then
         return 1
     fi
 }
@@ -238,7 +309,9 @@ run_dart_analyze() {
 
 # Run bandit security scan
 run_bandit_scan() {
-    if ! command -v bandit &> /dev/null; then
+    local bandit_bin
+    bandit_bin=$(find_venv_bin bandit)
+    if [ -z "$bandit_bin" ]; then
         return 0
     fi
 
@@ -258,7 +331,7 @@ run_bandit_scan() {
     fi
 
     local bandit_output
-    bandit_output=$(bandit -r "${src_dirs[@]}" -f txt -ll 2>&1) || true
+    bandit_output=$("$bandit_bin" -r "${src_dirs[@]}" -f txt -ll 2>&1) || true
 
     if echo "$bandit_output" | grep -qE "Severity: (High|Medium)"; then
         local high_count
@@ -297,62 +370,98 @@ run_pip_audit() {
     fi
 }
 
-# Run ruff linter
+# Run ruff linter — monorepo-aware
 run_ruff_check() {
-    if ! command -v ruff &> /dev/null; then
+    local ruff_bin
+    ruff_bin=$(find_venv_bin ruff)
+    if [ -z "$ruff_bin" ]; then
         return 0
     fi
 
-    local ruff_output
-    if ruff_output=$(ruff check . 2>&1); then
-        add_warning "Ruff: PASSED"
-    else
-        local error_count
-        error_count=$(echo "$ruff_output" | grep -cE "^.+:[0-9]+:[0-9]+:" || true)
-        if [ "$error_count" -gt 0 ]; then
-            add_critical_issue "Ruff: $error_count linting issues"
-            local tail_output
-            tail_output=$(echo "$ruff_output" | head -10)
-            add_critical_issue "Ruff output:\n$tail_output"
-        fi
-    fi
-}
+    local root_dir="$PWD"
+    local -a projects
+    read -ra projects <<< "$(find_python_projects)"
 
-# Run mypy type checker
-run_mypy_check() {
-    if ! command -v mypy &> /dev/null; then
-        return 0
-    fi
+    for project_dir in "${projects[@]}"; do
+        local label="$project_dir"
+        [ "$project_dir" = "." ] && label="root"
 
-    local target=""
-    for dir in src app lib lambda functions; do
-        if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            target="$target $dir"
-        fi
-    done
-    if [ -z "$target" ]; then
-        return 0
-    fi
+        cd "$root_dir/$project_dir" || continue
 
-    local mypy_output
-    local mypy_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }mypy --no-error-summary $target"
-    if mypy_output=$(eval "$mypy_cmd" 2>&1); then
-        add_warning "Mypy: PASSED"
-    else
-        local exit_code=$?
-        if [ $exit_code -eq 124 ]; then
-            add_critical_issue "Mypy: TIMED OUT after ${MAX_TEST_TIME}s"
+        local ruff_output
+        if ruff_output=$("$ruff_bin" check . 2>&1); then
+            add_warning "Ruff ($label): PASSED"
         else
             local error_count
-            error_count=$(echo "$mypy_output" | grep -c ": error:" || true)
+            error_count=$(echo "$ruff_output" | grep -cE "^.+:[0-9]+:[0-9]+:" || true)
             if [ "$error_count" -gt 0 ]; then
-                add_critical_issue "Mypy: $error_count type errors"
+                add_critical_issue "Ruff ($label): $error_count linting issues"
                 local tail_output
-                tail_output=$(echo "$mypy_output" | grep ": error:" | head -10)
-                add_critical_issue "Mypy output:\n$tail_output"
+                tail_output=$(echo "$ruff_output" | head -10)
+                add_critical_issue "Ruff output:\n$tail_output"
             fi
         fi
+
+        cd "$root_dir"
+    done
+}
+
+# Run mypy type checker — monorepo-aware, uses each sub-project's config
+run_mypy_check() {
+    local mypy_bin
+    mypy_bin=$(find_venv_bin mypy)
+    if [ -z "$mypy_bin" ]; then
+        return 0
     fi
+
+    local root_dir="$PWD"
+    local -a projects
+    read -ra projects <<< "$(find_python_projects)"
+
+    for project_dir in "${projects[@]}"; do
+        local label="$project_dir"
+        [ "$project_dir" = "." ] && label="root"
+
+        cd "$root_dir/$project_dir" || continue
+
+        # Find target directories for mypy
+        local target=""
+        if [ -f "pyproject.toml" ] && grep -q '\[tool\.mypy\]' pyproject.toml 2>/dev/null; then
+            # Use targets from bandit config or scan for source dirs
+            for dir in app src lib lambda functions stacks config custom_constructs; do
+                if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
+                    target="$target $dir"
+                fi
+            done
+        fi
+
+        if [ -z "$target" ]; then
+            cd "$root_dir"
+            continue
+        fi
+
+        local mypy_output
+        local mypy_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }$mypy_bin --no-error-summary $target"
+        if mypy_output=$(eval "$mypy_cmd" 2>&1); then
+            add_warning "Mypy ($label): PASSED"
+        else
+            local exit_code=$?
+            if [ $exit_code -eq 124 ]; then
+                add_critical_issue "Mypy ($label): TIMED OUT after ${MAX_TEST_TIME}s"
+            else
+                local error_count
+                error_count=$(echo "$mypy_output" | grep -c ": error:" || true)
+                if [ "$error_count" -gt 0 ]; then
+                    add_critical_issue "Mypy ($label): $error_count type errors"
+                    local tail_output
+                    tail_output=$(echo "$mypy_output" | grep ": error:" | head -10)
+                    add_critical_issue "Mypy output:\n$tail_output"
+                fi
+            fi
+        fi
+
+        cd "$root_dir"
+    done
 }
 
 # Run ESLint
