@@ -173,6 +173,12 @@ if (fs.existsSync(env.SETTINGS_FILE)) {
 }
 
 // Clean deploy - replace entire hooks key
+// PostToolUse runs a full test/lint/audit cycle, so:
+//   - timeout 600s (default 60s is too short for a real pytest+npm-audit run)
+//   - async: true + asyncRewake: true lets Claude keep working and
+//     wakes it only if the hook exits 2 (blocking failure)
+// Stop is synchronous on purpose — it should block Claude from ending
+// until tests pass — but still needs a generous timeout.
 existing.hooks = {
     PostToolUse: [
         {
@@ -180,7 +186,10 @@ existing.hooks = {
             hooks: [
                 {
                     type: "command",
-                    command: env.HOOK_SCRIPT
+                    command: env.HOOK_SCRIPT,
+                    timeout: 600,
+                    async: true,
+                    asyncRewake: true
                 }
             ]
         }
@@ -190,7 +199,8 @@ existing.hooks = {
             hooks: [
                 {
                     type: "command",
-                    command: env.TASK_HOOK_SCRIPT
+                    command: env.TASK_HOOK_SCRIPT,
+                    timeout: 900
                 }
             ]
         }
@@ -214,7 +224,10 @@ else
         "hooks": [
           {
             "type": "command",
-            "command": "$HOOK_SCRIPT"
+            "command": "$HOOK_SCRIPT",
+            "timeout": 600,
+            "async": true,
+            "asyncRewake": true
           }
         ]
       }
@@ -224,7 +237,8 @@ else
         "hooks": [
           {
             "type": "command",
-            "command": "$TASK_HOOK_SCRIPT"
+            "command": "$TASK_HOOK_SCRIPT",
+            "timeout": 900
           }
         ]
       }

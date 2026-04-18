@@ -23,37 +23,34 @@ const WRITE_TOOLS = new Set([
   "multi_edit",
 ]);
 
-export const PostCodeHookPlugin = async ({ $, directory }) => {
-  const hookScript = process.env.OPENCODE_HOOK_SCRIPT;
+// install_hooks.sh replaces __OPENCODE_HOOK_SCRIPT__ with the absolute path
+// to post_code_hook.sh at install time. Keep the placeholder here verbatim.
+const HOOK_SCRIPT = "__OPENCODE_HOOK_SCRIPT__";
 
-  if (!hookScript) {
-    console.error(
-      "[post-code-hook] OPENCODE_HOOK_SCRIPT not set. Run install_hooks.sh to configure."
-    );
+export const PostCodeHookPlugin = async ({ $, client, directory }) => {
+  const log = (msg) => {
+    if (client?.app?.log) client.app.log({ service: "post-code-hook", message: msg });
+    else console.error(`[post-code-hook] ${msg}`);
+  };
+
+  if (HOOK_SCRIPT === "__" + "OPENCODE_HOOK_SCRIPT__") {
+    log("hook script path not substituted — run install_hooks.sh");
     return {};
   }
 
   return {
     "tool.execute.after": async (input) => {
       const toolName = (input.tool || "").toLowerCase();
+      if (!WRITE_TOOLS.has(toolName)) return;
 
-      // Only trigger on file-modifying tools
-      if (!WRITE_TOOLS.has(toolName)) {
-        return;
-      }
-
-      // Debounce rapid consecutive writes
       const now = Date.now();
-      if (now - lastRunTime < DEBOUNCE_MS) {
-        return;
-      }
+      if (now - lastRunTime < DEBOUNCE_MS) return;
       lastRunTime = now;
 
       try {
-        await $`bash ${hookScript}`.cwd(directory);
+        await $`bash ${HOOK_SCRIPT}`.cwd(directory);
       } catch (err) {
-        // Log but don't block the session on hook failure
-        console.error(`[post-code-hook] Hook exited with issues: ${err.message}`);
+        log(`hook exited with issues: ${err.message}`);
       }
     },
   };

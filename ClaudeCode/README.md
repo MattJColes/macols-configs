@@ -37,10 +37,9 @@ ClaudeCode/
 │   ├── install_hooks.sh
 │   └── README.md
 ├── claude.md            # System-level Claude instructions
-├── mcp-config.json      # MCP server configuration
+├── mcp-config.json      # MCP server configuration (read by install_skills.sh)
 ├── install_agents.sh    # Agent installer
-├── install_skills.sh    # Skills installer
-├── install_mcps.sh      # MCP server installer
+├── install_skills.sh    # Skills + MCP server installer
 └── README.md
 ```
 
