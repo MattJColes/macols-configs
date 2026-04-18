@@ -123,37 +123,47 @@ install_mcps() {
 
     printf "\n${GREEN}✓ MCP servers installed${NC}\n"
 
-    # Configure MCPs
+    # Configure MCPs via the official `claude mcp` CLI (writes to ~/.claude.json
+    # at user scope). Writing to ~/.claude/settings.json does NOT register MCPs
+    # with Claude Code — that was the prior bug.
     printf "\n${BLUE}Configuring MCP servers...${NC}\n"
-    mkdir -p "$CLAUDE_DIR"
 
-    CONFIG_FILE="$CLAUDE_DIR/settings.json"
+    if ! command -v claude >/dev/null 2>&1; then
+        printf "${RED}claude CLI not found. Install Claude Code first, then re-run.${NC}\n"
+        return 1
+    fi
+
     SRC_CONFIG="$SCRIPT_DIR/mcp-config.json"
 
-    if command -v node >/dev/null 2>&1; then
-        MCP_SRC_CONFIG="$SRC_CONFIG" \
-        MCP_CONFIG_FILE="$CONFIG_FILE" \
-        MCP_HOME="$HOME" \
-        node -e '
+    # List server names from mcp-config.json
+    names=$(MCP_SRC_CONFIG="$SRC_CONFIG" node -e '
+const fs = require("fs");
+const src = JSON.parse(fs.readFileSync(process.env.MCP_SRC_CONFIG, "utf8"));
+process.stdout.write(Object.keys(src.mcpServers).join("\n"));
+')
+
+    for name in $names; do
+        # Extract the single-server JSON with $HOME expanded.
+        server_json=$(MCP_SRC_CONFIG="$SRC_CONFIG" MCP_NAME="$name" MCP_HOME="$HOME" node -e '
 const fs = require("fs");
 const env = process.env;
 const src = JSON.parse(fs.readFileSync(env.MCP_SRC_CONFIG, "utf8"));
-const configStr = JSON.stringify({ mcpServers: { ...src.mcpServers } });
-const result = JSON.parse(configStr.replace(/\$HOME/g, env.MCP_HOME));
+const entryStr = JSON.stringify(src.mcpServers[env.MCP_NAME]);
+process.stdout.write(entryStr.replace(/\$HOME/g, env.MCP_HOME));
+')
 
-let existing = {};
-if (fs.existsSync(env.MCP_CONFIG_FILE)) {
-    try { existing = JSON.parse(fs.readFileSync(env.MCP_CONFIG_FILE, "utf8")); } catch(e) {}
-}
-existing.mcpServers = result.mcpServers;
+        # Idempotent: remove any existing user-scope entry, then add fresh.
+        claude mcp remove "$name" -s user >/dev/null 2>&1 || true
+        if claude mcp add-json -s user "$name" "$server_json" >/dev/null 2>&1; then
+            printf "  ${GREEN}✓${NC} %s\n" "$name"
+        else
+            printf "  ${RED}✗${NC} %s (claude mcp add-json failed)\n" "$name"
+        fi
+    done
 
-fs.writeFileSync(env.MCP_CONFIG_FILE, JSON.stringify(existing, null, 2) + "\n");
-'
-        printf "${GREEN}✓ MCP configuration written: $CONFIG_FILE${NC}\n"
-    else
-        printf "${RED}Node.js required for config generation${NC}\n"
-        return 1
-    fi
+    printf "\n${GREEN}✓ MCP configuration written to ~/.claude.json (user scope)${NC}\n"
+    printf "\n${BLUE}Current MCP servers:${NC}\n"
+    claude mcp list 2>&1 || true
 }
 
 # Parse arguments
@@ -240,7 +250,7 @@ if [ "$INSTALL_MCPS" = true ]; then
     printf "${YELLOW}Next Steps:${NC}\n"
     echo "  • Restart Claude Code to load the new configuration"
     echo "  • Configure AWS credentials (~/.aws/credentials) for aws-kb and dynamodb MCPs"
-    echo "  • Configuration: ~/.claude/settings.json"
+    echo "  • Configuration: ~/.claude.json (user scope)"
     echo ""
 fi
 

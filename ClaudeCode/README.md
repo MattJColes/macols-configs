@@ -86,7 +86,7 @@ Both provide the same 16 specializations - choose the format that fits your work
 
 ## Configuration
 
-MCP configuration: `~/.claude/config.json`
+MCP configuration: `~/.claude.json` (user scope) or `.mcp.json` (project scope)
 Agent storage: `~/.claude/agents/`
 Skill storage: `~/.claude/skills/`
 Knowledge graph: `~/.claude/memory`
