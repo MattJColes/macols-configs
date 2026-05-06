@@ -172,6 +172,10 @@ if [ "$WRITE_GLOBAL_CONFIG" = true ]; then
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
+    },
+    "mempalace": {
+      "command": "uvx",
+      "args": ["--from", "mempalace", "mempalace-mcp"]
     }
   }
 }
@@ -195,6 +199,7 @@ echo "  6. aws-kb              - AWS Knowledge Base retrieval"
 echo "  7. context7            - Real-time library documentation"
 echo "  8. dynamodb            - DynamoDB operations (via uvx, on-demand)"
 echo "  9. dart                - Dart/Flutter MCP server (project context, tools)"
+echo " 10. mempalace          - Persistent memory palace (via uvx)"
 
 echo -e "\n${YELLOW}Architecture:${NC}"
 echo "  Each agent defines its own mcpServers in its JSON config."

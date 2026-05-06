@@ -175,6 +175,10 @@ cat > "$OPENCODE_MCP_CONFIG" << EOF
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
+    },
+    "mempalace": {
+      "command": "uvx",
+      "args": ["--from", "mempalace", "mempalace-mcp"]
     }
   }
 }
@@ -197,6 +201,7 @@ echo "  6. aws-kb              - AWS Knowledge Base retrieval"
 echo "  7. context7            - Real-time version-specific documentation"
 echo "  8. dynamodb            - DynamoDB operations (backend, data modeling)"
 echo "  9. dart                - Dart/Flutter MCP server (project context, tools)"
+echo " 10. mempalace          - Persistent memory palace (via uvx)"
 
 echo -e "\n${YELLOW}Configuration:${NC}"
 echo "  Location: $OPENCODE_MCP_CONFIG"

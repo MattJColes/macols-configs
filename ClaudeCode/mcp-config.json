@@ -38,6 +38,10 @@
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
+    },
+    "mempalace": {
+      "command": "uvx",
+      "args": ["--from", "mempalace", "mempalace-mcp"]
     }
   }
 }
