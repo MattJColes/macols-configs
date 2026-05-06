@@ -173,7 +173,7 @@ run_python_tests() {
         # Check test directory exists
         if [ ! -d "tests" ] && [ ! -d "test" ]; then
             if ! find . -maxdepth 3 -name "test_*.py" -o -name "*_test.py" 2>/dev/null | grep -q .; then
-                cd "$root_dir"
+                cd "$root_dir" || return
                 continue
             fi
         fi
@@ -195,7 +195,7 @@ run_python_tests() {
             any_failed=true
         fi
 
-        cd "$root_dir"
+        cd "$root_dir" || return
     done
 
     if [ "$any_failed" = true ]; then
@@ -402,7 +402,7 @@ run_ruff_check() {
             fi
         fi
 
-        cd "$root_dir"
+        cd "$root_dir" || return
     done
 }
 
@@ -436,7 +436,7 @@ run_mypy_check() {
         fi
 
         if [ -z "$target" ]; then
-            cd "$root_dir"
+            cd "$root_dir" || return
             continue
         fi
 
@@ -460,7 +460,7 @@ run_mypy_check() {
             fi
         fi
 
-        cd "$root_dir"
+        cd "$root_dir" || return
     done
 }
 
