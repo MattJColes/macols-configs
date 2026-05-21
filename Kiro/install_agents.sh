@@ -116,6 +116,9 @@ echo "  • test-coordinator        - Test strategy and coordination"
 echo "  • typescript-test-engineer - TypeScript testing with Jest/Playwright"
 echo "  • ui-ux-designer          - Design systems and user experience"
 
+echo -e "\n${YELLOW}Standalone skills (no paired agent):${NC}"
+echo "  • writing-style           - Matt's personal writing style for messages and emails"
+
 echo -e "\n${YELLOW}Directories:${NC}"
 echo "  Agents: $AGENTS_DIR"
 echo "  Skills: $SKILLS_DIR"
