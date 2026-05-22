@@ -114,6 +114,20 @@ npm install -g @anthropic-ai/claude-code
 echo "Installing Ollama..."
 curl -fsSL https://ollama.com/install.sh | sh
 
+# Configure tmux (enable mouse scroll wheel + PgUp in SSH sessions)
+echo "Configuring tmux..."
+if [ ! -f "$HOME/.tmux.conf" ] || ! grep -q '^set -g mouse on' "$HOME/.tmux.conf" 2>/dev/null; then
+    cat >> "$HOME/.tmux.conf" << 'TMUXEOF'
+
+# Enable mouse: scroll wheel scrolls the pane's scrollback
+set -g mouse on
+
+# Page Up jumps straight into copy mode and scrolls up
+bind -n Pageup copy-mode -u
+TMUXEOF
+    echo "Added tmux mouse configuration to ~/.tmux.conf"
+fi
+
 # Backup existing nvim config if it exists
 if [ -d "$HOME/.config/nvim" ]; then
     echo "Backing up existing nvim config..."
