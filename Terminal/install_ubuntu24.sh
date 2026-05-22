@@ -49,6 +49,24 @@ sudo apt-get install -y gh
 echo "Installing Podman..."
 sudo apt-get install -y podman
 
+# Install Docker (official repo)
+echo "Installing Docker..."
+sudo apt-get install -y ca-certificates
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Add current user to docker group (takes effect after re-login)
+echo "Adding $USER to docker group..."
+sudo usermod -aG docker "$USER"
+
+# Install QEMU + binfmt for multi-arch Docker builds (linux/arm64, etc.)
+echo "Installing QEMU and binfmt support..."
+sudo apt-get install -y qemu-user-static binfmt-support
+
 # Install NVM
 echo "Installing NVM..."
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
@@ -68,11 +86,11 @@ NVMEOF
     echo "Added NVM configuration to ~/.zshrc"
 fi
 
-# Install Node.js 22 via NVM
-echo "Installing Node.js 22 via NVM..."
-nvm install 22
-nvm use 22
-nvm alias default 22
+# Install Node.js 24 via NVM
+echo "Installing Node.js 24 via NVM..."
+nvm install 24
+nvm use 24
+nvm alias default 24
 
 # Install TypeScript globally
 echo "Installing TypeScript..."
@@ -199,11 +217,12 @@ echo ""
 echo "=== Installation Complete ==="
 echo ""
 echo "Next steps:"
-echo "1. Restart your terminal or run: source ~/.bashrc"
-echo "2. Run 'nvim' to complete LazyVim setup"
-echo "3. Start Ollama service if not already running: ollama serve"
-echo "4. Pull additional models: ollama pull <model-name>"
-echo "5. Verify installations:"
+echo "1. Log out and back in (or run 'newgrp docker') for docker group membership to take effect"
+echo "2. Restart your terminal or run: source ~/.bashrc"
+echo "3. Run 'nvim' to complete LazyVim setup"
+echo "4. Start Ollama service if not already running: ollama serve"
+echo "5. Pull additional models: ollama pull <model-name>"
+echo "6. Verify installations:"
 echo "   - python3 --version"
 echo "   - node --version"
 echo "   - aws --version"
