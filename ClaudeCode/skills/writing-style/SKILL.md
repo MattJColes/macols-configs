@@ -285,6 +285,17 @@ unsure if we have that considering everything we're working on / across
 
 ---
 
+## Writing Style Preferences
+
+- Do not use AI writing tropes: em dashes (—), excessive bolding, filler phrases, or over-structured formatting.
+- When not asked for dot points, write responses as concise paragraphs (1-2 max).
+- Only use bullet points or numbered lists when explicitly requested or when listing discrete items (e.g., action items, steps).
+- Keep language direct and natural. Match the user's tone and register.
+- Use proper title case for section headers (e.g., "Problem Statement", "Current State", "Rollout Approach"). Avoid overly casual lowercase headers or buzzy/catchy titles.
+- Documents should read like they were written by a principal engineer doing an investigation, not a pitch deck or marketing material.
+- First person is fine where it adds clarity or ownership (e.g., "My concern with this approach is...").
+- Keep implementation detail out of strategy docs. Reference separate technical docs for API mechanics, sequencing, and constraints.
+
 ## Anti-Patterns (Things Matt Does NOT Do)
 - Use "Hi" or "Hello" in Slack (always "Hey") — "Hi" acceptable in emails only
 - Use "Dear" — ever, in any medium
