@@ -30,9 +30,9 @@ fi
 echo "Updating Homebrew..."
 brew update
 
-# Install Python 3.13
-echo "Installing Python 3.13..."
-brew install python@3.13
+# Install Python 3.14
+echo "Installing Python 3.14..."
+brew install python@3.14
 
 # Install htop
 echo "Installing htop..."

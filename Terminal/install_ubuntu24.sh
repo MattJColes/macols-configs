@@ -20,10 +20,13 @@ sudo apt-get install -y curl wget
 echo "Installing htop..."
 sudo apt-get install -y htop
 
-# Install Python 3.12 and pip
-echo "Installing Python 3.12..."
-sudo apt-get install -y python3.12 python3.12-venv python3-pip
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+# Install Python 3.14 (via deadsnakes PPA — Ubuntu 24.04 ships with 3.12)
+echo "Installing Python 3.14..."
+sudo apt-get install -y software-properties-common
+sudo add-apt-repository -y ppa:deadsnakes/ppa
+sudo apt-get update -y
+sudo apt-get install -y python3.14 python3.14-venv python3.14-dev python3-pip
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.14 1
 
 # Install uv
 echo "Installing uv..."
