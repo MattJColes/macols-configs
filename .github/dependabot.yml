@@ -4,22 +4,84 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "github-actions"
+    commit-message:
+      prefix: "chore(actions)"
+      include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   # npm dependencies
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "npm"
-    ignore:
-      # Ignore major version updates for stable packages
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: "chore(npm)"
+      include: "scope"
+    versioning-strategy: "increase"
+    groups:
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+      npm-major:
+        update-types:
+          - "major"
+
+  # pip / Python dependencies (for any pyproject.toml or requirements.txt added later)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(pip)"
+      include: "scope"
+    groups:
+      pip-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+      pip-major:
+        update-types:
+          - "major"
+
+  # Docker (covers any Dockerfile added later)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(docker)"
+      include: "scope"
+
+  # Devcontainers (covers any .devcontainer/devcontainer.json added later)
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "devcontainers"
+    commit-message:
+      prefix: "chore(devcontainer)"
+      include: "scope"

@@ -20,10 +20,13 @@ sudo apt-get install -y curl wget
 echo "Installing htop..."
 sudo apt-get install -y htop
 
-# Install Python 3.12 and pip
-echo "Installing Python 3.12..."
-sudo apt-get install -y python3.12 python3.12-venv python3-pip
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+# Install Python 3.14 (via deadsnakes PPA — Ubuntu 24.04 ships with 3.12)
+echo "Installing Python 3.14..."
+sudo apt-get install -y software-properties-common
+sudo add-apt-repository -y ppa:deadsnakes/ppa
+sudo apt-get update -y
+sudo apt-get install -y python3.14 python3.14-venv python3.14-dev python3-pip
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.14 1
 
 # Install uv
 echo "Installing uv..."
@@ -72,9 +75,12 @@ sudo usermod -aG docker "$USER"
 echo "Installing QEMU and binfmt support..."
 sudo apt-get install -y qemu-user-static binfmt-support
 
-# Install NVM
+# Install NVM (fetch latest release tag)
 echo "Installing NVM..."
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+NVM_LATEST=$(curl -fsSL https://api.github.com/repos/nvm-sh/nvm/releases/latest | grep -oP '"tag_name": "\K[^"]+')
+NVM_LATEST="${NVM_LATEST:-v0.40.1}"
+echo "Using NVM ${NVM_LATEST}"
+curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_LATEST}/install.sh" | bash
 export NVM_DIR="$HOME/.nvm"
 # shellcheck source=/dev/null
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
@@ -91,19 +97,19 @@ NVMEOF
     echo "Added NVM configuration to ~/.zshrc"
 fi
 
-# Install Node.js 24 via NVM
-echo "Installing Node.js 24 via NVM..."
-nvm install 24
-nvm use 24
-nvm alias default 24
+# Install latest Node.js via NVM
+echo "Installing latest Node.js via NVM..."
+nvm install node
+nvm use node
+nvm alias default node
 
-# Install TypeScript globally
+# Install TypeScript globally (latest)
 echo "Installing TypeScript..."
-npm install -g typescript
+npm install -g typescript@latest
 
-# Install AWS CDK
+# Install AWS CDK (latest)
 echo "Installing AWS CDK..."
-npm install -g aws-cdk
+npm install -g aws-cdk@latest
 
 # Install LazyVim dependencies
 echo "Installing LazyVim dependencies..."
@@ -129,9 +135,9 @@ curl -L "https://desktop-release.q.us-east-1.amazonaws.com/latest/amazon-q.deb" 
 sudo dpkg -i /tmp/kiro.deb || sudo apt-get install -f -y
 rm /tmp/kiro.deb
 
-# Install Claude Code
+# Install Claude Code (latest)
 echo "Installing Claude Code..."
-npm install -g @anthropic-ai/claude-code
+npm install -g @anthropic-ai/claude-code@latest
 
 # Install Ollama
 echo "Installing Ollama..."

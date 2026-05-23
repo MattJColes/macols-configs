@@ -30,9 +30,9 @@ fi
 echo "Updating Homebrew..."
 brew update
 
-# Install Python 3.13
-echo "Installing Python 3.13..."
-brew install python@3.13
+# Install Python 3.14
+echo "Installing Python 3.14..."
+brew install python@3.14
 
 # Install htop
 echo "Installing htop..."
@@ -50,11 +50,14 @@ brew install gh
 echo "Installing Podman..."
 brew install podman
 
-# Install NVM
+# Install NVM (fetch latest release tag)
 echo "Installing NVM..."
 # Ensure .zshrc exists so the NVM installer can append to it
 touch "$HOME/.zshrc"
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+NVM_LATEST=$(curl -fsSL https://api.github.com/repos/nvm-sh/nvm/releases/latest | grep -oE '"tag_name": *"[^"]+"' | cut -d'"' -f4)
+NVM_LATEST="${NVM_LATEST:-v0.40.1}"
+echo "Using NVM ${NVM_LATEST}"
+curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_LATEST}/install.sh" | bash
 export NVM_DIR="$HOME/.nvm"
 # shellcheck source=/dev/null
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
@@ -71,19 +74,19 @@ NVMEOF
     echo "Added NVM configuration to ~/.zshrc"
 fi
 
-# Install Node.js 22 via NVM
-echo "Installing Node.js 22 via NVM..."
-nvm install 22
-nvm use 22
-nvm alias default 22
+# Install latest Node.js via NVM
+echo "Installing latest Node.js via NVM..."
+nvm install node
+nvm use node
+nvm alias default node
 
-# Install TypeScript globally
+# Install TypeScript globally (latest)
 echo "Installing TypeScript..."
-npm install -g typescript
+npm install -g typescript@latest
 
-# Install AWS CDK
+# Install AWS CDK (latest)
 echo "Installing AWS CDK..."
-npm install -g aws-cdk
+npm install -g aws-cdk@latest
 
 # Install uv
 echo "Installing uv..."
