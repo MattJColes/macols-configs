@@ -120,13 +120,13 @@ install_mcps() {
     # Install core MCP servers
     printf "\n${BLUE}Installing core MCP packages...${NC}\n"
 
-    npm install -g @modelcontextprotocol/server-filesystem 2>/dev/null && printf "  ${GREEN}✓${NC} filesystem\n" || printf "  ${YELLOW}⚠${NC} filesystem (may already be installed)\n"
-    npm install -g @modelcontextprotocol/server-sequential-thinking 2>/dev/null && printf "  ${GREEN}✓${NC} sequential-thinking\n" || printf "  ${YELLOW}⚠${NC} sequential-thinking\n"
-    npm install -g @modelcontextprotocol/server-puppeteer 2>/dev/null && printf "  ${GREEN}✓${NC} puppeteer\n" || printf "  ${YELLOW}⚠${NC} puppeteer\n"
-    npm install -g @playwright/mcp 2>/dev/null && printf "  ${GREEN}✓${NC} playwright\n" || printf "  ${YELLOW}⚠${NC} playwright\n"
-    npm install -g @modelcontextprotocol/server-memory 2>/dev/null && printf "  ${GREEN}✓${NC} memory\n" || printf "  ${YELLOW}⚠${NC} memory\n"
-    npm install -g @modelcontextprotocol/server-aws-kb-retrieval 2>/dev/null && printf "  ${GREEN}✓${NC} aws-kb-retrieval\n" || printf "  ${YELLOW}⚠${NC} aws-kb-retrieval\n"
-    npm install -g @upstash/context7-mcp 2>/dev/null && printf "  ${GREEN}✓${NC} context7\n" || printf "  ${YELLOW}⚠${NC} context7\n"
+    npm install -g @modelcontextprotocol/server-filesystem@latest 2>/dev/null && printf "  ${GREEN}✓${NC} filesystem\n" || printf "  ${YELLOW}⚠${NC} filesystem (may already be installed)\n"
+    npm install -g @modelcontextprotocol/server-sequential-thinking@latest 2>/dev/null && printf "  ${GREEN}✓${NC} sequential-thinking\n" || printf "  ${YELLOW}⚠${NC} sequential-thinking\n"
+    npm install -g @modelcontextprotocol/server-puppeteer@latest 2>/dev/null && printf "  ${GREEN}✓${NC} puppeteer\n" || printf "  ${YELLOW}⚠${NC} puppeteer\n"
+    npm install -g @playwright/mcp@latest 2>/dev/null && printf "  ${GREEN}✓${NC} playwright\n" || printf "  ${YELLOW}⚠${NC} playwright\n"
+    npm install -g @modelcontextprotocol/server-memory@latest 2>/dev/null && printf "  ${GREEN}✓${NC} memory\n" || printf "  ${YELLOW}⚠${NC} memory\n"
+    npm install -g @modelcontextprotocol/server-aws-kb-retrieval@latest 2>/dev/null && printf "  ${GREEN}✓${NC} aws-kb-retrieval\n" || printf "  ${YELLOW}⚠${NC} aws-kb-retrieval\n"
+    npm install -g @upstash/context7-mcp@latest 2>/dev/null && printf "  ${GREEN}✓${NC} context7\n" || printf "  ${YELLOW}⚠${NC} context7\n"
     printf "  ${GREEN}✓${NC} dynamodb (installed on-demand via uvx)\n"
 
     # Check for Dart SDK (required for dart MCP server, built into Dart 3.9+)
