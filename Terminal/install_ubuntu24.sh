@@ -20,6 +20,10 @@ sudo apt-get install -y curl wget
 echo "Installing htop..."
 sudo apt-get install -y htop
 
+# Install curl
+echo "Installing unzip..."
+sudo apt-get install -y unzip
+
 # Install Python 3.14 (via deadsnakes PPA — Ubuntu 24.04 ships with 3.12)
 echo "Installing Python 3.14..."
 sudo apt-get install -y software-properties-common
