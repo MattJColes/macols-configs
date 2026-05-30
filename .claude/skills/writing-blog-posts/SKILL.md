@@ -18,8 +18,8 @@ publishing process. Read it before drafting or editing any post.
   Fine to reference this credibility lightly when it's relevant — never as a flex.
 
 ## Voice (the key rules)
-- Middle-ground casual: conversational and a bit terse. Short fragments, em-dashes, the
-  occasional run-on. First person, present tense.
+- Middle-ground casual: conversational and a bit terse. Short fragments and the occasional
+  run-on. First person, present tense. Go easy on em-dashes (overusing them reads as AI).
 - KEEP standard capitalisation and apostrophes — capital `I`, `don't`, `it's`. It should
   read deliberate, not like typos. (Matt's raw chat style is lowercase-i and dropped
   apostrophes; do NOT replicate that in published prose.)
@@ -35,6 +35,10 @@ publishing process. Read it before drafting or editing any post.
 - Over-self-deprecation that undersells him, e.g. "half of it doesn't survive contact with
   reality / the half that does ends up here." A little humility is fine — but frame around
   judgement, trade-offs, and the patterns behind what works: what's worth sharing and *why*.
+- AI-detector tells — Matt runs his drafts past these. Don't pile up em-dashes; don't lean on
+  rule-of-three lists or "X, not Y" antithesis; skip cutesy understatement ("gently out of
+  hand", "far too many containers", "out-ranked by our cats"). Vary sentence length, use plain
+  words, and keep a couple of genuinely personal asides.
 
 ## The meta / ironic angle (Matt likes this — use it)
 - The blog is called "coles.codes", but these days he specs and prompts a lot of it up for
