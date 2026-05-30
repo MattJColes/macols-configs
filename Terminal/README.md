@@ -170,20 +170,20 @@ p10k configure
 ```
 
 **What it does:**
-1. Installs Monokai Pro color scheme for iTerm2
+1. Installs Ayu Dark color scheme for iTerm2
 2. Configures iTerm2 preferences
 
-**Monokai Pro Features:**
-- Professional dark theme
-- Carefully selected colors for readability
-- Syntax highlighting optimized for code
+**Ayu Dark Features:**
+- Clean, dark background (`#0A0E14`) with warm amber cursor
+- Carefully balanced syntax colors for readability
+- Consistent with Ghostty and LazyVim theme
 - Easy on the eyes for long sessions
 
 **Manual import (if script doesn't work):**
 1. Open iTerm2 → Preferences → Profiles → Colors
 2. Click "Color Presets" → Import
-3. Select `monokai_pro.itermcolors`
-4. Select "Monokai Pro" from presets
+3. Select `ayu_dark.itermcolors`
+4. Select "Ayu Dark" from presets
 
 ## 🛠️ Installed Tools Overview
 
@@ -229,11 +229,12 @@ p10k configure
 - **`install_macos.sh`** - Complete macOS development environment
 - **`install_ubuntu24.sh`** - Complete Ubuntu 24.04 development environment
 - **`install_ohmyzsh_p10k.sh`** - Oh My Zsh + Powerlevel10k theme
-- **`install_iterm_colors.sh`** - iTerm2 Monokai Pro color scheme
+- **`install_iterm_colors.sh`** - iTerm2 Ayu Dark color scheme
 
 ### Configuration Files
 
-- **`monokai_pro.itermcolors`** - Monokai Pro theme for iTerm2
+- **`monokai_pro.itermcolors`** - Monokai Pro theme for iTerm2 (legacy)
+- **`ayu_dark.itermcolors`** - Ayu Dark theme for iTerm2
 
 ## 🔧 Configuration Locations
 
