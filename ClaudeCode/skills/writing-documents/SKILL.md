@@ -1,12 +1,14 @@
 ---
-name: amazon-writing-style
-description: Amazon document writing style - narratives, PRFAQs, COEs with macols' direct voice and reasoning structure
+name: writing-documents
+description: Document and narrative writing - drafts and reviews documents, memos, PRFAQs, COEs applying macols' understanding of the Amazon writing style (direct voice, reasoning structure, data over weasel words)
 user-invocable: true
 ---
 
-# Amazon Writing Style
+# Writing Documents
 
-Use this skill when drafting or reviewing narratives, documents, memos, or any formal written content at Amazon. Blends Amazon writing culture with a direct, opinionated, Australian-inflected voice.
+Use this skill when drafting or reviewing any document, narrative, memo, or formal written content. It applies Matt's understanding of the Amazon writing style - a direct, opinionated, reasoning-first house style - whether you're writing at Amazon or anywhere else.
+
+This is a shared, practical take on the style, not official Amazon doctrine. Carry it with a direct, opinionated, Australian-inflected voice.
 
 ## Voice Principles
 
