@@ -76,6 +76,119 @@ Extract when at least one is clearly true — otherwise stay in the monolith:
 "We might need it later" is not a reason. Extraction is cheap if the seams are
 clean, so the winning move is clean seams now, extraction later.
 
+## Project Structure
+
+Structure follows the same rule as everything else: start as small as the
+problem allows, and **organise by business capability, not by technical layer**.
+The layout *is* the architecture — it's what makes the seams real.
+
+### The one rule: slice vertically, not horizontally
+Group code by what it does for the business (a feature/bounded context), so a
+change to "orders" touches one folder. Do **not** lead with top-level
+`models/`, `services/`, `controllers/`, `utils/` — that horizontal slicing
+forces every feature to smear across the whole tree, maximises coupling, and
+makes a module impossible to extract later.
+
+```
+❌ horizontal (layer-first)        ✅ vertical (capability-first)
+src/                                src/
+├── models/                         ├── orders/
+│   ├── order.py                    │   ├── interface.py
+│   └── invoice.py                  │   ├── models.py
+├── services/                       │   ├── service.py
+│   ├── order_service.py            │   └── repository.py
+│   └── invoice_service.py          ├── billing/
+├── repositories/                   │   ├── interface.py
+│   └── ...                         │   ├── models.py
+└── controllers/                    │   ├── service.py
+    └── ...                         │   └── repository.py
+                                    └── shared/
+"orders" lives in 4 folders.        "orders" lives in 1 folder.
+```
+
+### Stage 1 — start flat (a small service or single Lambda)
+Don't build the module tree for a tiny service. A handful of files is correct
+until it isn't. Grow into modules when one file starts doing two jobs.
+
+```
+src/
+├── handler.py        # entrypoint (Lambda handler / FastAPI app)
+├── models.py         # Pydantic at the edge, dataclasses within
+├── store.py          # DynamoDB access (the repository)
+└── config.py         # Pydantic BaseSettings
+tests/
+└── test_handler.py
+```
+
+### Stage 2 — modular monolith (organise by bounded context)
+When the flat layout gets crowded, promote each capability to a module. Each
+module mirrors a small internal layering and exposes exactly one public seam.
+
+```
+src/
+├── main.py                # composition root: wiring + app entrypoint, nothing else
+├── config.py              # Pydantic BaseSettings (one place for config)
+├── shared/                # ONLY genuinely cross-cutting code — keep it tiny
+│   ├── ids.py             # ULID helpers
+│   ├── events.py          # event envelope base model
+│   └── errors.py          # base exception types
+├── orders/                # ── bounded context ──
+│   ├── interface.py       # PUBLIC seam: the ONLY thing other modules import
+│   ├── models.py          # domain models
+│   ├── service.py         # business logic
+│   ├── repository.py      # data access for this context's table/items
+│   └── handlers.py        # API / event entrypoints for this context
+├── billing/               # ── bounded context ──
+│   ├── interface.py
+│   ├── models.py
+│   ├── service.py
+│   └── repository.py
+└── inventory/
+    └── ...
+tests/
+├── orders/
+│   └── test_service.py    # exercises orders through orders/interface.py
+└── billing/
+    └── test_service.py
+```
+
+Rules that keep this healthy:
+- **`interface.py` is the contract.** Other modules import `orders.interface`
+  and nothing else from `orders/`. No reaching into `orders.repository` or
+  `orders.models` internals. This is the seam you extract along later.
+- **Each context owns its data.** `orders/repository.py` is the only code that
+  touches the orders items. Cross-context reads go through the other module's
+  interface.
+- **`shared/` is for cross-cutting only.** IDs, the event envelope, base errors,
+  logging setup. The moment something feels domain-specific, it belongs in a
+  context, not in `shared/`. There is no `utils.py` dumping ground.
+- **`main.py` only wires.** Construct repositories/clients, inject them into
+  services, register routes. Keep logic out of it.
+
+### Stage 3 — extracted service
+A module's folder lifts out almost unchanged into its own repo/deployable,
+keeping the same internal layout. Its `interface.py` becomes the published
+contract (HTTP client / SQS publisher) that the monolith now calls remotely.
+Because callers only ever depended on the interface, their code doesn't change.
+
+```
+orders-service/            # was src/orders/, now its own deployable
+├── src/
+│   ├── interface.py       # now backed by handlers, exposed via API/events
+│   ├── models.py
+│   ├── service.py
+│   ├── repository.py
+│   └── handlers.py        # Lambda/FastAPI entrypoints
+├── infra/                 # this service's CDK stack (see cdk-expert)
+└── tests/
+```
+
+### Where infrastructure lives
+Keep IaC close to the code it deploys: an `infra/` directory in the service for
+a single deployable, or a top-level `infra/` for the monolith. One CDK stack
+per bounded context makes the eventual split painless. Hand the actual CDK to
+**cdk-expert-python / cdk-expert-ts**.
+
 ## DynamoDB: Default Data Store
 
 DynamoDB is the default for most workloads — predictable single-digit-ms
