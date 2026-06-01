@@ -4,12 +4,15 @@ This directory contains specialized AI agents, skills, hooks, and Model Context 
 
 ## Quick Install
 
-A single `install.sh` installs agents, skills, MCP servers and hooks. It
-performs a clean deploy — it removes and replaces its target directory/config:
-agents clear `~/.claude/agents/` (and copy `CLAUDE.md`), skills clear
-`~/.claude/skills/`, hooks replace the `hooks` key in `~/.claude/settings.json`,
-and MCPs re-register each server in `mcp-config.json` at user scope (removing
-any existing entry with the same name first).
+Agents and skills are authored together, one folder per persona under
+`personas/<name>/` (a `SKILL.md` and an optional `AGENT.md`). A single
+`install.sh` splits each persona to its target and also installs MCP servers
+and hooks. It performs a clean deploy — it removes and replaces its target
+directory/config: agents clear `~/.claude/agents/` (and copy `CLAUDE.md`),
+skills clear `~/.claude/skills/`, hooks replace the `hooks` key in
+`~/.claude/settings.json`, and MCPs re-register each server in
+`mcp-config.json` at user scope (removing any existing entry with the same
+name first).
 
 ```bash
 # Install everything (agents, skills, MCPs, hooks)
@@ -32,13 +35,15 @@ any existing entry with the same name first).
 
 ```
 ClaudeCode/
-├── agents/              # 16 agent definitions (Markdown)
-│   ├── architecture_expert.md
-│   ├── code_reviewer.md
-│   └── ...
-├── skills/              # 16 skill definitions (SKILL.md)
+├── personas/            # One folder per persona (23 skills, 18 with agents)
 │   ├── architecture-expert/
+│   │   ├── SKILL.md     #   concise, slash-command invocable
+│   │   └── AGENT.md     #   full long-form agent definition (optional)
 │   ├── code-reviewer/
+│   │   ├── SKILL.md
+│   │   └── AGENT.md
+│   ├── commit/
+│   │   └── SKILL.md     #   skill-only persona (no agent)
 │   └── ...
 ├── hooks/               # Testing & security automation
 │   ├── post_code_hook.sh
@@ -52,12 +57,15 @@ ClaudeCode/
 
 ## Agents vs Skills
 
-- **Agents** (`.md` files): Full agent definitions with system prompts, installed to `~/.claude/agents/`
-- **Skills** (`SKILL.md` files): Slash-command invocable workflows, installed to `~/.claude/skills/`
+Each persona is authored once under `personas/<name>/`, holding up to two files:
 
-Both provide the same 16 specializations - choose the format that fits your workflow.
+- **`SKILL.md`**: Concise, slash-command invocable workflow, installed to `~/.claude/skills/<name>/SKILL.md`. Every persona has one.
+- **`AGENT.md`**: Full long-form agent definition with system prompt, installed to `~/.claude/agents/<name>.md` (named after the agent's `name:` field). Present for 18 of the 23 personas.
 
-## 16 Specialized Agents/Skills
+`install.sh` reads each persona folder and routes the two files to their
+respective targets, so editing a persona keeps the skill and agent side by side.
+
+## Specialized Personas
 
 | Name | Description |
 |------|-------------|

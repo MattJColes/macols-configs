@@ -38,6 +38,8 @@ usage() {
 Usage: $0 [OPTIONS]
 
 Installs Claude Code agents, skills, MCP servers and hooks.
+Agents and skills are authored together under personas/<name>/
+(SKILL.md, optional AGENT.md) and installed to their respective targets.
 With no options, all four are installed.
 
 Options:
@@ -48,19 +50,19 @@ Options:
     --hooks-only      Install only post-code/post-task hooks
     -p, --project     Install agents & skills to the current project
                       (./.claude/agents and ./.claude/skills)
-    --list            List available skills and exit
+    --list            List available personas and exit
 EOF
 }
 
 list_skills() {
-    printf "${BLUE}Available Skills:${NC}\n\n"
-    for skill_dir in "$SCRIPT_DIR/skills"/*; do
-        [ -d "$skill_dir" ] || continue
-        skill_name=$(basename "$skill_dir")
-        if [ -f "$skill_dir/SKILL.md" ]; then
-            description=$(grep -m1 "^description:" "$skill_dir/SKILL.md" | sed 's/^description: //')
-            printf "  ${GREEN}%-25s${NC} %s\n" "$skill_name" "$description"
-        fi
+    printf "${BLUE}Available Personas:${NC}\n\n"
+    for persona_dir in "$SCRIPT_DIR/personas"/*; do
+        [ -d "$persona_dir" ] || continue
+        persona_name=$(basename "$persona_dir")
+        [ -f "$persona_dir/SKILL.md" ] || continue
+        description=$(grep -m1 "^description:" "$persona_dir/SKILL.md" | sed 's/^description: //')
+        [ -f "$persona_dir/AGENT.md" ] && marker="${CYAN}+agent${NC}" || marker="      "
+        printf "  ${GREEN}%-25s${NC} %b  %s\n" "$persona_name" "$marker" "$description"
     done
     echo ""
 }
@@ -68,8 +70,8 @@ list_skills() {
 install_agents() {
     target_dir="$1"
 
-    if [ ! -d "$SCRIPT_DIR/agents" ]; then
-        printf "${RED}Error: agents directory not found at %s${NC}\n" "$SCRIPT_DIR/agents"
+    if [ ! -d "$SCRIPT_DIR/personas" ]; then
+        printf "${RED}Error: personas directory not found at %s${NC}\n" "$SCRIPT_DIR/personas"
         return 1
     fi
 
@@ -81,12 +83,12 @@ install_agents() {
 
     printf "${BLUE}Installing agents to: %s${NC}\n" "$target_dir"
     count=0
-    for agent_file in "$SCRIPT_DIR/agents"/*.md; do
+    for agent_file in "$SCRIPT_DIR/personas"/*/AGENT.md; do
         [ -f "$agent_file" ] || continue
-        [ "$(basename "$agent_file")" = "README.md" ] && continue
-        # Name the installed file after the agent's `name:` field (hyphenated).
+        # Name the installed file after the agent's `name:` field (hyphenated),
+        # falling back to the persona directory name.
         name=$(sed -n 's/^name:[[:space:]]*//p' "$agent_file" | head -1)
-        [ -n "$name" ] || name=$(basename "$agent_file" .md)
+        [ -n "$name" ] || name=$(basename "$(dirname "$agent_file")")
         cp "$agent_file" "$target_dir/$name.md"
         printf "  ${GREEN}✓${NC} %s\n" "$name"
         count=$((count + 1))
@@ -111,11 +113,12 @@ install_skills() {
 
     printf "${BLUE}Installing skills to: %s${NC}\n" "$target_dir"
     count=0
-    for skill_dir in "$SCRIPT_DIR/skills"/*; do
-        [ -d "$skill_dir" ] || continue
-        skill_name=$(basename "$skill_dir")
+    for persona_dir in "$SCRIPT_DIR/personas"/*; do
+        [ -d "$persona_dir" ] || continue
+        [ -f "$persona_dir/SKILL.md" ] || continue
+        skill_name=$(basename "$persona_dir")
         mkdir -p "$target_dir/$skill_name"
-        cp "$skill_dir/SKILL.md" "$target_dir/$skill_name/SKILL.md"
+        cp "$persona_dir/SKILL.md" "$target_dir/$skill_name/SKILL.md"
         printf "  ${GREEN}✓${NC} %s\n" "$skill_name"
         count=$((count + 1))
     done
