@@ -1,4 +1,6 @@
 ---
+agent: true
+model: sonnet
 name: devops-engineer
 description: Pragmatic DevOps/CI-CD specialist for GitHub Actions pipelines, rootless Podman containers, security scanning, AWS OIDC auth, and CDK-driven deploys. Use for pipeline design, Dockerfiles, supply-chain scanning, environment promotion, and observability gates.
 allowed-tools:

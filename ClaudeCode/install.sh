@@ -33,6 +33,83 @@ MCP_CONFIG_FILE="$SCRIPT_DIR/mcp-config.json"
 HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
 TASK_HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_task_hook.sh"
 
+# Each persona is a single source file: personas/<name>/SKILL.md. The skill is
+# the canonical content. When its frontmatter sets `agent: true`, install.sh
+# also generates an agent from the SAME body, swapping the frontmatter
+# (allowed-tools -> tools, adding `model:`). This keeps one source of truth and
+# stops the skill and agent definitions from drifting apart.
+read -r -d '' PERSONA_GEN_JS <<'PERSONA_EOF' || true
+const fs = require("fs"), path = require("path");
+const mode = process.env.MODE, pdir = process.env.PERSONAS_DIR, tdir = process.env.TARGET_DIR;
+const DEFAULT_TOOLS = ["Read", "Write", "Edit", "Bash", "Grep", "Glob"];
+
+function parse(text) {
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (!m) return { data: {}, body: text };
+  const data = {}; let cur = null;
+  for (const line of m[1].split(/\r?\n/)) {
+    const li = line.match(/^\s*-\s+(.*)$/);
+    if (li && cur) { (data[cur] = data[cur] || []).push(li[1].trim()); continue; }
+    const kv = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    if (kv) {
+      const k = kv[1], v = kv[2];
+      if (v === "") { data[k] = []; cur = k; }
+      else { data[k] = v === "true" ? true : v === "false" ? false : v; cur = null; }
+    }
+  }
+  return { data, body: m[2] };
+}
+
+function emit(obj) {
+  let o = "---\n";
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined || v === null) continue;
+    if (Array.isArray(v)) { o += k + ":\n"; for (const i of v) o += "  - " + i + "\n"; }
+    else o += k + ": " + v + "\n";
+  }
+  return o + "---\n";
+}
+
+let count = 0;
+for (const name of fs.readdirSync(pdir).sort()) {
+  const src = path.join(pdir, name, "SKILL.md");
+  if (!fs.existsSync(src)) continue;
+  const { data, body } = parse(fs.readFileSync(src, "utf8"));
+  const pname = data.name || name;
+  if (mode === "skill") {
+    const fm = { name: pname, description: data.description };
+    if (data["allowed-tools"]) fm["allowed-tools"] = data["allowed-tools"];
+    if (data["user-invocable"] !== undefined) fm["user-invocable"] = data["user-invocable"];
+    const dest = path.join(tdir, name);
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, "SKILL.md"), emit(fm) + body);
+    console.log("  ✓ " + pname);
+    count++;
+  } else if (mode === "agent") {
+    if (data.agent !== true) continue;
+    const tools = (data["allowed-tools"] && data["allowed-tools"].length) ? data["allowed-tools"] : DEFAULT_TOOLS;
+    const fm = { name: pname, description: data.description, tools: tools.join(", "), model: data.model || "sonnet" };
+    fs.mkdirSync(tdir, { recursive: true });
+    fs.writeFileSync(path.join(tdir, pname + ".md"), emit(fm) + body);
+    console.log("  ✓ " + pname);
+    count++;
+  }
+}
+console.log("__COUNT__" + count);
+PERSONA_EOF
+
+# generate_personas <skill|agent> <personas_dir> <target_dir>
+# Prints a per-item checklist; sets PERSONA_COUNT to the number generated.
+generate_personas() {
+    if ! command -v node &> /dev/null; then
+        printf "${RED}Node.js required to generate personas${NC}\n"
+        return 1
+    fi
+    out=$(MODE="$1" PERSONAS_DIR="$2" TARGET_DIR="$3" node -e "$PERSONA_GEN_JS")
+    PERSONA_COUNT=$(printf "%s" "$out" | sed -n 's/^__COUNT__//p')
+    printf "%s\n" "$out" | grep -v '^__COUNT__'
+}
+
 usage() {
     cat << EOF
 Usage: $0 [OPTIONS]
@@ -61,7 +138,7 @@ list_skills() {
         persona_name=$(basename "$persona_dir")
         [ -f "$persona_dir/SKILL.md" ] || continue
         description=$(grep -m1 "^description:" "$persona_dir/SKILL.md" | sed 's/^description: //')
-        [ -f "$persona_dir/AGENT.md" ] && marker="${CYAN}+agent${NC}" || marker="      "
+        if grep -q "^agent:[[:space:]]*true" "$persona_dir/SKILL.md"; then marker="${CYAN}+agent${NC}"; else marker="      "; fi
         printf "  ${GREEN}%-25s${NC} %b  %s\n" "$persona_name" "$marker" "$description"
     done
     echo ""
@@ -82,18 +159,8 @@ install_agents() {
     mkdir -p "$target_dir"
 
     printf "${BLUE}Installing agents to: %s${NC}\n" "$target_dir"
-    count=0
-    for agent_file in "$SCRIPT_DIR/personas"/*/AGENT.md; do
-        [ -f "$agent_file" ] || continue
-        # Name the installed file after the agent's `name:` field (hyphenated),
-        # falling back to the persona directory name.
-        name=$(sed -n 's/^name:[[:space:]]*//p' "$agent_file" | head -1)
-        [ -n "$name" ] || name=$(basename "$(dirname "$agent_file")")
-        cp "$agent_file" "$target_dir/$name.md"
-        printf "  ${GREEN}✓${NC} %s\n" "$name"
-        count=$((count + 1))
-    done
-    printf "${GREEN}✓ Installed %d agents${NC}\n" "$count"
+    generate_personas agent "$SCRIPT_DIR/personas" "$target_dir" || return 1
+    printf "${GREEN}✓ Installed %s agents${NC}\n" "$PERSONA_COUNT"
 
     # System-level Claude configuration (user scope only)
     if [ "$target_dir" = "$AGENTS_DIR" ] && [ -f "$SCRIPT_DIR/CLAUDE.md" ]; then
@@ -112,17 +179,8 @@ install_skills() {
     mkdir -p "$target_dir"
 
     printf "${BLUE}Installing skills to: %s${NC}\n" "$target_dir"
-    count=0
-    for persona_dir in "$SCRIPT_DIR/personas"/*; do
-        [ -d "$persona_dir" ] || continue
-        [ -f "$persona_dir/SKILL.md" ] || continue
-        skill_name=$(basename "$persona_dir")
-        mkdir -p "$target_dir/$skill_name"
-        cp "$persona_dir/SKILL.md" "$target_dir/$skill_name/SKILL.md"
-        printf "  ${GREEN}✓${NC} %s\n" "$skill_name"
-        count=$((count + 1))
-    done
-    printf "${GREEN}✓ Installed %d skills${NC}\n" "$count"
+    generate_personas skill "$SCRIPT_DIR/personas" "$target_dir" || return 1
+    printf "${GREEN}✓ Installed %s skills${NC}\n" "$PERSONA_COUNT"
 }
 
 install_mcps() {

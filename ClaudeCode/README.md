@@ -4,18 +4,19 @@ This directory contains specialized AI agents, skills, hooks, and Model Context 
 
 ## Quick Install
 
-Agents and skills are authored together, one folder per persona under
-`personas/<name>/` (a `SKILL.md` and an optional `AGENT.md`). A single
-`install.sh` splits each persona to its target and also installs MCP servers
-and hooks. It performs a clean deploy — it removes and replaces its target
-directory/config: agents clear `~/.claude/agents/` (and copy `CLAUDE.md`),
+Each persona is authored as a **single source file** — `personas/<name>/SKILL.md`.
+The skill is the canonical content; when its frontmatter sets `agent: true`,
+`install.sh` also **generates** a matching agent from the same body (so the two
+never drift). A single `install.sh` installs skills, generated agents, MCP
+servers and hooks. It performs a clean deploy — it removes and replaces its
+target directory/config: agents clear `~/.claude/agents/` (and copy `CLAUDE.md`),
 skills clear `~/.claude/skills/`, hooks replace the `hooks` key in
 `~/.claude/settings.json`, and MCPs re-register each server in
 `mcp-config.json` at user scope (removing any existing entry with the same
 name first).
 
 ```bash
-# Install everything (agents, skills, MCPs, hooks)
+# Install everything (skills, agents, MCPs, hooks)
 ./install.sh
 
 # Install a single component
@@ -24,26 +25,71 @@ name first).
 ./install.sh --mcps-only
 ./install.sh --hooks-only
 
-# Install agents & skills into the current project (./.claude/)
+# Install skills & agents into the current project (./.claude/)
 ./install.sh --skills-only --project
 
-# Preview available skills
+# Preview available personas (a +agent marker shows which also install an agent)
 ./install.sh --list
 ```
+
+### Prerequisites
+
+The installer is a Bash script. It needs **git**, **Node.js** (used to generate
+agents and write the hooks config), and — only for `--mcps-only` — the
+[`claude`](https://docs.claude.com/claude-code) CLI plus `jq` and `uv`
+(auto-installed if missing).
+
+### Install on Linux
+
+```bash
+# Debian/Ubuntu — install prerequisites
+sudo apt-get update && sudo apt-get install -y git nodejs npm jq
+
+git clone https://github.com/MattJColes/macols-configs.git
+cd macols-configs/ClaudeCode
+./install.sh
+```
+
+### Install on macOS
+
+```bash
+# Requires Homebrew (https://brew.sh)
+brew install git node jq
+
+git clone https://github.com/MattJColes/macols-configs.git
+cd macols-configs/ClaudeCode
+./install.sh
+```
+
+### Install on Windows
+
+The installer is a Bash script, so run it under **WSL2** (recommended) or
+**Git Bash**.
+
+```bash
+# In a WSL2 (Ubuntu) shell — same as Linux:
+sudo apt-get update && sudo apt-get install -y git nodejs npm jq
+
+git clone https://github.com/MattJColes/macols-configs.git
+cd macols-configs/ClaudeCode
+./install.sh
+```
+
+> Note: under WSL2 the configs install into the WSL home (`~/.claude/`), so run
+> Claude Code from inside WSL. For native Windows + Git Bash, ensure `node` is
+> on your `PATH`; agents and skills install to `%USERPROFILE%\.claude\`.
 
 ## Directory Structure
 
 ```
 ClaudeCode/
-├── personas/            # One folder per persona (23 skills, 18 with agents)
+├── personas/            # One folder per persona — 22 skills, 21 generate an agent
 │   ├── architecture-expert/
-│   │   ├── SKILL.md     #   concise, slash-command invocable
-│   │   └── AGENT.md     #   full long-form agent definition (optional)
+│   │   └── SKILL.md     #   single source (agent: true → also generates an agent)
 │   ├── code-reviewer/
-│   │   ├── SKILL.md
-│   │   └── AGENT.md
+│   │   └── SKILL.md
 │   ├── commit/
-│   │   └── SKILL.md     #   skill-only persona (no agent)
+│   │   └── SKILL.md     #   skill-only persona (no `agent:` key)
 │   └── ...
 ├── hooks/               # Testing & security automation
 │   ├── post_code_hook.sh
@@ -51,41 +97,65 @@ ClaudeCode/
 │   └── README.md
 ├── CLAUDE.md            # System-level Claude instructions
 ├── mcp-config.json      # MCP server configuration
-├── install.sh           # Unified installer (agents, skills, MCPs, hooks)
+├── install.sh           # Unified installer (skills, agents, MCPs, hooks)
 └── README.md
 ```
 
-## Agents vs Skills
+## Agents vs Skills — one source
 
-Each persona is authored once under `personas/<name>/`, holding up to two files:
+Each persona is authored once as `personas/<name>/SKILL.md`. That skill is the
+**single source of truth**; there are no separate agent files to keep in sync.
+A small block of frontmatter controls what gets installed:
 
-- **`SKILL.md`**: Concise, slash-command invocable workflow, installed to `~/.claude/skills/<name>/SKILL.md`. Every persona has one.
-- **`AGENT.md`**: Full long-form agent definition with system prompt, installed to `~/.claude/agents/<name>.md` (named after the agent's `name:` field). Present for 18 of the 23 personas.
+```yaml
+---
+name: code-reviewer
+description: Code review specialist for quality, security, and best practices.
+allowed-tools:        # becomes the agent's `tools` when an agent is generated
+  - Read
+  - Edit
+  - Bash
+user-invocable: true
+agent: true           # generate an agent from this same body
+model: opus           # model for the generated agent (default: sonnet)
+---
+```
 
-`install.sh` reads each persona folder and routes the two files to their
-respective targets, so editing a persona keeps the skill and agent side by side.
+`install.sh` installs the skill to `~/.claude/skills/<name>/SKILL.md` (stripping
+the `agent`/`model` keys), and — when `agent: true` — generates
+`~/.claude/agents/<name>.md` from the **same body**, swapping in agent-style
+frontmatter (`tools`, `model`). Drop `agent: true` for a skill-only persona
+(e.g. `commit`, the `writing-*` helpers).
 
 ## Specialized Personas
 
-| Name | Description |
-|------|-------------|
-| `architecture-expert` | System design, AWS infrastructure, technical decisions |
-| `cdk-expert-python` | AWS CDK infrastructure in Python |
-| `cdk-expert-ts` | AWS CDK infrastructure in TypeScript |
-| `code-reviewer` | Code quality, security, and best practices review |
-| `data-scientist` | Data analysis, ML models, visualization |
-| `devops-engineer` | CI/CD, Docker, GitHub Actions |
-| `documentation-engineer` | README, API docs, architecture documentation |
-| `frontend-engineer-ts` | React, TypeScript, Tailwind CSS |
-| `frontend-engineer-dart` | Flutter, Dart, mobile/web apps |
-| `linux-specialist` | Shell scripting, git, system administration |
-| `product-manager` | Feature planning, roadmaps, requirements |
-| `project-coordinator` | Memory Bank management, task coordination |
-| `python-backend` | FastAPI, Lambda, Python services |
-| `python-test-engineer` | pytest, integration testing |
-| `test-coordinator` | Test strategy, coverage analysis |
-| `typescript-test-engineer` | Jest, Playwright, React Testing Library |
-| `ui-ux-designer` | Wireframes, design systems, accessibility |
+The `+agent` column marks personas that also install an agent (`./install.sh --list`
+shows this live).
+
+| Name | +agent | Description |
+|------|:------:|-------------|
+| `architecture-expert` | ✓ | System design, AWS infrastructure, technical decisions |
+| `cdk-expert-python` | ✓ | AWS CDK infrastructure in Python |
+| `cdk-expert-ts` | ✓ | AWS CDK infrastructure in TypeScript |
+| `code-reviewer` | ✓ | Code quality, security, and best practices review |
+| `commit` |  | Run tests/linters, then create a conventional commit and push |
+| `dart-app-developer` | ✓ | Flutter/Dart apps — architecture, widgets, Riverpod, tests |
+| `data-scientist` | ✓ | Data analysis, ML models, visualization |
+| `devops-engineer` | ✓ | CI/CD, Docker, GitHub Actions |
+| `documentation-engineer` | ✓ | README, API docs, architecture documentation |
+| `frontend-engineer-ts` | ✓ | React, TypeScript, Tailwind CSS |
+| `linux-specialist` | ✓ | Shell scripting, git, system administration |
+| `product-manager` | ✓ | Feature planning, roadmaps, requirements |
+| `project-coordinator` | ✓ | Memory Bank management, task coordination |
+| `python-backend` | ✓ | FastAPI, Lambda, Python services |
+| `python-test-engineer` | ✓ | pytest, integration testing |
+| `security-specialist` | ✓ | Threat modeling, OWASP, AWS security hardening |
+| `test-coordinator` | ✓ | Test strategy, coverage analysis |
+| `typescript-test-engineer` | ✓ | Jest, Playwright, React Testing Library |
+| `ui-ux-designer` | ✓ | Wireframes, design systems, accessibility |
+| `writing-blog-posts` | ✓ | Blog posts for coles.codes in Matt's voice |
+| `writing-documents` | ✓ | Docs, memos, PRFAQs, COEs (Amazon writing style) |
+| `writing-style` | ✓ | Matt's personal writing style for messages & email |
 
 ## MCP Servers
 
@@ -130,7 +200,7 @@ User: "Add user authentication with Cognito"
 
 1. test-coordinator defines testing strategy
 2. python-test-engineer writes tests first
-3. python-backend-agent implements auth code
+3. python-backend implements auth code
 4. Tests auto-run, errors auto-fixed (max 3 attempts)
 5. code-reviewer checks for security issues
 6. Commit message suggested

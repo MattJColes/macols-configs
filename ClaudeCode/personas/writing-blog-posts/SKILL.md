@@ -1,4 +1,6 @@
 ---
+agent: true
+model: opus
 name: writing-blog-posts
 description: Write blog posts for Matt Coles in his voice for coles.codes. Use when drafting, editing, or outlining posts for the blog.
 ---

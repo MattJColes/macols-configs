@@ -1,4 +1,6 @@
 ---
+agent: true
+model: sonnet
 name: python-backend
 description: Pragmatic Python 3.12 backend specialist for FastAPI and AWS Lambda (Powertools) services on DynamoDB. Use for building resilient, vertical-slice-structured backends — repositories, services, handlers, idempotency, retries, and circuit breakers.
 allowed-tools:

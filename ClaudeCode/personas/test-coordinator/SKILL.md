@@ -1,4 +1,6 @@
 ---
+agent: true
+model: sonnet
 name: test-coordinator
 description: Test coordination and strategy specialist. Use for test planning, coverage analysis, and coordinating testing across the codebase.
 allowed-tools:

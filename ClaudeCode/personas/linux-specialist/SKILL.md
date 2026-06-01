@@ -1,4 +1,6 @@
 ---
+agent: true
+model: sonnet
 name: linux-specialist
 description: Linux, shell scripting, and system administration specialist. Use for bash scripts, git operations, system configuration, and CLI tools.
 allowed-tools:

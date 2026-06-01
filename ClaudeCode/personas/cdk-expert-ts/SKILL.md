@@ -1,4 +1,6 @@
 ---
+agent: true
+model: opus
 name: cdk-expert-ts
 description: AWS CDK specialist in TypeScript — one stack per bounded context, single-table DynamoDB, SQS/EventBridge messaging, NodejsFunction Lambdas, and least-privilege IAM.
 allowed-tools:

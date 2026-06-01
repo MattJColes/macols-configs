@@ -1,4 +1,6 @@
 ---
+agent: true
+model: sonnet
 name: typescript-test-engineer
 description: TypeScript testing specialist for Jest, Playwright, and React Testing Library. Use for frontend tests, E2E tests, and TypeScript test automation.
 allowed-tools:

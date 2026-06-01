@@ -1,4 +1,6 @@
 ---
+agent: true
+model: opus
 name: security-specialist
 description: Application security specialist for threat modeling, vulnerability assessment, OWASP compliance, and AWS security hardening. Use for security audits, IAM reviews, and secure architecture design.
 allowed-tools:

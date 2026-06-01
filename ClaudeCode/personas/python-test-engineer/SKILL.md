@@ -1,4 +1,6 @@
 ---
+agent: true
+model: sonnet
 name: python-test-engineer
 description: Python testing specialist for pytest, integration tests, and test automation. Use for test coverage, testing strategies, and CI test configuration.
 allowed-tools:

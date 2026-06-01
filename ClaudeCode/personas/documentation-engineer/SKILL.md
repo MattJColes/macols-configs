@@ -1,4 +1,6 @@
 ---
+agent: true
+model: sonnet
 name: documentation-engineer
 description: Technical documentation specialist. Use for README files, API documentation, architecture docs, and user guides.
 allowed-tools:

@@ -1,4 +1,6 @@
 ---
+agent: true
+model: opus
 name: project-coordinator
 description: Project coordination and Memory Bank management. Use for task orchestration, session management, and multi-agent coordination.
 allowed-tools:

@@ -1,4 +1,6 @@
 ---
+agent: true
+model: opus
 name: code-reviewer
 description: Code review specialist for quality, security, and best practices. Use for reviewing pull requests, code quality analysis, and security audits.
 allowed-tools:

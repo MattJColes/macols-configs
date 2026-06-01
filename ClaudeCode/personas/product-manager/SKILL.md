@@ -1,4 +1,6 @@
 ---
+agent: true
+model: opus
 name: product-manager
 description: Product management specialist for feature planning, requirements, and roadmaps. Use for FEATURES.md, product specs, and prioritization.
 allowed-tools:

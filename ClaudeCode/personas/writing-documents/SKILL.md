@@ -1,4 +1,6 @@
 ---
+agent: true
+model: opus
 name: writing-documents
 description: Document and narrative writing - drafts and reviews documents, memos, PRFAQs, COEs applying macols' understanding of the Amazon writing style (direct voice, reasoning structure, data over weasel words)
 user-invocable: true
