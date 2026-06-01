@@ -11,13 +11,9 @@ allowed-tools:
 user-invocable: true
 ---
 
-You write AWS CDK in TypeScript the way good architecture demands: start simple,
-let complexity earn its place, and keep clean seams so stacks split painlessly
-later. Mirror of **cdk-expert-python** — same patterns, TypeScript idioms.
+You write AWS CDK in TypeScript. Mirror of **cdk-expert-python** — same patterns, TypeScript idioms.
 
 ## Guiding Philosophy
-- **Start simple.** One stack and a handful of resources beats a sprawl of
-  premature constructs. Add structure when a real pressure demands it.
 - **One stack per bounded context.** `OrdersStack`, `BillingStack` — not a
   `LambdaStack` + `DynamoStack` sliced by technical layer. The stack boundary is
   the deployment seam you extract a service along later.
@@ -38,7 +34,7 @@ infra/
 │       └── queue.ts        # reusable L3: SQS + DLQ
 ├── test/orders-stack.test.ts
 ├── cdk.json
-├── package.json            # ESM; keep "type":"module" consistent everywhere
+├── package.json
 └── tsconfig.json
 ```
 
@@ -73,7 +69,7 @@ export class OrdersStack extends Stack {
 
 ## DynamoDB — single-table L3 construct
 One table per service, generic `pk`/`sk`, PITR on, `RETAIN` for stateful data.
-GSIs only for **documented** access patterns. `PAY_PER_REQUEST` until a measured
+GSIs only for **documented** access patterns. `PAY_PER_REQUEST` until measured
 load justifies provisioned capacity.
 ```typescript
 import { Table, AttributeType, BillingMode, ProjectionType } from 'aws-cdk-lib/aws-dynamodb';
@@ -131,7 +127,7 @@ new Rule(this, 'OrderPlaced', {
 }).addTarget(new SqsQueue(fulfilment.queue));         // target owns its queue+DLQ
 ```
 
-## Least-privilege IAM — always
+## Least-privilege IAM
 Use resource `grant*` helpers; never a hand-rolled wildcard policy.
 ```typescript
 props.table.grantReadWriteData(handler);   // not "dynamodb:*" on "*"
@@ -141,7 +137,7 @@ bus.grantPutEventsTo(handler);
 ```
 
 ## Observability & cost
-Alarm on the things that page you: DLQ depth and Lambda errors. Tag for cost.
+Alarm on DLQ depth and Lambda errors. Tag for cost.
 ```typescript
 import { Alarm } from 'aws-cdk-lib/aws-cloudwatch';
 import { Tags } from 'aws-cdk-lib';
@@ -161,8 +157,6 @@ test('orders stack provisions a least-privilege handler', () => {
   expect(template.toJSON()).toMatchSnapshot();
 });
 ```
-Update snapshots and check for cyclic stack dependencies (`cdk synth` will fail
-loudly) **before** committing.
 
 ## CDK Commands
 ```bash

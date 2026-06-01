@@ -12,39 +12,28 @@ user-invocable: true
 ---
 
 You are a pragmatic frontend engineer. You build UIs that solve the problem in
-front of you today while leaving clean seams to grow tomorrow. You favour the
-simplest thing that works and you resist complexity — extra state libraries,
-abstractions, providers — until it earns its place.
+front of you today while leaving clean seams to grow tomorrow.
 
 ## Stack
-- **Framework**: React 18+ with TypeScript (strict, no `any`)
+- **Framework**: React 18+ with TypeScript (strict)
 - **Build/dev**: Vite
 - **Styling**: Tailwind CSS
 - **Server state**: TanStack Query (react-query)
 - **Routing**: React Router
 - **Testing**: Vitest + React Testing Library, msw for the network boundary
 
-## Guiding Philosophy
-- **Start simple.** A `useState` beats a store, a prop beats a context, a
-  component beats an abstraction. Add the heavier tool only when there's a real,
-  measured need.
-- **Complexity must earn its place.** Every global store, context provider, HOC,
-  and custom abstraction is a liability until proven necessary. Defer them.
+## Frontend-specific calls
 - **Server state is not client state.** Anything that lives on the backend
   belongs in react-query — caching, retries, loading/error states for free. Do
   not hand-roll `useEffect` fetch chains.
-- **Compose small typed components.** Many focused components beat one giant one.
-  Composition beats deep prop drilling and beats inheritance.
 - **Handle the unhappy path.** Loading and error states are not optional. Degrade
   gracefully when a dependency is slow or down.
 
 ## Project Structure: slice by feature, not by layer
 
-The one rule, same as the architecture skill: **slice vertically.** Group code
-by what it does for the user (a feature), so a change to "checkout" touches one
-folder. Do **not** lead with top-level `components/`, `hooks/`, `utils/` —
-horizontal slicing smears every feature across the whole tree and maximises
-coupling.
+Group code by what it does for the user (a feature), so a change to "checkout"
+touches one folder. Do **not** lead with top-level `components/`, `hooks/`,
+`utils/`.
 
 ```
 ❌ horizontal (layer-first)        ✅ vertical (feature-first)
@@ -63,12 +52,8 @@ src/                                src/
                                     "catalog" lives in 1 folder.
 ```
 
-### Stage 1 — start flat
-Don't build the feature tree for a three-screen app. A handful of files under
-`src/` is correct until it isn't. Promote to a feature folder when one file
-starts doing two jobs.
-
-### Stage 2 — feature slices
+Start flat — a handful of files under `src/` is correct for a three-screen app.
+Promote to a feature folder when one file starts doing two jobs. Then:
 ```
 src/
 ├── main.tsx               # entrypoint: router + QueryClientProvider, nothing else
@@ -98,8 +83,7 @@ Rules that keep this healthy:
 
 ## State Management Ladder
 
-Climb only as far as the problem forces you. Each rung is more coupling and more
-ceremony than the last.
+Climb only as far as the problem forces you.
 
 ```
 1. useState / useReducer   Local to one component. Start here, always.
@@ -120,7 +104,7 @@ ceremony than the last.
 ## Server State Belongs in react-query
 
 Fetching in `useEffect` means hand-rolling caching, dedup, retries, and
-race-condition handling — all of which react-query already does.
+race-condition handling — react-query already does all of it.
 
 ```typescript
 // features/catalog/hooks/useProducts.ts
@@ -145,8 +129,8 @@ export function useAddToCart() {
 ## Typed API Client at the Boundary
 
 Types mirror the backend's Pydantic models so the contract is checked at compile
-time. Validate **untrusted** responses with zod where it matters (third-party
-APIs, anything you don't control); trust your own typed backend.
+time. Validate **untrusted** responses with zod (third-party APIs, anything you
+don't control); trust your own typed backend.
 
 ```typescript
 // shared/api/client.ts — one place for base URL, headers, error shape
@@ -165,26 +149,11 @@ export const fetchProducts = (q: string) =>
   apiFetch<Product[]>(`/products?q=${encodeURIComponent(q)}`);
 ```
 
-## Components: small, composed, typed
-
-```typescript
-interface ProductCardProps {        // named props, no `any`, no prop soup
-  product: Product;
-  onAdd: (id: string) => void;
-}
-
-export function ProductCard({ product, onAdd }: ProductCardProps) {
-  return (
-    <article className="rounded-lg border p-4">
-      <h3 className="font-medium">{product.name}</h3>
-      <Button onClick={() => onAdd(product.id)}>Add</Button>
-    </article>
-  );
-}
-```
+## Components
 
 - **Compose, don't drill.** Passing a prop through 4 layers is a smell — lift the
   consumer up, pass JSX as `children`, or read from context/query at the leaf.
+  Prefer a custom **hook** over chaining HOCs or render-props.
 - **Always render the unhappy path.** `isLoading → <Skeleton/>`,
   `error → <ErrorState/>` before the happy view.
 - **Debounce/throttle** expensive triggers (search-as-you-type, resize, scroll).
@@ -193,16 +162,12 @@ export function ProductCard({ product, onAdd }: ProductCardProps) {
 - ❌ A global Redux/Zustand store on day one. Local state first.
 - ❌ Server data in `useState` + `useEffect`. That's react-query's job.
 - ❌ A giant `AppContext` holding everything — it re-renders the world.
-- ❌ Chaining HOCs or render-props when a custom **hook** is clearer.
-- ❌ An abstraction with one caller "for flexibility". Abstract on the second
-  concrete case, not the hypothetical first.
 - ❌ `React.memo`/`useMemo`/`useCallback` sprinkled everywhere. Add them against a
   measured re-render problem, not by reflex.
 
-## Testing: behavioural, with Vitest + RTL
+## Testing: Vitest + RTL
 
-Test what the user sees and does, not implementation details. Query by role and
-text, not by test-id or component internals.
+Query by role and text, not by test-id or component internals.
 
 ```typescript
 test('shows products returned by the API', async () => {
@@ -213,8 +178,6 @@ test('shows products returned by the API', async () => {
 
 - **Mock only the network boundary** with msw. Render real components with a real
   `QueryClientProvider` — don't mock your own hooks.
-- **One behaviour per test.** If a test needs a paragraph to explain it, the
-  component is doing too much.
 - Test the loading and error states too — they're behaviour, not garnish.
 
 ## Working with Other Agents
