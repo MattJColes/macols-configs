@@ -8,6 +8,7 @@ You are a system-level Claude assistant focused on minimal, robust software deve
 - Do not expand scope beyond what was requested. If asked to fix one thing, fix that thing and stop. Do not autonomously fix tangential issues or over-engineer solutions.
 - Do not create new files when you can edit existing ones. Avoid unnecessary helper files (utils.py, helpers.ts, etc.).
 - Check for existing patterns and dependencies before introducing new ones (e.g. don't add a new HTTP client when one is already used in the project).
+- Don't reinvent what a well-maintained library already does well. Reach for the established library (retries, circuit breakers, parsing, validation) before hand-rolling your own version.
 
 ## Core Principles
 
@@ -37,6 +38,9 @@ You are a system-level Claude assistant focused on minimal, robust software deve
 - **Clean Code**: Write self-documenting code with clear naming. Functions should do one thing. Classes should have a single responsibility. Avoid deep nesting and long parameter lists.
 - **OOP Design Patterns**: Apply patterns (Factory, Strategy, Observer, Repository, etc.) when they genuinely simplify the design. Do not force patterns where a simple function would suffice.
 - **Reusable Components**: Extract reusable components, widgets, or modules when logic is shared across multiple features. Keep them focused, well-typed, and documented.
+- **Organise by feature, not by layer**: Group code by capability/feature/bounded context (e.g. `orders/`, `billing/`), each exposing a small public interface that other code depends on. Avoid slicing the top level into horizontal technical layers (`models/`, `services/`, `controllers/`). This keeps related code together and makes a module cheap to extract later. Start flat for small things and grow into modules as they earn it.
+- **Validate at boundaries**: Parse and validate untrusted input at trust boundaries — API requests, queue/event payloads, external responses, config (Pydantic, zod, and the like). Within trusted code use plain typed structures. Model a fixed set of values as an enum / sealed type, never magic strings.
+- **Avoid premature indirection**: Don't introduce an abstraction for a single implementation, and don't start with deep function chaining or pipelines. Write plain, sequential, readable code first; abstract on the second concrete case, not the hypothetical first.
 
 ## Task Decomposition
 
@@ -75,6 +79,14 @@ You are a system-level Claude assistant focused on minimal, robust software deve
 
 - Always run the app or relevant integration test after fixing a bug, not just unit tests. Unit tests passing does not guarantee the fix works at runtime.
 
+## Resilience (networked & distributed code)
+
+- Set an explicit timeout on every network/IO call — a call with no timeout is a latent hang.
+- Retry only idempotent operations, with exponential backoff + jitter and a capped attempt count.
+- Make consumers idempotent (e.g. an idempotency key stored with a TTL) wherever retries or at-least-once delivery are possible.
+- Wrap calls to unreliable dependencies in a circuit breaker, and give every async consumer a dead-letter queue with an alarm.
+- Use a maintained library for these primitives (e.g. `tenacity`, `pybreaker`) rather than bespoke retry/breaker code.
+
 ## Python
 
 - For Python projects, always use the project's virtual environment (venv), not system Python. Check for venv activation before installing dependencies.
@@ -84,8 +96,9 @@ You are a system-level Claude assistant focused on minimal, robust software deve
 
 ## Flutter / Dart
 
-- Run `dart fix --apply` after making changes to apply recommended Dart fixes.
-- Use `const` constructors wherever possible for widget performance.
+- Run `dart fix --apply` after making changes to apply recommended Dart fixes, and run `dart analyze` and `dart format` before considering Dart work done.
+- Use `const` constructors wherever possible for widget performance; prefer `final` and precise types, and avoid `dynamic`.
+- Use sound null safety; avoid the `!` bang operator unless the value is provably non-null.
 - Follow the existing state management pattern in the project — do not introduce a different one (e.g. don't add Provider if the project uses Riverpod).
 
 ## JavaScript / TypeScript

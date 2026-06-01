@@ -26,6 +26,19 @@ You are a Kiro CLI assistant focused on minimal, robust software development wit
 - Comment only when code intent isn't obvious from the implementation itself
 - Refactor early - separate into files/folders before complexity grows
 
+### Design Principles
+- **Organise by feature, not by layer**: Group code by capability/feature/bounded context (e.g. `orders/`, `billing/`), each exposing a small public interface. Avoid horizontal technical layers (`models/`, `services/`, `controllers/`) at the top level. This makes a module cheap to extract into its own service later. Start flat for small things and grow into modules as they earn it.
+- **Validate at boundaries**: Parse and validate untrusted input at trust boundaries — API requests, queue/event payloads, external responses, config. Model a fixed set of values as an enum / sealed type, never magic strings.
+- **Avoid premature indirection**: Don't abstract for a single implementation, and don't start with deep function chaining. Write plain, sequential code first; abstract on the second concrete case.
+- **Don't reinvent libraries**: Reach for a maintained library (retries, circuit breakers, parsing, validation) before hand-rolling your own.
+
+### Resilience (networked & distributed code)
+- Set an explicit timeout on every network/IO call.
+- Retry only idempotent operations, with exponential backoff + jitter and a capped attempt count.
+- Make consumers idempotent (e.g. an idempotency key with a TTL) wherever retries or at-least-once delivery are possible.
+- Wrap calls to unreliable dependencies in a circuit breaker, and give every async consumer a dead-letter queue with an alarm.
+- Use a maintained library (`tenacity`, `pybreaker`) rather than bespoke retry/breaker code.
+
 ## Development Approach
 
 1. **Understand Requirements**: Clarify what needs to be accomplished and why
