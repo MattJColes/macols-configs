@@ -4,23 +4,28 @@ This directory contains specialized AI agents, skills, hooks, and Model Context 
 
 ## Quick Install
 
-> **Note:** Each installer performs a clean deploy — it removes and replaces its target directory/config. Running `install_agents.sh` clears `~/.claude/agents/` and `~/.claude/skills/`, `install_skills.sh` clears `~/.claude/skills/`, `install_hooks.sh` replaces the `hooks` key in `~/.claude/settings.json`, and `install_mcps.sh` re-registers each server in `mcp-config.json` at user scope in `~/.claude.json` (removes any existing entry with the same name first).
+A single `install.sh` installs agents, skills, MCP servers and hooks. It
+performs a clean deploy — it removes and replaces its target directory/config:
+agents clear `~/.claude/agents/` (and copy `CLAUDE.md`), skills clear
+`~/.claude/skills/`, hooks replace the `hooks` key in `~/.claude/settings.json`,
+and MCPs re-register each server in `mcp-config.json` at user scope (removing
+any existing entry with the same name first).
 
 ```bash
-# Install agents (markdown-based)
-./install_agents.sh
+# Install everything (agents, skills, MCPs, hooks)
+./install.sh
 
-# Install skills (slash-command-based)
-./install_skills.sh
+# Install a single component
+./install.sh --agents-only
+./install.sh --skills-only
+./install.sh --mcps-only
+./install.sh --hooks-only
 
-# Install only skills to current project
-./install_skills.sh --skills-only --project
+# Install agents & skills into the current project (./.claude/)
+./install.sh --skills-only --project
 
-# Install hooks
-./install_hooks.sh
-
-# Install MCP servers
-./install_mcps.sh
+# Preview available skills
+./install.sh --list
 ```
 
 ## Directory Structure
@@ -37,13 +42,11 @@ ClaudeCode/
 │   └── ...
 ├── hooks/               # Testing & security automation
 │   ├── post_code_hook.sh
-│   ├── install_hooks.sh
+│   ├── post_task_hook.sh
 │   └── README.md
-├── claude.md            # System-level Claude instructions
+├── CLAUDE.md            # System-level Claude instructions
 ├── mcp-config.json      # MCP server configuration
-├── install_agents.sh    # Agent installer
-├── install_skills.sh    # Skills installer
-├── install_mcps.sh      # MCP server installer
+├── install.sh           # Unified installer (agents, skills, MCPs, hooks)
 └── README.md
 ```
 
@@ -91,7 +94,7 @@ Both provide the same 16 specializations - choose the format that fits your work
 
 ## Configuration
 
-MCP configuration: `~/.claude.json` (top-level `mcpServers` key, written by `install_mcps.sh`)
+MCP configuration: `~/.claude.json` (top-level `mcpServers` key, written by `./install.sh --mcps-only`)
 Agent storage: `~/.claude/agents/`
 Skill storage: `~/.claude/skills/`
 Knowledge graph: `~/.claude/memory`
@@ -127,10 +130,10 @@ User: "Add user authentication with Cognito"
 
 ## Hooks
 
-Testing and security automation hooks are in `hooks/`:
+Testing and security automation hook scripts live in `hooks/`; install them via:
 
 ```bash
-cd hooks && ./install_hooks.sh
+./install.sh --hooks-only
 ```
 
 The hook automatically runs after code changes:

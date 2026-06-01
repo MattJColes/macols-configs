@@ -38,7 +38,8 @@ Available IDE hook events:
 ## Installation
 
 ```bash
-./install_hooks.sh
+# from the Kiro/ directory
+./install.sh --hooks-only
 ```
 
 ## Hook Configuration

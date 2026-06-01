@@ -278,15 +278,14 @@ Enter your:
 
 ### 3. Set Up Claude Code Agents
 ```bash
-cd ../ClaudeAgents
-./install_mcps.sh
-./install_agents.sh
+cd ../ClaudeCode
+./install.sh  # Installs agents, skills, MCPs and hooks
 ```
 
 ### 4. Set Up Kiro CLI Agents
 ```bash
-cd ../KiroAgents
-./install_agents.sh  # Installs agents and optionally MCPs
+cd ../Kiro
+./install.sh  # Installs agents, skills, MCPs and hooks
 ```
 
 **Note**: Kiro CLI stores configuration in `~/.kiro/`. Install agents and MCPs from the `../Kiro/` directory.
