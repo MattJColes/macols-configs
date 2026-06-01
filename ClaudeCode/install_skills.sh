@@ -244,6 +244,7 @@ if [ "$INSTALL_SKILLS" = true ]; then
     echo "    /commit                 - Test, lint, commit, and push"
     echo "    /devops-engineer      - CI/CD and containerization"
     echo "    /writing-style          - Matt's personal writing style for messages and emails"
+    echo "    /writing-documents      - Documents & narratives (Amazon writing style)"
     echo "  Use --list to see all available skills"
     echo ""
 fi
