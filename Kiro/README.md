@@ -35,11 +35,10 @@ Kiro/
 │   └── ...
 ├── hooks/               # Testing & security automation
 │   ├── post_code_hook.sh
-│   ├── install_hooks.sh
+│   ├── post_task_hook.sh
 │   └── README.md
 ├── steering.md          # System-level Kiro instructions
-├── install_agents.sh    # Agent + skill installer
-├── install_mcps.sh      # MCP package installer
+├── install.sh           # Unified installer (agents, skills, MCPs, hooks)
 ├── generate_skills_and_agents.py  # Generator script (dev tool)
 └── README.md
 ```
@@ -47,17 +46,20 @@ Kiro/
 ## Quick Install
 
 ```bash
-# Install agents + skills (also offers MCP package install)
-./install_agents.sh
+# Install everything (agents, skills, MCP packages, hooks)
+./install.sh
 
-# Install MCP npm packages only (no global config written)
-./install_mcps.sh
+# Install a single component
+./install.sh --agents-only
+./install.sh --skills-only
+./install.sh --mcps-only
+./install.sh --hooks-only
 
-# Install MCP packages + write global fallback config
-./install_mcps.sh --with-global-config
+# Install MCP packages + write the global fallback config
+./install.sh --mcps-only --with-global-config
 
-# Install hooks
-cd hooks && ./install_hooks.sh
+# Preview available skills
+./install.sh --list
 ```
 
 ## Per-Agent MCP Mapping
@@ -165,10 +167,10 @@ kiro chat
 
 ## Hooks
 
-Testing and security automation hooks are in `hooks/`:
+Testing and security automation hook scripts live in `hooks/`; install them via:
 
 ```bash
-cd hooks && ./install_hooks.sh
+./install.sh --hooks-only
 ```
 
 The hook automatically runs after code changes:
@@ -191,8 +193,8 @@ This extracts `prompt` from each agent JSON into `skills/*/SKILL.md` and updates
 
 ## Maintenance
 
-- Update agents: Edit JSON files in `agents/`, then re-run `./install_agents.sh`
-- Update skills: Edit SKILL.md files in `skills/`, then re-run `./install_agents.sh`
+- Update agents: Edit JSON files in `agents/`, then re-run `./install.sh --agents-only`
+- Update skills: Edit SKILL.md files in `skills/`, then re-run `./install.sh --skills-only`
 - Update MCP mapping: Edit `generate_skills_and_agents.py` AGENT_MCPS dict, then re-run
-- Update hooks: Edit files in `hooks/`
-- Install MCP packages: `./install_mcps.sh`
+- Update hooks: Edit files in `hooks/`, then re-run `./install.sh --hooks-only`
+- Install MCP packages: `./install.sh --mcps-only`

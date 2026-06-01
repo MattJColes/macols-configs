@@ -69,11 +69,11 @@ Task({
 Run the installer script to deploy agents:
 
 ```bash
-# Install agents system-wide
-./install_agents.sh
+# Install agents system-wide (from the OpenCode/ directory)
+./install.sh --agents-only
 
-# Or install with skills
-./install_skills.sh
+# Or install everything (agents, skills, MCPs, hooks)
+./install.sh
 ```
 
 This will install agents to `~/.config/opencode/agents/`

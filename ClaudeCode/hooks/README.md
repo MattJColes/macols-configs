@@ -22,10 +22,11 @@ Two hooks fire on every `Edit|Write|NotebookEdit`:
 
 ## Installation
 
-> **Note:** Running `install_hooks.sh` replaces the entire `hooks` key in `~/.claude/settings.json`. Any pre-existing hooks will be removed.
+> **Note:** Running `./install.sh --hooks-only` replaces the entire `hooks` key in `~/.claude/settings.json`. Any pre-existing hooks will be removed.
 
 ```bash
-./install_hooks.sh
+# from the ClaudeCode/ directory
+./install.sh --hooks-only
 ```
 
 ## Hook Configuration

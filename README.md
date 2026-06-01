@@ -32,28 +32,27 @@ cd Terminal
 
 ### 2. Configure AI Agents
 
+Each tool has a single `install.sh` that installs agents, skills, MCP servers
+and hooks. Run it with no arguments to install everything, or scope it with
+`--agents-only`, `--skills-only`, `--mcps-only`, `--hooks-only` (and `--list`
+to preview available skills, `-p`/`--project` for a per-project install).
+
 **Claude Code:**
 ```bash
 cd ClaudeCode
-./install_agents.sh             # Installs agents and skills
-./install_mcps.sh               # MCP servers (filesystem, memory, playwright, etc.)
-./install_hooks.sh              # Optional: test & security hooks
+./install.sh                    # Agents, skills, MCPs and hooks
 ```
 
 **Kiro CLI:**
 ```bash
 cd Kiro
-./install_agents.sh             # Installs agents and skills
-./install_mcps.sh               # Optional
-./install_hooks.sh              # Optional: test & security hooks
+./install.sh                    # Agents, skills, MCPs and hooks
 ```
 
 **OpenCode (with LM Studio + GLM4.7-Air):**
 ```bash
 cd OpenCode
-./install_skills.sh             # Install 17 agent skills
-./install_mcps.sh               # Same MCPs as Claude/Kiro
-./install_hooks.sh              # Optional: test & security hooks
+./install.sh                    # Agents, skills, MCPs and hooks
 ./configure_lmstudio.sh         # Set up local GLM4.7-Air model
 ```
 

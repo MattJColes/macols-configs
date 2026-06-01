@@ -9,19 +9,13 @@ This folder provides configuration scripts for [OpenCode](https://github.com/ope
 ## Quick Start
 
 ```bash
-# 1. Install agents (specialized assistants)
-./install_agents.sh
+# 1. Install everything (agents, skills, MCPs, hooks)
+./install.sh
 
-# 2. Install skills (agent behaviors - includes agents)
-./install_skills.sh
-
-# 3. Install MCPs (tool integrations)
-./install_mcps.sh
-
-# 4. Configure LM Studio with GLM-4.7-Flash
+# 2. Configure LM Studio with GLM-4.7-Flash
 ./configure_lmstudio.sh
 
-# 5. Start OpenCode
+# 3. Start OpenCode
 opencode-glm  # Uses local GLM-4.7-Flash
 ```
 
@@ -31,7 +25,7 @@ Agents are specialized assistants that handle specific types of tasks. They are 
 
 ```bash
 # Install agents
-./install_agents.sh
+./install.sh --agents-only
 ```
 
 See [agents/README.md](agents/README.md) for detailed agent documentation.
@@ -39,8 +33,6 @@ See [agents/README.md](agents/README.md) for detailed agent documentation.
 ## Skills
 
 Skills provide reusable agent behaviors that OpenCode agents can load on-demand. They are installed to `~/.config/opencode/skills/` (global) or `.opencode/skills/` (project-level).
-
-**Note:** Running `./install_skills.sh` will also install agents automatically.
 
 | Skill | Description |
 |-------|-------------|
@@ -67,13 +59,13 @@ Install skills:
 
 ```bash
 # Install globally
-./install_skills.sh
+./install.sh --skills-only
 
 # Install to current project
-./install_skills.sh --project
+./install.sh --skills-only --project
 
 # List available skills
-./install_skills.sh --list
+./install.sh --list
 ```
 
 ## MCP Servers
