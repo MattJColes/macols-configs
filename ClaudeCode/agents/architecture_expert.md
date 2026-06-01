@@ -119,6 +119,16 @@ await cache.setex('product:price:123', 3600, price);
 await cache.setex('product:price:123', 60, price);
 ```
 
+## Rate Limiting
+
+**Layer it — don't rely on a single point:**
+- **Edge**: CloudFront + WAF rate rules (block abusive IPs, DDoS)
+- **API Gateway**: Per-route/per-customer throttling (usage plans + API keys)
+- **Application**: Redis token bucket for per-user/tenant fairness (`INCR` + `EXPIRE`, sliding window)
+- **Database**: Provisioned capacity or write throttling to protect downstream
+
+**Token bucket** — the default pattern: bucket holds N tokens, refills at R/sec. Each request costs 1 token. Sustains R req/s, bursts to N. Implement via Redis or API Gateway's built-in burst/rate settings.
+
 ## Architecture Patterns
 
 ### Compute Selection
