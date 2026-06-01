@@ -324,58 +324,20 @@ Service ──put-event──→ EventBridge bus ──┼──→ rule: order.
 Build these in early; they're hard to retrofit and cheap to add up front.
 
 ### Circuit breaker — stop hammering a failing dependency
-Wrap every call to a remote dependency (HTTP API, another service). After N
-consecutive failures the breaker **opens** and fails fast for a cooldown,
-giving the dependency room to recover and protecting your own threads/latency.
-Then it goes **half-open** to test recovery before fully **closing**.
+Wrap calls to a remote dependency (HTTP API, another service). After N
+consecutive failures the breaker **opens** and fails fast for a cooldown —
+protecting your own latency/threads and giving the dependency room to recover —
+then goes **half-open** to test recovery before **closing** again. Don't
+hand-roll it: use `pybreaker` (Python) or `opossum` (TS/Node).
 
 ```python
-import time
-from enum import Enum
+import pybreaker
+payments = pybreaker.CircuitBreaker(fail_max=5, reset_timeout=30)
 
-class State(Enum):
-    CLOSED = "closed"        # healthy: calls pass through
-    OPEN = "open"            # failing: reject immediately
-    HALF_OPEN = "half_open"  # probing: allow one trial call
-
-class CircuitBreaker:
-    """Minimal circuit breaker. Keep it this simple until you need more."""
-
-    def __init__(self, failure_threshold: int = 5, reset_timeout_s: float = 30.0):
-        self._failure_threshold = failure_threshold
-        self._reset_timeout_s = reset_timeout_s
-        self._failures = 0
-        self._state = State.CLOSED
-        self._opened_at = 0.0
-
-    def call(self, fn, *args, **kwargs):
-        if self._state is State.OPEN:
-            if time.monotonic() - self._opened_at < self._reset_timeout_s:
-                raise CircuitOpenError("circuit is open")
-            self._state = State.HALF_OPEN
-
-        try:
-            result = fn(*args, **kwargs)
-        except Exception:
-            self._record_failure()
-            raise
-        self._record_success()
-        return result
-
-    def _record_success(self) -> None:
-        self._failures = 0
-        self._state = State.CLOSED
-
-    def _record_failure(self) -> None:
-        self._failures += 1
-        if self._failures >= self._failure_threshold:
-            self._state = State.OPEN
-            self._opened_at = time.monotonic()
-
-class CircuitOpenError(Exception): ...
+@payments
+def charge(card, amount):   # opens after 5 failures, fails fast for 30s
+    return payments_api.charge(card, amount)
 ```
-For production, prefer a battle-tested library (e.g. `pybreaker`) over
-hand-rolling, but the model above is what it's doing.
 
 ### The rest of the resilience toolkit
 - **Timeouts** on every network call. A call with no timeout is a latent hang.
