@@ -1,10 +1,10 @@
 # OpenCode Configuration
 
-OpenCode setup with skills, MCP servers, and LM Studio integration for local model inference.
+OpenCode setup with personas (single-source skills that can also generate agents), MCP servers, and LM Studio integration for local model inference.
 
 ## Overview
 
-This folder provides configuration scripts for [OpenCode](https://github.com/opencode-ai/opencode), a terminal-based AI coding assistant. The setup includes skills (reusable agent behaviors) and MCP servers, mirroring the configuration used by Claude Code and Kiro CLI for consistency across all three AI assistants.
+This folder provides configuration scripts for [OpenCode](https://github.com/opencode-ai/opencode), a terminal-based AI coding assistant. Each persona is authored once as `personas/<name>/SKILL.md`; the skill is the canonical content, and when its frontmatter sets `agent: true` the installer generates an OpenCode agent from the same body. The setup also includes MCP servers, mirroring the configuration used by Claude Code and Kiro CLI for consistency across all three AI assistants.
 
 ## Quick Start
 
@@ -19,54 +19,68 @@ This folder provides configuration scripts for [OpenCode](https://github.com/ope
 opencode-glm  # Uses local GLM-4.7-Flash
 ```
 
-## Agents
+## Personas — one source
 
-Agents are specialized assistants that handle specific types of tasks. They are installed to `~/.config/opencode/agents/` and can be invoked as skills or via the Task tool.
+Each persona is authored once as `personas/<name>/SKILL.md`. That skill is the
+**single source of truth**; there are no separate agent files to keep in sync.
+A small block of frontmatter controls what gets installed:
 
-```bash
-# Install agents
-./install.sh --agents-only
+```yaml
+---
+name: code-reviewer
+description: Code review specialist for quality, security, and best practices.
+compatibility: opencode
+agent: true           # generate an OpenCode agent from this same body
+model: opus           # tool-agnostic model name (opus | sonnet)
+---
 ```
 
-See [agents/README.md](agents/README.md) for detailed agent documentation.
-
-## Skills
-
-Skills provide reusable agent behaviors that OpenCode agents can load on-demand. They are installed to `~/.config/opencode/skills/` (global) or `.opencode/skills/` (project-level).
-
-| Skill | Description |
-|-------|-------------|
-| `architecture-expert` | System design, AWS infrastructure, and technical decisions |
-| `cdk-expert-python` | AWS CDK with Python |
-| `cdk-expert-ts` | AWS CDK with TypeScript |
-| `code-reviewer` | Code quality, security, and best practices |
-| `data-scientist` | Data analysis, ML models, and visualization |
-| `devops-engineer` | CI/CD, Docker, and infrastructure automation |
-| `documentation-engineer` | README, API docs, and user guides |
-| `frontend-engineer-ts` | React, TypeScript, and Tailwind CSS |
-| `frontend-engineer-dart` | Flutter, Dart, and mobile/web apps |
-| `linux-specialist` | Shell scripting and system administration |
-| `product-manager` | Feature planning, requirements, and roadmaps |
-| `project-coordinator` | Task orchestration and Memory Bank management |
-| `python-backend` | FastAPI, AWS Lambda, and Python services |
-| `python-test-engineer` | pytest and test automation |
-| `security-specialist` | Threat modeling, OWASP, and AWS security |
-| `test-coordinator` | Test strategy, coverage, and coordination |
-| `typescript-test-engineer` | Jest, Playwright, and React Testing Library |
-| `ui-ux-designer` | Wireframes, design systems, and accessibility |
-
-Install skills:
+`install.sh` installs the skill to `~/.config/opencode/skills/<name>/SKILL.md`
+(stripping the `agent`/`model` keys, keeping `name`/`description`/`compatibility`),
+and — when `agent: true` — generates `~/.config/opencode/agents/<name>.md` from
+the **same body**, emitting OpenCode agent frontmatter (a `description`, a
+provider model string, and a `tools` bool-map). The tool-agnostic `model` is
+mapped to a provider string: `opus` → `anthropic/claude-opus-4-6`,
+`sonnet` → `anthropic/claude-sonnet-4-5`. Drop `agent: true` for a skill-only
+persona.
 
 ```bash
-# Install globally
+# Install agents (generated from agent: true personas) and system opencode.md
+./install.sh --agents-only
+
+# Install skills globally
 ./install.sh --skills-only
 
-# Install to current project
+# Install skills/agents to the current project (./.opencode/skills, ./.opencode/agents)
 ./install.sh --skills-only --project
 
-# List available skills
+# List available personas (a +agent marker shows which also install an agent)
 ./install.sh --list
 ```
+
+| Persona | +agent | Description |
+|---------|:------:|-------------|
+| `architecture-expert` | ✓ | System design, AWS infrastructure, and technical decisions |
+| `cdk-expert-python` | ✓ | AWS CDK with Python |
+| `cdk-expert-ts` | ✓ | AWS CDK with TypeScript |
+| `code-reviewer` | ✓ | Code quality, security, and best practices |
+| `dart-app-developer` | ✓ | Flutter/Dart app architecture and good Dart practices |
+| `data-scientist` | ✓ | Data analysis, ML models, and visualization |
+| `devops-engineer` | ✓ | CI/CD, Docker, and infrastructure automation |
+| `documentation-engineer` | ✓ | README, API docs, and user guides |
+| `frontend-engineer-ts` | ✓ | React, TypeScript, and Tailwind CSS |
+| `linux-specialist` | ✓ | Shell scripting and system administration |
+| `product-manager` | ✓ | Feature planning, requirements, and roadmaps |
+| `project-coordinator` | ✓ | Task orchestration and Memory Bank management |
+| `python-backend` | ✓ | FastAPI, AWS Lambda, and Python services |
+| `python-test-engineer` | ✓ | pytest and test automation |
+| `security-specialist` | ✓ | Threat modeling, OWASP, and AWS security |
+| `test-coordinator` | ✓ | Test strategy, coverage, and coordination |
+| `typescript-test-engineer` | ✓ | Jest, Playwright, and React Testing Library |
+| `ui-ux-designer` | ✓ | Wireframes, design systems, and accessibility |
+| `writing-blog-posts` | ✓ | Blog posts for coles.codes in Matt's voice |
+| `writing-documents` | ✓ | Documents, memos, PRFAQs in the Amazon writing style |
+| `writing-style` | ✓ | Matt's personal writing register and conventions |
 
 ## MCP Servers
 
@@ -140,8 +154,9 @@ lmstudio-status
 | `config.json` | `~/.config/opencode/` | Main OpenCode settings |
 | `mcp.json` | `~/.config/opencode/` | MCP server definitions |
 | `opencode.md` | `~/.config/opencode/` | System-level agent configuration |
-| `agents/` | `~/.config/opencode/` | Agent definitions |
-| `skills/` | `~/.config/opencode/` | Agent skill definitions |
+| `agents/` | `~/.config/opencode/` | Agent definitions (generated from `agent: true` personas) |
+| `skills/` | `~/.config/opencode/` | Skill definitions (installed from `personas/`) |
+| `personas/` | this folder | Single-source persona definitions (`<name>/SKILL.md`) |
 
 ## Environment Variables
 

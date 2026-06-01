@@ -81,17 +81,21 @@ python3 --version && node --version && claude --version
 - **LazyVim** - Modern Neovim with LSP
 
 ### AI Coding Assistants
-- **Claude Code** - 17 specialized agents + skills with MCPs
-- **Kiro CLI** - AWS-native AI assistant with 17 agents
-- **OpenCode** - Terminal AI with 17 skills, MCPs & LM Studio for local models (GLM4.7-Air)
+- **Claude Code** - 21 specialized agents + skills with MCPs
+- **Kiro CLI** - AWS-native AI assistant with 21 agents
+- **OpenCode** - Terminal AI with 21 skills, MCPs & LM Studio for local models (GLM4.7-Air)
 
-### 18 Specialized Agents
-**Development:** python-backend, frontend-engineer-ts, frontend-engineer-dart, cdk-expert-ts, cdk-expert-python, data-scientist
+Each tool is authored as single-source personas (`personas/<name>/SKILL.md`); the
+installer generates that tool's agent from the same skill body.
+
+### 21 Specialized Agents
+**Development:** python-backend, frontend-engineer-ts, dart-app-developer, cdk-expert-ts, cdk-expert-python, data-scientist
 **Testing:** test-coordinator, python-test-engineer, typescript-test-engineer
 **DevOps:** devops-engineer, linux-specialist, code-reviewer
 **Architecture:** architecture-expert, ui-ux-designer
 **Security:** security-specialist
 **Management:** documentation-engineer, product-manager, project-coordinator
+**Writing:** writing-blog-posts, writing-documents, writing-style
 
 ### 8 Core MCP Servers
 - **filesystem** - File operations
@@ -136,7 +140,7 @@ You: "Add user authentication with Cognito"
 # What happens:
 # 1. test-coordinator plans testing strategy
 # 2. python-test-engineer writes tests (fail initially)
-# 3. python-backend-agent implements code
+# 3. python-backend implements code
 # 4. Tests auto-run, errors auto-fixed (max 3 attempts)
 # 5. code-reviewer checks security
 # 6. Commit message suggested
