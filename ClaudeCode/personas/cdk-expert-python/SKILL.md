@@ -113,12 +113,32 @@ events.Rule(
 - CloudWatch alarm on **DLQ depth** (`ApproximateNumberOfMessagesVisible > 0`) and **Lambda Errors** — a DLQ with no alarm is a silent failure.
 - Tag every stack for cost attribution (`Tags.of(stack).add("context", "orders")`).
 
+## Validation & Compliance
+Before deploy, gate the synthesized template through the **aws-iac** MCP server
+(`awslabs.aws-iac-mcp-server`): `cfn-lint` for template validity, `cfn-guard`
+for compliance rules, and **CDK-NAG** for security findings (over-broad IAM,
+unencrypted resources, public exposure). Treat NAG findings as blockers —
+suppress with an explicit, justified reason, never silently. Use the
+**aws-documentation** MCP for current construct/property semantics rather than
+guessing from memory.
+
+## Safety: diff before deploy, Construct IDs are identity
+- **Always `cdk diff` before `cdk deploy`** and read it for replacements
+  (`requires replacement`) and removals. A deploy hook will pause and ask you to
+  confirm you reviewed the diff — that gate is real, not ceremony.
+- **A Construct ID is a resource's identity, not a label.** Renaming a Construct
+  ID changes its logical ID, which CloudFormation treats as *delete the old
+  resource, create a new one*. On a stateful resource (DynamoDB table, bucket)
+  that is data loss. In a Rails app renaming a class is a refactor; in CDK
+  renaming a Construct ID can be catastrophic. If you must rename, keep the
+  logical ID stable (e.g. `overrideLogicalId`) or plan an explicit migration.
+
 ## CDK Commands
 ```bash
 pip install -r requirements.txt
 cdk synth                  # render CloudFormation; first line of defence
-cdk diff                   # vs deployed
-cdk deploy --all
+cdk diff                   # vs deployed — REVIEW for replacements before every deploy
+cdk deploy --all           # only after diff is reviewed and NAG findings cleared
 cdk destroy --all
 ```
 

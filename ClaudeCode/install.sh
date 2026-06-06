@@ -32,6 +32,7 @@ SETTINGS_FILE="$CLAUDE_DIR/settings.json"
 MCP_CONFIG_FILE="$SCRIPT_DIR/mcp-config.json"
 HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
 TASK_HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_task_hook.sh"
+PRE_DEPLOY_HOOK_SCRIPT="$SCRIPT_DIR/hooks/pre_deploy_hook.sh"
 
 # Each persona is a single source file: personas/<name>/SKILL.md. The skill is
 # the canonical content. When its frontmatter sets `agent: true`, install.sh
@@ -231,14 +232,14 @@ install_hooks() {
     printf "${BLUE}Installing post-code/post-task hooks...${NC}\n"
 
     for f in "$SHARED_DIR/post_code_checks.sh" "$SHARED_DIR/post_task_checks.sh" \
-             "$HOOK_SCRIPT" "$TASK_HOOK_SCRIPT"; do
+             "$HOOK_SCRIPT" "$TASK_HOOK_SCRIPT" "$PRE_DEPLOY_HOOK_SCRIPT"; do
         if [ ! -f "$f" ]; then
             printf "${RED}Required file not found: %s${NC}\n" "$f"
             return 1
         fi
     done
 
-    chmod +x "$HOOK_SCRIPT" "$TASK_HOOK_SCRIPT"
+    chmod +x "$HOOK_SCRIPT" "$TASK_HOOK_SCRIPT" "$PRE_DEPLOY_HOOK_SCRIPT"
     mkdir -p "$CLAUDE_DIR"
 
     if ! command -v node &> /dev/null; then
@@ -249,6 +250,7 @@ install_hooks() {
     SETTINGS_FILE="$SETTINGS_FILE" \
     HOOK_SCRIPT="$HOOK_SCRIPT" \
     TASK_HOOK_SCRIPT="$TASK_HOOK_SCRIPT" \
+    PRE_DEPLOY_HOOK_SCRIPT="$PRE_DEPLOY_HOOK_SCRIPT" \
     node -e '
 const fs = require("fs");
 const env = process.env;
@@ -257,6 +259,10 @@ if (fs.existsSync(env.SETTINGS_FILE)) {
     try { existing = JSON.parse(fs.readFileSync(env.SETTINGS_FILE, "utf8")); } catch(e) {}
 }
 existing.hooks = {
+    PreToolUse: [
+        { matcher: "Bash",
+          hooks: [{ type: "command", command: env.PRE_DEPLOY_HOOK_SCRIPT }] }
+    ],
     PostToolUse: [
         { matcher: "Edit|Write|NotebookEdit",
           hooks: [{ type: "command", command: env.HOOK_SCRIPT }] }
@@ -265,9 +271,23 @@ existing.hooks = {
         { hooks: [{ type: "command", command: env.TASK_HOOK_SCRIPT }] }
     ]
 };
+
+// Hard safety the model cannot talk itself out of: deny reads of AWS
+// credentials, scrub secrets from subprocess env, and disable bypass mode.
+existing.permissions = existing.permissions || {};
+const deny = new Set(existing.permissions.deny || []);
+deny.add("Read(~/.aws/**)");
+deny.add("Read(./.aws/**)");
+existing.permissions.deny = [...deny];
+
+existing.env = existing.env || {};
+existing.env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB = "1";
+
+existing.disableBypassPermissionsMode = "disable";
+
 fs.writeFileSync(env.SETTINGS_FILE, JSON.stringify(existing, null, 2) + "\n");
 '
-    printf "${GREEN}✓ Hooks configuration written to %s${NC}\n" "$SETTINGS_FILE"
+    printf "${GREEN}✓ Hooks, permissions and safety settings written to %s${NC}\n" "$SETTINGS_FILE"
 }
 
 # Parse arguments

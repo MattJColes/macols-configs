@@ -18,6 +18,17 @@ Two hooks fire on every `Edit|Write|NotebookEdit`:
 | `command` | Runs shell script: tests, bandit, pip-audit/npm audit |
 | `agent` | Spawns a mini LLM agent to review the edited file for logic bugs and missed security issues |
 
+A third hook fires on `PreToolUse` for `Bash`:
+
+| Hook | What it does |
+|------|-------------|
+| `pre_deploy_hook.sh` | Detects `cdk deploy` / `cdk destroy` and returns `permissionDecision: "ask"`, pausing to confirm you reviewed `cdk diff` for resource replacements. A renamed Construct ID changes its logical ID and forces delete-then-create — data loss on stateful resources. `cdk diff` / `cdk synth` pass through untouched. |
+
+`install.sh --hooks-only` additionally writes hard safety to
+`~/.claude/settings.json` that the model cannot override: `permissions.deny` on
+`Read(~/.aws/**)`, `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`, and
+`disableBypassPermissionsMode: "disable"`.
+
 > **Note:** `type: "agent"` hooks run a scoped LLM agent with tool access. They are separate from the main Claude session's subagents spawned via the Task tool.
 
 ## Installation
