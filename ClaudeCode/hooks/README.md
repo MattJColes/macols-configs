@@ -26,8 +26,8 @@ A third hook fires on `PreToolUse` for `Bash`:
 
 `install.sh --hooks-only` additionally writes hard safety to
 `~/.claude/settings.json` that the model cannot override: `permissions.deny` on
-`Read(~/.aws/**)`, `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`, and
-`disableBypassPermissionsMode: "disable"`.
+`Read(~/.aws/**)` and `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`. Bypass ("yolo")
+permissions mode is left enabled.
 
 > **Note:** `type: "agent"` hooks run a scoped LLM agent with tool access. They are separate from the main Claude session's subagents spawned via the Task tool.
 
