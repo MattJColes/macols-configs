@@ -94,6 +94,7 @@ ClaudeCode/
 ├── hooks/               # Testing & security automation
 │   ├── post_code_hook.sh
 │   ├── post_task_hook.sh
+│   ├── pre_deploy_hook.sh  # PreToolUse guard: confirm `cdk diff` before deploy/destroy
 │   └── README.md
 ├── CLAUDE.md            # System-level Claude instructions
 ├── mcp-config.json      # MCP server configuration
@@ -167,6 +168,8 @@ shows this live).
 | `playwright` | Cross-browser testing automation |
 | `memory` | Persistent knowledge graph across sessions |
 | `aws-kb` | AWS Knowledge Base retrieval |
+| `aws-iac` | CDK/CloudFormation validation — cfn-lint, cfn-guard, CDK-NAG, construct examples (`awslabs.aws-iac-mcp-server`) |
+| `aws-documentation` | Live AWS service/construct documentation lookup (`awslabs.aws-documentation-mcp-server`) |
 | `context7` | Real-time library documentation |
 | `dart` | Dart/Flutter project context and tools |
 
@@ -219,3 +222,17 @@ The hook automatically runs after code changes:
 - **jest/mocha** - JavaScript/TypeScript tests
 - **bandit** - Python security scanning
 - **pip-audit / npm audit** - Package vulnerability checks
+
+`install.sh --hooks-only` also writes hard, model-independent safety into
+`~/.claude/settings.json` (these are enforced by the harness, not interpreted
+from CLAUDE.md, which degrades as context grows):
+
+- **PreToolUse deploy guard** (`pre_deploy_hook.sh`) — pauses `cdk deploy` /
+  `cdk destroy` and asks you to confirm you reviewed `cdk diff` for resource
+  replacements (a renamed Construct ID can force destruction).
+- **`permissions.deny`** — blocks reads of `~/.aws/**` so AWS credentials never
+  reach the model.
+- **`env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`** — scrubs secrets from subprocess
+  environments.
+- **`disableBypassPermissionsMode: "disable"`** — prevents bypassing the
+  permission system.
