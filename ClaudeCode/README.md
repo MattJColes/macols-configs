@@ -234,5 +234,6 @@ from CLAUDE.md, which degrades as context grows):
   reach the model.
 - **`env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`** — scrubs secrets from subprocess
   environments.
-- **`disableBypassPermissionsMode: "disable"`** — prevents bypassing the
-  permission system.
+
+Bypass ("yolo") permissions mode is left enabled — the installer removes any
+`disableBypassPermissionsMode` lockdown from a previous strict install.

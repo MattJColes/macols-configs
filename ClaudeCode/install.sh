@@ -273,7 +273,8 @@ existing.hooks = {
 };
 
 // Hard safety the model cannot talk itself out of: deny reads of AWS
-// credentials, scrub secrets from subprocess env, and disable bypass mode.
+// credentials and scrub secrets from subprocess env. Bypass ("yolo")
+// permissions mode is intentionally left available.
 existing.permissions = existing.permissions || {};
 const deny = new Set(existing.permissions.deny || []);
 deny.add("Read(~/.aws/**)");
@@ -283,7 +284,8 @@ existing.permissions.deny = [...deny];
 existing.env = existing.env || {};
 existing.env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB = "1";
 
-existing.disableBypassPermissionsMode = "disable";
+// Re-enable bypass mode if a previous strict install disabled it.
+delete existing.disableBypassPermissionsMode;
 
 fs.writeFileSync(env.SETTINGS_FILE, JSON.stringify(existing, null, 2) + "\n");
 '
