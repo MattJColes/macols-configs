@@ -49,6 +49,42 @@ publishing process. Read it before drafting or editing any post.
   confident humour: it's a deliberate principal-engineer workflow choice (spec well,
   delegate, review), not laziness. Useful as a recurring wink, especially in meta/intro posts.
 
+## Hands-on tutorial / how-to mode (the build-along voice)
+Matt has a back catalogue of hands-on AWS tutorials, originally on "Devs in the
+Shed" (tagline: "Getting hands on with AWS") — for example the AWS CDK in Python
+posts "Identifiers within AWS CDK" and "Reference and import existing assets into
+AWS CDK". When a post is a build-along tutorial rather than a personal/meta piece,
+switch into this mode. It's warmer and more instructional than the everyday
+coles.codes voice, but every rule above still holds (standard capitalisation,
+plain words, varied sentence length, no AI tells).
+What defines these posts:
+- Set the scope in the first line. Say plainly what the post covers and what the
+  reader walks away with. (His old opener was literally "A quick blog today on…" —
+  keep that spirit of stating scope up front, but don't reuse the phrase; it reads
+  dated now.)
+- One topic per post, kept tight. Each post does a single thing — explain
+  identifiers, or import existing assets — and then stops. Split a bigger subject
+  into separate posts rather than one sprawling one.
+- Build-along structure. Copy-pasteable terminal commands and code blocks in the
+  order the reader runs them: scaffold (`mkdir cdk-fun && cd cdk-fun && cdk init
+  app --language=python`), edit the stack file, bootstrap, deploy.
+- Concrete placeholder names to anchor the abstract. `ACMEVPC`, `TestVPC`,
+  `cdk-fun`, `this.acme_vpc` — pick a memorable name and reuse it so the concept
+  has something to hang on.
+- Explain the why, not just the steps. When AWS does something non-obvious (e.g.
+  the 8-digit hash appended to a Construct ID to make the CloudFormation logical
+  ID unique), say why it works that way. The reader should leave understanding the
+  mechanism, not just having pasted commands.
+- Link a companion repo. Ship the full working code in a public GitHub repo and
+  link it (the CDK posts pointed at a `cdk-python-imports` repo). The post walks
+  the key parts; the repo holds the rest.
+- End on the concrete payoff. Close on what the reader should now see working —
+  "you should see an EC2 instance created in a few minutes" — not a summary
+  paragraph.
+These older AWS tutorials are good candidates to migrate or refresh onto
+coles.codes: keep the hands-on structure, but tighten the prose to the current
+voice.
+
 ## Topics & identity (weave in naturally when relevant)
 - Python with a strong emphasis on type safety: Pydantic, PydanticAI, FastAPI, AWS Strands.
 - AI agents doing the boring parts, plus agent orchestration.
