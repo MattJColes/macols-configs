@@ -184,6 +184,26 @@ echo "Installing LazyVim..."
 git clone https://github.com/LazyVim/starter "$HOME/.config/nvim"
 rm -rf "$HOME/.config/nvim/.git"
 
+# Install Homebrew + herdr + yazi + lazygit + neovim tooling (sub-script)
+echo "Running install_brew_herdr_yazi_lazygit_nvim.sh..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$SCRIPT_DIR/install_brew_herdr_yazi_lazygit_nvim.sh"
+
+# Launch herdr automatically on SSH login (idempotent)
+echo "Configuring herdr auto-launch on SSH login..."
+if ! grep -q 'Launch herdr on SSH login' "$HOME/.zshrc" 2>/dev/null; then
+    cat >> "$HOME/.zshrc" << 'HERDREOF'
+
+# --- Launch herdr on SSH login ---
+if [[ -n "$SSH_CONNECTION" && -z "$HERDR_ENV" ]]; then
+  herdr
+fi
+HERDREOF
+    echo "Added herdr auto-launch to ~/.zshrc"
+else
+    echo "herdr auto-launch already configured in ~/.zshrc"
+fi
+
 echo ""
 echo "=== Configuration ==="
 echo ""
