@@ -191,7 +191,7 @@ bash "$SCRIPT_DIR/install_brew_herdr_yazi_lazygit_nvim.sh"
 
 # Launch herdr automatically on SSH login (idempotent)
 echo "Configuring herdr auto-launch on SSH login..."
-if ! grep -q 'Launch herdr on SSH login' "$HOME/.zshrc" 2>/dev/null; then
+if [ -f "$HOME/.zshrc" ] && ! grep -q 'Launch herdr on SSH login' "$HOME/.zshrc" 2>/dev/null; then
     cat >> "$HOME/.zshrc" << 'HERDREOF'
 
 # --- Launch herdr on SSH login ---
@@ -200,8 +200,6 @@ if [[ -n "$SSH_CONNECTION" && -z "$HERDR_ENV" ]]; then
 fi
 HERDREOF
     echo "Added herdr auto-launch to ~/.zshrc"
-else
-    echo "herdr auto-launch already configured in ~/.zshrc"
 fi
 
 echo ""
