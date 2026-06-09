@@ -18,7 +18,7 @@ if ! command -v brew &>/dev/null; then
         elif command -v dnf &>/dev/null; then
             echo "  Installing build dependencies (dnf)..."
             sudo dnf groupinstall -y "Development Tools"
-            sudo dnf install -y procps-ng curl file git
+            sudo dnf install -y procps-ng file git
         elif command -v yum &>/dev/null; then
             echo "  Installing build dependencies (yum)..."
             sudo yum groupinstall -y "Development Tools"
@@ -27,14 +27,15 @@ if ! command -v brew &>/dev/null; then
     fi
 
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-    if [[ -f /opt/homebrew/bin/brew ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    elif [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-    fi
 else
     echo "Homebrew already installed."
+fi
+
+# Ensure brew is on PATH for the rest of the script
+if [[ -f /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
 echo ""
@@ -42,8 +43,16 @@ echo "=============================="
 echo " [2/7] Installing packages"
 echo "=============================="
 
-echo "Installing neovim, yazi, lazygit, delta, herd, and tmux..."
-brew install neovim yazi lazygit git-delta herdr tmux
+echo "Installing neovim, yazi, lazygit, delta, and tmux..."
+brew install neovim yazi lazygit git-delta tmux
+
+# herdr is Amazon-internal — skip on non-Amazon systems
+if brew tap | grep -q amazon 2>/dev/null || brew search herdr 2>/dev/null | grep -q herdr; then
+    echo "Installing herdr..."
+    brew install herdr
+else
+    echo "  Skipping herdr (not available outside Amazon)."
+fi
 
 echo ""
 echo "=============================="
@@ -107,9 +116,8 @@ echo " [5/7] Installing Yazi plugins"
 echo "=============================="
 
 ya pkg add yazi-rs/plugins:git || true
-ya pkg add Lil-Dank/lazygit || true
 ya pkg add yazi-rs/plugins:vcs-files || true
-ya pkg install || true
+ya pkg install --discard || true
 
 echo ""
 echo "=============================="
@@ -185,6 +193,7 @@ require("git"):setup {
 EOF
 
 echo "  Writing lazygit plugin..."
+rm -f "$YAZI_CONFIG/plugins/lazygit.yazi/main.lua"
 cat > "$YAZI_CONFIG/plugins/lazygit.yazi/main.lua" << 'EOF'
 local function entry()
 	ya.emit("shell", { "lazygit", block = true, orphan = true })
@@ -291,10 +300,23 @@ echo "=============================="
 echo " [7/7] Shell configuration"
 echo "=============================="
 
+BREW_LINE='eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"'
 EDITOR_LINE='export EDITOR="nvim"'
 
 for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
     if [[ -f "$rc" ]]; then
+        if ! grep -qF 'linuxbrew' "$rc" && ! grep -qF '/opt/homebrew' "$rc"; then
+            echo "" >> "$rc"
+            if [[ -f /opt/homebrew/bin/brew ]]; then
+                echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$rc"
+            else
+                echo "$BREW_LINE" >> "$rc"
+            fi
+            echo "  Added brew shellenv to $rc"
+        else
+            echo "  brew shellenv already in $rc"
+        fi
+
         if ! grep -qF 'export EDITOR="nvim"' "$rc"; then
             echo "" >> "$rc"
             echo "$EDITOR_LINE" >> "$rc"
