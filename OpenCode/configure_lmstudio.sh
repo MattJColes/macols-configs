@@ -170,7 +170,7 @@ if ! grep -q "# OpenCode LM Studio aliases" "$SHELL_RC" 2>/dev/null; then
 
 # OpenCode LM Studio aliases
 alias opencode-glm='opencode --model lmstudio/glm-4.7-flash'
-alias opencode-claude='opencode --model anthropic/claude-sonnet-4-5'
+alias opencode-claude='opencode --model anthropic/claude-sonnet-4-6'
 alias lmstudio-status='curl -s http://localhost:1234/v1/models | jq .'
 EOF
     echo -e "${GREEN}OK Shell aliases added to ${SHELL_RC}${NC}"

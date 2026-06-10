@@ -163,7 +163,6 @@ shows this live).
 | MCP | Purpose |
 |-----|---------|
 | `filesystem` | File operations across your home directory |
-| `sequential-thinking` | Complex problem-solving and planning |
 | `puppeteer` | Browser automation and screenshots |
 | `playwright` | Cross-browser testing automation |
 | `memory` | Persistent knowledge graph across sessions |

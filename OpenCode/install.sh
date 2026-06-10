@@ -34,7 +34,7 @@ read -r -d '' PERSONA_GEN_JS <<'PERSONA_EOF' || true
 const fs = require("fs"), path = require("path");
 const mode = process.env.MODE, pdir = process.env.PERSONAS_DIR, tdir = process.env.TARGET_DIR;
 // Map the tool-agnostic model name to OpenCode's provider string.
-const MODEL_MAP = { opus: "anthropic/claude-opus-4-6", sonnet: "anthropic/claude-sonnet-4-5" };
+const MODEL_MAP = { opus: "anthropic/claude-opus-4-8", sonnet: "anthropic/claude-sonnet-4-6" };
 // OpenCode skills don't carry an allowed-tools list, so default all six to true.
 const AGENT_TOOLS = ["read", "write", "edit", "bash", "grep", "glob"];
 
@@ -261,7 +261,6 @@ install_mcps() {
     mkdir -p "$HOME/.mcp/servers"
     for pkg in \
         @modelcontextprotocol/server-filesystem \
-        @modelcontextprotocol/server-sequential-thinking \
         @modelcontextprotocol/server-puppeteer \
         @playwright/mcp \
         @modelcontextprotocol/server-memory \
@@ -285,10 +284,6 @@ install_mcps() {
     "filesystem": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "$HOME"]
-    },
-    "sequential-thinking": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     },
     "puppeteer": {
       "command": "npx",
