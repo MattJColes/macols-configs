@@ -97,9 +97,8 @@ installer generates that tool's agent from the same skill body.
 **Management:** documentation-engineer, product-manager, project-coordinator
 **Writing:** writing-blog-posts, writing-documents, writing-style
 
-### 8 Core MCP Servers
+### 7 Core MCP Servers
 - **filesystem** - File operations
-- **sequential-thinking** - Complex problem-solving
 - **puppeteer** & **playwright** - Browser automation
 - **memory** - Knowledge graph across sessions
 - **context7** - Real-time, up-to-date library documentation

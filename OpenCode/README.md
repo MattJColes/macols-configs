@@ -40,8 +40,8 @@ model: opus           # tool-agnostic model name (opus | sonnet)
 and — when `agent: true` — generates `~/.config/opencode/agents/<name>.md` from
 the **same body**, emitting OpenCode agent frontmatter (a `description`, a
 provider model string, and a `tools` bool-map). The tool-agnostic `model` is
-mapped to a provider string: `opus` → `anthropic/claude-opus-4-6`,
-`sonnet` → `anthropic/claude-sonnet-4-5`. Drop `agent: true` for a skill-only
+mapped to a provider string: `opus` → `anthropic/claude-opus-4-8`,
+`sonnet` → `anthropic/claude-sonnet-4-6`. Drop `agent: true` for a skill-only
 persona.
 
 ```bash
@@ -89,7 +89,6 @@ The following MCP servers are configured (identical to Claude Code and Kiro):
 | Server | Description | Use Case |
 |--------|-------------|----------|
 | `filesystem` | File read/write operations | All file operations |
-| `sequential-thinking` | Complex problem-solving | Architecture, planning |
 | `puppeteer` | Browser automation | Screenshots, UI testing |
 | `playwright` | Cross-browser testing | E2E testing |
 | `memory` | Knowledge graph persistence | Cross-session context |

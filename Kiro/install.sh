@@ -50,7 +50,6 @@ const MCP_SERVERS = {
   filesystem: { command: "npx", args: ["-y", "@modelcontextprotocol/server-filesystem", "$HOME"] },
   memory: { command: "npx", args: ["-y", "@modelcontextprotocol/server-memory"] },
   context7: { command: "npx", args: ["-y", "@upstash/context7-mcp@latest"] },
-  "sequential-thinking": { command: "npx", args: ["-y", "@modelcontextprotocol/server-sequential-thinking"] },
   puppeteer: { command: "npx", args: ["-y", "@modelcontextprotocol/server-puppeteer"] },
   playwright: { command: "npx", args: ["-y", "@playwright/mcp"] },
   dynamodb: { command: "uvx", args: ["awslabs.dynamodb-mcp-server@latest"], env: { AWS_REGION: "ap-southeast-2", AWS_PROFILE: "default", "DDB-MCP-READONLY": "false" } },
@@ -60,7 +59,7 @@ const MCP_SERVERS = {
 
 // Per-agent MCPs beyond the common filesystem + memory.
 const AGENT_MCPS = {
-  "architecture-expert": ["context7", "sequential-thinking", "aws-kb"],
+  "architecture-expert": ["context7", "aws-kb"],
   "cdk-expert-ts": ["context7", "aws-kb"],
   "cdk-expert-python": ["context7", "aws-kb"],
   "code-reviewer": [],
@@ -74,9 +73,9 @@ const AGENT_MCPS = {
   "project-coordinator": [],
   "python-backend": ["context7", "dynamodb", "aws-kb"],
   "python-test-engineer": ["context7", "dynamodb"],
-  "security-specialist": ["context7", "sequential-thinking", "aws-kb"],
+  "security-specialist": ["context7", "aws-kb"],
   "test-coordinator": ["playwright"],
-  "typescript-test-engineer": ["context7", "sequential-thinking", "puppeteer", "playwright"],
+  "typescript-test-engineer": ["context7", "puppeteer", "playwright"],
   "ui-ux-designer": ["context7", "puppeteer"],
   "writing-blog-posts": [],
   "writing-documents": [],
@@ -304,7 +303,6 @@ install_mcps() {
     mkdir -p "$HOME/.mcp/servers"
     for pkg in \
         @modelcontextprotocol/server-filesystem \
-        @modelcontextprotocol/server-sequential-thinking \
         @modelcontextprotocol/server-puppeteer \
         @playwright/mcp \
         @modelcontextprotocol/server-memory \
