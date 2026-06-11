@@ -32,6 +32,13 @@ publishing process. Read it before drafting or editing any post.
   "where I write up the work that's held up".
 - Prefer his phrasing "simple first, room to grow later" (he chose "grow" over "flex").
 - Short paragraphs.
+- Shorter is better — he asks for condensing passes on drafts. Cut throat-clearing
+  sentences that announce a point instead of making it ("This is the bit that made it
+  work, so it's worth explaining", "This is the question that nagged at me most",
+  "so let me start there"); start sections in the middle of the point.
+- When a section ends on a limitation or trade-off, close it with a short forward-looking
+  note rather than dwelling (e.g. "local model quality has jumped a lot lately, so I
+  suspect the gap keeps narrowing").
 
 ## Avoid (explicit dislikes)
 - The opener "Most of what I do starts as 'I wonder if I can…'". Don't use that framing.
@@ -42,6 +49,10 @@ publishing process. Read it before drafting or editing any post.
   rule-of-three lists or "X, not Y" antithesis; skip cutesy understatement ("gently out of
   hand", "far too many containers", "out-ranked by our cats"). Vary sentence length, use plain
   words, and keep a couple of genuinely personal asides.
+- "Honest/honestly" as a verbal crutch (once per post at most), and confession-trope
+  headers like "The honest part nobody writes about" — just state the claim as the header.
+- Bolted-on self-referential links: he cut a "see the projects page" closing paragraph and
+  a back-link to his own intro post. Cross-link only where it genuinely helps the reader.
 
 ## The meta / ironic angle (Matt likes this — use it)
 - The blog is called "coles.codes", but these days he specs and prompts a lot of it up for
@@ -105,7 +116,10 @@ voice.
 
 ## SEO hygiene checklist
 Front matter:
-- `title` — specific and search-friendly.
+- `title` — specific, search-friendly, and short. Prefer "Building X: what it is" over a
+  trailing clause ("Building lgtmaybe: a PR reviewer for any model", not "…a PR reviewer
+  that runs on whatever model you've got"). Slugs come from the filename, so a title
+  rename is safe after publishing.
 - `description` — always present, ~120–155 chars. It feeds the meta description,
   OpenGraph, JSON-LD, and llms.txt, so make it count.
 - `tags` — relevant, consistent.
