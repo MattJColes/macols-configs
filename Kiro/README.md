@@ -96,31 +96,31 @@ Kiro/
 
 ## Per-Agent MCP Mapping
 
-Each agent only starts the MCP servers it needs. All agents get `filesystem` + `memory`.
+Each agent only starts the MCP servers it needs. All agents get `filesystem`.
 
-| Agent | context7 | seq-thinking | puppeteer | playwright | dynamodb | aws-kb | dart |
-|---|---|---|---|---|---|---|---|
-| architecture-expert | Y | Y | - | - | - | Y | - |
-| cdk-expert-ts | Y | - | - | - | - | Y | - |
-| cdk-expert-python | Y | - | - | - | - | Y | - |
-| code-reviewer | - | - | - | - | - | - | - |
-| dart-app-developer | Y | - | - | - | - | - | Y |
-| data-scientist | Y | - | - | - | Y | Y | - |
-| devops-engineer | Y | - | - | Y | - | - | - |
-| documentation-engineer | Y | - | - | - | - | - | - |
-| frontend-engineer-ts | Y | - | - | - | - | - | - |
-| linux-specialist | - | - | - | - | - | - | - |
-| product-manager | - | - | - | - | - | - | - |
-| project-coordinator | - | - | - | - | - | - | - |
-| python-backend | Y | - | - | - | Y | Y | - |
-| python-test-engineer | Y | - | - | - | Y | - | - |
-| security-specialist | Y | Y | - | - | - | Y | - |
-| test-coordinator | - | - | - | Y | - | - | - |
-| typescript-test-engineer | Y | Y | Y | Y | - | - | - |
-| ui-ux-designer | Y | - | Y | - | - | - | - |
-| writing-blog-posts | - | - | - | - | - | - | - |
-| writing-documents | - | - | - | - | - | - | - |
-| writing-style | - | - | - | - | - | - | - |
+| Agent | puppeteer | playwright | dynamodb | aws-kb | dart |
+|---|---|---|---|---|---|
+| architecture-expert | - | - | - | Y | - |
+| cdk-expert-ts | - | - | - | Y | - |
+| cdk-expert-python | - | - | - | Y | - |
+| code-reviewer | - | - | - | - | - |
+| dart-app-developer | - | - | - | - | Y |
+| data-scientist | - | - | Y | Y | - |
+| devops-engineer | - | Y | - | - | - |
+| documentation-engineer | - | - | - | - | - |
+| frontend-engineer-ts | - | - | - | - | - |
+| linux-specialist | - | - | - | - | - |
+| product-manager | - | - | - | - | - |
+| project-coordinator | - | - | - | - | - |
+| python-backend | - | - | Y | Y | - |
+| python-test-engineer | - | - | Y | - | - |
+| security-specialist | - | - | - | Y | - |
+| test-coordinator | - | Y | - | - | - |
+| typescript-test-engineer | Y | Y | - | - | - |
+| ui-ux-designer | Y | - | - | - | - |
+| writing-blog-posts | - | - | - | - | - |
+| writing-documents | - | - | - | - | - |
+| writing-style | - | - | - | - | - |
 
 ## Specialized Personas
 
@@ -165,7 +165,6 @@ Each agent only starts the MCP servers it needs. All agents get `filesystem` + `
 | `~/.kiro/skills/*/SKILL.md` | Skill files (progressive loading) |
 | `~/.kiro/settings/mcp.json` | Global MCP config (optional fallback) |
 | `~/.kiro/settings/hooks.json` | Hook configuration |
-| `~/.kiro/memory` | Knowledge graph memory |
 
 ## Usage
 
@@ -192,7 +191,6 @@ kiro chat
     "includeMcpJson": false,
     "mcpServers": {
         "filesystem": { "command": "npx", "args": ["..."] },
-        "memory": { "command": "npx", "args": ["..."] },
         "dynamodb": { "command": "uvx", "args": ["..."], "env": { "..." } }
     },
     "resources": [

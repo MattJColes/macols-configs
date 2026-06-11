@@ -16,10 +16,6 @@
       "command": "npx",
       "args": ["-y", "@playwright/mcp"]
     },
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
-    },
     "aws-kb": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-aws-kb-retrieval"],
@@ -42,17 +38,9 @@
         "AWS_DOCUMENTATION_PARTITION": "aws"
       }
     },
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
-    },
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
-    },
-    "mempalace": {
-      "command": "uvx",
-      "args": ["--from", "mempalace", "mempalace-mcp"]
     }
   }
 }

@@ -91,9 +91,7 @@ The following MCP servers are configured (identical to Claude Code and Kiro):
 | `filesystem` | File read/write operations | All file operations |
 | `puppeteer` | Browser automation | Screenshots, UI testing |
 | `playwright` | Cross-browser testing | E2E testing |
-| `memory` | Knowledge graph persistence | Cross-session context |
 | `aws-kb` | AWS Knowledge Base retrieval | AWS documentation |
-| `context7` | Real-time documentation | Up-to-date library docs |
 | `dynamodb` | DynamoDB operations | Data modeling |
 | `dart` | Dart/Flutter MCP server | Flutter/Dart development |
 

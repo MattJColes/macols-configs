@@ -48,8 +48,6 @@ const HOME = process.env.HOME_DIR || "";
 // MCP server definitions ($HOME left literal; expanded below for agent JSON).
 const MCP_SERVERS = {
   filesystem: { command: "npx", args: ["-y", "@modelcontextprotocol/server-filesystem", "$HOME"] },
-  memory: { command: "npx", args: ["-y", "@modelcontextprotocol/server-memory"] },
-  context7: { command: "npx", args: ["-y", "@upstash/context7-mcp@latest"] },
   puppeteer: { command: "npx", args: ["-y", "@modelcontextprotocol/server-puppeteer"] },
   playwright: { command: "npx", args: ["-y", "@playwright/mcp"] },
   dynamodb: { command: "uvx", args: ["awslabs.dynamodb-mcp-server@latest"], env: { AWS_REGION: "ap-southeast-2", AWS_PROFILE: "default", "DDB-MCP-READONLY": "false" } },
@@ -57,26 +55,26 @@ const MCP_SERVERS = {
   dart: { command: "dart", args: ["mcp-server"] },
 };
 
-// Per-agent MCPs beyond the common filesystem + memory.
+// Per-agent MCPs beyond the common filesystem.
 const AGENT_MCPS = {
-  "architecture-expert": ["context7", "aws-kb"],
-  "cdk-expert-ts": ["context7", "aws-kb"],
-  "cdk-expert-python": ["context7", "aws-kb"],
+  "architecture-expert": ["aws-kb"],
+  "cdk-expert-ts": ["aws-kb"],
+  "cdk-expert-python": ["aws-kb"],
   "code-reviewer": [],
-  "data-scientist": ["context7", "dynamodb", "aws-kb"],
-  "dart-app-developer": ["context7", "dart"],
-  "devops-engineer": ["context7", "playwright"],
-  "documentation-engineer": ["context7"],
-  "frontend-engineer-ts": ["context7"],
+  "data-scientist": ["dynamodb", "aws-kb"],
+  "dart-app-developer": ["dart"],
+  "devops-engineer": ["playwright"],
+  "documentation-engineer": [],
+  "frontend-engineer-ts": [],
   "linux-specialist": [],
   "product-manager": [],
   "project-coordinator": [],
-  "python-backend": ["context7", "dynamodb", "aws-kb"],
-  "python-test-engineer": ["context7", "dynamodb"],
-  "security-specialist": ["context7", "aws-kb"],
+  "python-backend": ["dynamodb", "aws-kb"],
+  "python-test-engineer": ["dynamodb"],
+  "security-specialist": ["aws-kb"],
   "test-coordinator": ["playwright"],
-  "typescript-test-engineer": ["context7", "puppeteer", "playwright"],
-  "ui-ux-designer": ["context7", "puppeteer"],
+  "typescript-test-engineer": ["puppeteer", "playwright"],
+  "ui-ux-designer": ["puppeteer"],
   "writing-blog-posts": [],
   "writing-documents": [],
   "writing-style": [],
@@ -145,7 +143,6 @@ function expandHome(value) {
 function buildMcpServers(name) {
   const servers = {};
   servers.filesystem = MCP_SERVERS.filesystem;
-  servers.memory = MCP_SERVERS.memory;
   for (const m of AGENT_MCPS[name] || []) servers[m] = MCP_SERVERS[m];
   return expandHome(servers);
 }
@@ -305,13 +302,11 @@ install_mcps() {
         @modelcontextprotocol/server-filesystem \
         @modelcontextprotocol/server-puppeteer \
         @playwright/mcp \
-        @modelcontextprotocol/server-memory \
-        @modelcontextprotocol/server-aws-kb-retrieval \
-        @upstash/context7-mcp; do
+        @modelcontextprotocol/server-aws-kb-retrieval; do
         printf "${BLUE}→ %s${NC}\n" "$pkg"
         npm install -g "$pkg" >/dev/null 2>&1 && printf "  ${GREEN}✓${NC}\n" || printf "  ${YELLOW}⚠ (may already be installed)${NC}\n"
     done
-    printf "  ${GREEN}✓${NC} dynamodb / mempalace (Python via uvx, on-demand)\n"
+    printf "  ${GREEN}✓${NC} dynamodb (Python via uvx, on-demand)\n"
     if command -v dart &> /dev/null; then
         printf "  ${GREEN}✓${NC} dart (built into Dart SDK)\n"
     else
@@ -331,21 +326,9 @@ install_mcps() {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "$HOME"]
     },
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
-    },
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
-    },
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
-    },
-    "mempalace": {
-      "command": "uvx",
-      "args": ["--from", "mempalace", "mempalace-mcp"]
     }
   }
 }
