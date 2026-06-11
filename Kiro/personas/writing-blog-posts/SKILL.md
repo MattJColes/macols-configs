@@ -20,11 +20,17 @@ publishing process. Read it before drafting or editing any post.
   Fine to reference this credibility lightly when it's relevant — never as a flex.
 
 ## Voice (the key rules)
-- Middle-ground casual: conversational and a bit terse. Short fragments and the occasional
-  run-on. First person, present tense. Go easy on em-dashes (overusing them reads as AI).
+- Middle-ground casual: conversational, first person, present tense. Go easy on em-dashes
+  (overusing them reads as AI).
+- String sentences together. Matt's natural rhythm is longer sentences joined with commas,
+  colons, and "and"/"so" — comma splices are fine. AI writing defaults to staccato ("Short
+  sentence. Another point. Close.") — join those up. Don't end a paragraph or section on a
+  punchy fragment ("Worth a read.", "And occasionally, a maybe."); fold it into the
+  previous sentence.
 - KEEP standard capitalisation and apostrophes — capital `I`, `don't`, `it's`. It should
   read deliberate, not like typos. (Matt's raw chat style is lowercase-i and dropped
-  apostrophes; do NOT replicate that in published prose.)
+  apostrophes; do NOT replicate that in published prose.) Straight quotes and apostrophes
+  only (`'`, `"`) — never curly/smart quotes; they creep in when prose is drafted elsewhere.
 - Concrete over corporate. No buzzword stacking. Link to the repo / sources rather than
   describing them at length.
 - Tighten wordy or cutesy phrasing. Example: "where I dump the experiments" became
@@ -45,9 +51,11 @@ publishing process. Read it before drafting or editing any post.
   reality / the half that does ends up here." A little humility is fine — but frame around
   judgement, trade-offs, and the patterns behind what works: what's worth sharing and *why*.
 - AI-detector tells — Matt runs his drafts past these. Don't pile up em-dashes; don't lean on
-  rule-of-three lists or "X, not Y" antithesis; skip cutesy understatement ("gently out of
+  rule-of-three lists, "X, not Y" antithesis, or polished aphorisms ("nothing erodes trust
+  faster than noise" — just say it plainly); skip cutesy understatement ("gently out of
   hand", "far too many containers", "out-ranked by our cats"). Vary sentence length, use plain
-  words, and keep a couple of genuinely personal asides.
+  words ("marker" not "sentinel", "freeze up" not "go inert", "clear" not "unambiguous"), and
+  keep a couple of genuinely personal asides.
 - "Honest/honestly" as a verbal crutch (once per post at most), and confession-trope
   headers like "The honest part nobody writes about" — just state the claim as the header.
 - Bolted-on self-referential links: he cut a "see the projects page" closing paragraph and
@@ -100,7 +108,9 @@ voice.
 - AI agents doing the boring parts, plus agent orchestration.
 - Open-source LLMs (Qwen, GLM); local fine-tuning including vision models / OCR, on a
   Framework Desktop and a DGX Spark (Unsloth).
-- Homelab: Raspberry Pis, a NAS, OptiPlexes, routers — all on Tailscale, lots of containers.
+- Homelab: Raspberry Pis, a NAS, and a stack of Dell OptiPlex Micros and other mini PCs — all
+  on Tailscale, lots of containers (Docker Swarm + Portainer). Frame it around the mini PCs,
+  not routers.
 - Apps: into Flutter lately; has done native and React Native.
 - Backends: FastAPI, starting as a modular monolith and peeling off microservices only
   where something genuinely needs to scale.
