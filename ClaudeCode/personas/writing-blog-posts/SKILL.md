@@ -60,6 +60,11 @@ publishing process. Read it before drafting or editing any post.
   hand", "far too many containers", "out-ranked by our cats"). Vary sentence length, use plain
   words ("marker" not "sentinel", "freeze up" not "go inert", "clear" not "unambiguous"), and
   keep a couple of genuinely personal asides.
+- Metaphors where a factual sentence does the job — especially for results and performance
+  claims. "Missed planted bugs that every frontier model caught" beats "caught without
+  blinking", "clawed some of it back", or "a floor you don't get under": state what happened
+  and what the numbers showed. At most one piece of imagery per post, and only where it adds
+  something a plain sentence can't.
 - "Honest/honestly" as a verbal crutch (once per post at most), and confession-trope
   headers like "The honest part nobody writes about" — just state the claim as the header.
 - Attention-seeking section headings — snappy, matter-of-fact, or clickbaity. No
