@@ -263,7 +263,8 @@ install_mcps() {
         @modelcontextprotocol/server-filesystem \
         @modelcontextprotocol/server-puppeteer \
         @playwright/mcp \
-        @modelcontextprotocol/server-aws-kb-retrieval; do
+        @modelcontextprotocol/server-aws-kb-retrieval \
+        @upstash/context7-mcp; do
         printf "${BLUE}→ %s${NC}\n" "$pkg"
         npm install -g "$pkg" >/dev/null 2>&1 && printf "  ${GREEN}✓${NC}\n" || printf "  ${YELLOW}⚠ (may already be installed)${NC}\n"
     done
@@ -295,6 +296,10 @@ install_mcps() {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-aws-kb-retrieval"],
       "env": { "AWS_PROFILE": "default" }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
     },
     "dynamodb": {
       "command": "uvx",

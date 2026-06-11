@@ -48,6 +48,7 @@ const HOME = process.env.HOME_DIR || "";
 // MCP server definitions ($HOME left literal; expanded below for agent JSON).
 const MCP_SERVERS = {
   filesystem: { command: "npx", args: ["-y", "@modelcontextprotocol/server-filesystem", "$HOME"] },
+  context7: { command: "npx", args: ["-y", "@upstash/context7-mcp@latest"] },
   puppeteer: { command: "npx", args: ["-y", "@modelcontextprotocol/server-puppeteer"] },
   playwright: { command: "npx", args: ["-y", "@playwright/mcp"] },
   dynamodb: { command: "uvx", args: ["awslabs.dynamodb-mcp-server@latest"], env: { AWS_REGION: "ap-southeast-2", AWS_PROFILE: "default", "DDB-MCP-READONLY": "false" } },
@@ -57,24 +58,24 @@ const MCP_SERVERS = {
 
 // Per-agent MCPs beyond the common filesystem.
 const AGENT_MCPS = {
-  "architecture-expert": ["aws-kb"],
-  "cdk-expert-ts": ["aws-kb"],
-  "cdk-expert-python": ["aws-kb"],
+  "architecture-expert": ["context7", "aws-kb"],
+  "cdk-expert-ts": ["context7", "aws-kb"],
+  "cdk-expert-python": ["context7", "aws-kb"],
   "code-reviewer": [],
-  "data-scientist": ["dynamodb", "aws-kb"],
-  "dart-app-developer": ["dart"],
-  "devops-engineer": ["playwright"],
-  "documentation-engineer": [],
-  "frontend-engineer-ts": [],
+  "data-scientist": ["context7", "dynamodb", "aws-kb"],
+  "dart-app-developer": ["context7", "dart"],
+  "devops-engineer": ["context7", "playwright"],
+  "documentation-engineer": ["context7"],
+  "frontend-engineer-ts": ["context7"],
   "linux-specialist": [],
   "product-manager": [],
   "project-coordinator": [],
-  "python-backend": ["dynamodb", "aws-kb"],
-  "python-test-engineer": ["dynamodb"],
-  "security-specialist": ["aws-kb"],
+  "python-backend": ["context7", "dynamodb", "aws-kb"],
+  "python-test-engineer": ["context7", "dynamodb"],
+  "security-specialist": ["context7", "aws-kb"],
   "test-coordinator": ["playwright"],
-  "typescript-test-engineer": ["puppeteer", "playwright"],
-  "ui-ux-designer": ["puppeteer"],
+  "typescript-test-engineer": ["context7", "puppeteer", "playwright"],
+  "ui-ux-designer": ["context7", "puppeteer"],
   "writing-blog-posts": [],
   "writing-documents": [],
   "writing-style": [],
@@ -302,7 +303,8 @@ install_mcps() {
         @modelcontextprotocol/server-filesystem \
         @modelcontextprotocol/server-puppeteer \
         @playwright/mcp \
-        @modelcontextprotocol/server-aws-kb-retrieval; do
+        @modelcontextprotocol/server-aws-kb-retrieval \
+        @upstash/context7-mcp; do
         printf "${BLUE}→ %s${NC}\n" "$pkg"
         npm install -g "$pkg" >/dev/null 2>&1 && printf "  ${GREEN}✓${NC}\n" || printf "  ${YELLOW}⚠ (may already be installed)${NC}\n"
     done
@@ -325,6 +327,10 @@ install_mcps() {
     "filesystem": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "$HOME"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
     },
     "dart": {
       "command": "dart",

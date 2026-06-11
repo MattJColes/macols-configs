@@ -168,6 +168,7 @@ shows this live).
 | `aws-kb` | AWS Knowledge Base retrieval |
 | `aws-iac` | CDK/CloudFormation validation — cfn-lint, cfn-guard, CDK-NAG, construct examples (`awslabs.aws-iac-mcp-server`) |
 | `aws-documentation` | Live AWS service/construct documentation lookup (`awslabs.aws-documentation-mcp-server`) |
+| `context7` | Real-time library documentation |
 | `dart` | Dart/Flutter project context and tools |
 
 ## Configuration
