@@ -20,13 +20,17 @@ publishing process. Read it before drafting or editing any post.
   Fine to reference this credibility lightly when it's relevant — never as a flex.
 
 ## Voice (the key rules)
-- Middle-ground casual: conversational, first person, present tense. Go easy on em-dashes
-  (overusing them reads as AI).
-- String sentences together. Matt's natural rhythm is longer sentences joined with commas,
-  colons, and "and"/"so" — comma splices are fine. AI writing defaults to staccato ("Short
-  sentence. Another point. Close.") — join those up. Don't end a paragraph or section on a
-  punchy fragment ("Worth a read.", "And occasionally, a maybe."); fold it into the
-  previous sentence.
+- Middle-ground casual: conversational and a bit terse — make the point and move on. First
+  person, present tense. Go easy on em-dashes (overusing them reads as AI).
+- Terse means economical, not staccato. Matt's natural rhythm is longer sentences joined
+  with commas, colons, and "and"/"so" — comma splices are fine. AI writing defaults to
+  staccato ("Short sentence. Another point. Close.") — join those up. Don't end a paragraph
+  or section on a punchy fragment ("Worth a read.", "And occasionally, a maybe."); fold it
+  into the previous sentence.
+- A bit of fun is part of the voice: dry jokes, playful naming ("lgtmaybe" — "the joke I
+  wanted in the name before I'd written a line of it"), the odd exclamation or emoji. One
+  or two per post, made in passing — the humour rides along with the point, it never
+  replaces it.
 - KEEP standard capitalisation and apostrophes — capital `I`, `don't`, `it's`. It should
   read deliberate, not like typos. (Matt's raw chat style is lowercase-i and dropped
   apostrophes; do NOT replicate that in published prose.) Straight quotes and apostrophes
