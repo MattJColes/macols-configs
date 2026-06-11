@@ -48,7 +48,6 @@ const HOME = process.env.HOME_DIR || "";
 // MCP server definitions ($HOME left literal; expanded below for agent JSON).
 const MCP_SERVERS = {
   filesystem: { command: "npx", args: ["-y", "@modelcontextprotocol/server-filesystem", "$HOME"] },
-  memory: { command: "npx", args: ["-y", "@modelcontextprotocol/server-memory"] },
   context7: { command: "npx", args: ["-y", "@upstash/context7-mcp@latest"] },
   puppeteer: { command: "npx", args: ["-y", "@modelcontextprotocol/server-puppeteer"] },
   playwright: { command: "npx", args: ["-y", "@playwright/mcp"] },
@@ -57,7 +56,7 @@ const MCP_SERVERS = {
   dart: { command: "dart", args: ["mcp-server"] },
 };
 
-// Per-agent MCPs beyond the common filesystem + memory.
+// Per-agent MCPs beyond the common filesystem.
 const AGENT_MCPS = {
   "architecture-expert": ["context7", "aws-kb"],
   "cdk-expert-ts": ["context7", "aws-kb"],
@@ -145,7 +144,6 @@ function expandHome(value) {
 function buildMcpServers(name) {
   const servers = {};
   servers.filesystem = MCP_SERVERS.filesystem;
-  servers.memory = MCP_SERVERS.memory;
   for (const m of AGENT_MCPS[name] || []) servers[m] = MCP_SERVERS[m];
   return expandHome(servers);
 }
@@ -305,13 +303,12 @@ install_mcps() {
         @modelcontextprotocol/server-filesystem \
         @modelcontextprotocol/server-puppeteer \
         @playwright/mcp \
-        @modelcontextprotocol/server-memory \
         @modelcontextprotocol/server-aws-kb-retrieval \
         @upstash/context7-mcp; do
         printf "${BLUE}→ %s${NC}\n" "$pkg"
         npm install -g "$pkg" >/dev/null 2>&1 && printf "  ${GREEN}✓${NC}\n" || printf "  ${YELLOW}⚠ (may already be installed)${NC}\n"
     done
-    printf "  ${GREEN}✓${NC} dynamodb / mempalace (Python via uvx, on-demand)\n"
+    printf "  ${GREEN}✓${NC} dynamodb (Python via uvx, on-demand)\n"
     if command -v dart &> /dev/null; then
         printf "  ${GREEN}✓${NC} dart (built into Dart SDK)\n"
     else
@@ -331,10 +328,6 @@ install_mcps() {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "$HOME"]
     },
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
-    },
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
@@ -342,10 +335,6 @@ install_mcps() {
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
-    },
-    "mempalace": {
-      "command": "uvx",
-      "args": ["--from", "mempalace", "mempalace-mcp"]
     }
   }
 }

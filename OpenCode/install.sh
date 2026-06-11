@@ -263,13 +263,12 @@ install_mcps() {
         @modelcontextprotocol/server-filesystem \
         @modelcontextprotocol/server-puppeteer \
         @playwright/mcp \
-        @modelcontextprotocol/server-memory \
         @modelcontextprotocol/server-aws-kb-retrieval \
         @upstash/context7-mcp; do
         printf "${BLUE}→ %s${NC}\n" "$pkg"
         npm install -g "$pkg" >/dev/null 2>&1 && printf "  ${GREEN}✓${NC}\n" || printf "  ${YELLOW}⚠ (may already be installed)${NC}\n"
     done
-    printf "  ${GREEN}✓${NC} dynamodb / mempalace (Python via uvx, on-demand)\n"
+    printf "  ${GREEN}✓${NC} dynamodb (Python via uvx, on-demand)\n"
     if command -v dart &> /dev/null; then
         printf "  ${GREEN}✓${NC} dart (built into Dart SDK)\n"
     else
@@ -293,10 +292,6 @@ install_mcps() {
       "command": "npx",
       "args": ["-y", "@playwright/mcp"]
     },
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
-    },
     "aws-kb": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-aws-kb-retrieval"],
@@ -318,10 +313,6 @@ install_mcps() {
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
-    },
-    "mempalace": {
-      "command": "uvx",
-      "args": ["--from", "mempalace", "mempalace-mcp"]
     }
   }
 }

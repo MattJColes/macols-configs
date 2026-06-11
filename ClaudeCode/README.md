@@ -165,7 +165,6 @@ shows this live).
 | `filesystem` | File operations across your home directory |
 | `puppeteer` | Browser automation and screenshots |
 | `playwright` | Cross-browser testing automation |
-| `memory` | Persistent knowledge graph across sessions |
 | `aws-kb` | AWS Knowledge Base retrieval |
 | `aws-iac` | CDK/CloudFormation validation — cfn-lint, cfn-guard, CDK-NAG, construct examples (`awslabs.aws-iac-mcp-server`) |
 | `aws-documentation` | Live AWS service/construct documentation lookup (`awslabs.aws-documentation-mcp-server`) |
@@ -177,7 +176,6 @@ shows this live).
 MCP configuration: `~/.claude.json` (top-level `mcpServers` key, written by `./install.sh --mcps-only`)
 Agent storage: `~/.claude/agents/`
 Skill storage: `~/.claude/skills/`
-Knowledge graph: `~/.claude/memory`
 
 ## Usage
 

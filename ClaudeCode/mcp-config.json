@@ -16,10 +16,6 @@
       "command": "npx",
       "args": ["-y", "@playwright/mcp"]
     },
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
-    },
     "aws-kb": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-aws-kb-retrieval"],
@@ -49,10 +45,6 @@
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
-    },
-    "mempalace": {
-      "command": "uvx",
-      "args": ["--from", "mempalace", "mempalace-mcp"]
     }
   }
 }

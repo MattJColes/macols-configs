@@ -97,10 +97,9 @@ installer generates that tool's agent from the same skill body.
 **Management:** documentation-engineer, product-manager, project-coordinator
 **Writing:** writing-blog-posts, writing-documents, writing-style
 
-### 7 Core MCP Servers
+### Core MCP Servers
 - **filesystem** - File operations
 - **puppeteer** & **playwright** - Browser automation
-- **memory** - Knowledge graph across sessions
 - **context7** - Real-time, up-to-date library documentation
 - **aws-kb** & **dynamodb** - AWS service interactions
 - **github** & **gitlab** - Optional: repository operations (require access tokens)
@@ -110,8 +109,6 @@ installer generates that tool's agent from the same skill body.
 - **Auto-testing** - Agents run tests after code changes and attempt fixes
 - **Commit suggestions** - Professional commit messages auto-generated
 - **Audit logging** - GDPR/SOC2 compliant user action tracking (Python)
-- **Sequential thinking** - Break down complex problems systematically
-- **Persistent memory** - Context retained across sessions
 - **Podman first** - Secure rootless containers throughout
 
 ---
