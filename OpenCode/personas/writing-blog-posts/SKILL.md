@@ -63,6 +63,12 @@ publishing process. Read it before drafting or editing any post.
   keep a couple of genuinely personal asides.
 - "Honest/honestly" as a verbal crutch (once per post at most), and confession-trope
   headers like "The honest part nobody writes about" — just state the claim as the header.
+- Attention-seeking section headings — snappy, matter-of-fact, or clickbaity. No
+  colon-punchlines ("The one rule: don't nest it in tmux"), aphorism pronouncements
+  ("Shape is not quality", "Good enough is a skill"), cute inversions ("Yolo mode, where
+  it belongs"), or rhetorical snark as headings. Headings are signposts, not performances:
+  plain, descriptive, sentence case, stating what the section covers ("Why I bothered",
+  "Picking the database", "Verifying JWTs in FastAPI").
 - Bolted-on self-referential links: he cut a "see the projects page" closing paragraph and
   a back-link to his own intro post. Cross-link only where it genuinely helps the reader.
 
