@@ -58,6 +58,10 @@ publishing process. Read it before drafting or editing any post.
   hand", "far too many containers", "out-ranked by our cats"). Vary sentence length, use plain
   words ("marker" not "sentinel", "freeze up" not "go inert", "clear" not "unambiguous"), and
   keep a couple of genuinely personal asides.
+- Visual describers and metaphors where a factual sentence does the job: don't reach for
+  verbs that paint a picture ("peeling off microservices" — say "breaking out
+  microservices"). At most one piece of imagery per post, and only where it adds something
+  a plain sentence can't.
 - "Honest/honestly" as a verbal crutch (once per post at most), and confession-trope
   headers like "The honest part nobody writes about" — just state the claim as the header.
 - Attention-seeking section headings — snappy, matter-of-fact, or clickbaity. No
@@ -120,7 +124,7 @@ voice.
   on Tailscale, lots of containers (Docker Swarm + Portainer). Frame it around the mini PCs,
   not routers.
 - Apps: into Flutter lately; has done native and React Native.
-- Backends: FastAPI, starting as a modular monolith and peeling off microservices only
+- Backends: FastAPI, starting as a modular monolith and breaking out microservices only
   where something genuinely needs to scale.
 - Favourite AWS services: Bedrock, EventBridge, Fargate (ECS), and CDK.
 - Dev environment: Claude Code + Claude Opus daily, CMUX on Mac, ricing Linux + Claude Code

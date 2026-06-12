@@ -63,8 +63,10 @@ publishing process. Read it before drafting or editing any post.
 - Metaphors where a factual sentence does the job — especially for results and performance
   claims. "Missed planted bugs that every frontier model caught" beats "caught without
   blinking", "clawed some of it back", or "a floor you don't get under": state what happened
-  and what the numbers showed. At most one piece of imagery per post, and only where it adds
-  something a plain sentence can't.
+  and what the numbers showed. The same goes for visual describers in everyday prose, not
+  just claims: don't reach for verbs that paint a picture ("peeling off microservices" —
+  say "breaking out microservices"). At most one piece of imagery per post, and only where
+  it adds something a plain sentence can't.
 - "Honest/honestly" as a verbal crutch (once per post at most), and confession-trope
   headers like "The honest part nobody writes about" — just state the claim as the header.
 - Attention-seeking section headings — snappy, matter-of-fact, or clickbaity. No
@@ -127,7 +129,7 @@ voice.
   on Tailscale, lots of containers (Docker Swarm + Portainer). Frame it around the mini PCs,
   not routers.
 - Apps: into Flutter lately; has done native and React Native.
-- Backends: FastAPI, starting as a modular monolith and peeling off microservices only
+- Backends: FastAPI, starting as a modular monolith and breaking out microservices only
   where something genuinely needs to scale.
 - Favourite AWS services: Bedrock, EventBridge, Fargate (ECS), and CDK.
 - Dev environment: Claude Code + Claude Opus daily, CMUX on Mac, ricing Linux + Claude Code
