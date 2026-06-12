@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Re-exec under bash if invoked with sh/dash (bashisms ahead)
+if [ -z "$BASH_VERSION" ]; then
+    exec bash "$0" "$@"
+fi
+
 set -e
 
 echo "=== Ubuntu 24 Development Environment Setup ==="

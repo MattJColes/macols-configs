@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+
+# Re-exec under bash if invoked with sh/dash (set -o pipefail and [[ ]] are bash-only)
+if [ -z "$BASH_VERSION" ]; then
+    exec bash "$0" "$@"
+fi
+
 set -euo pipefail
 
 echo ""
