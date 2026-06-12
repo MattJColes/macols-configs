@@ -151,13 +151,6 @@ find_python_projects() {
 # Run Python tests — monorepo-aware: runs pytest from each sub-project directory
 run_python_tests() {
     local root_dir="$PWD"
-    local pytest_bin
-    pytest_bin=$(find_python_pytest)
-
-    if [ -z "$pytest_bin" ]; then
-        add_warning "pytest not installed - skipping Python tests"
-        return 0
-    fi
 
     local -a projects
     read -ra projects <<< "$(find_python_projects)"
@@ -169,6 +162,16 @@ run_python_tests() {
         [ "$project_dir" = "." ] && label="root"
 
         cd "$root_dir/$project_dir" || continue
+
+        # Resolve pytest per project so sub-project .venvs (with their own
+        # deps) win over a global tool install
+        local pytest_bin
+        pytest_bin=$(find_python_pytest)
+        if [ -z "$pytest_bin" ]; then
+            add_warning "pytest not installed - skipping Python tests ($label)"
+            cd "$root_dir" || return
+            continue
+        fi
 
         # Check test directory exists
         if [ ! -d "tests" ] && [ ! -d "test" ]; then
