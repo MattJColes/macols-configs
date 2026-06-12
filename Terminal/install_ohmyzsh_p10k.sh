@@ -3,6 +3,11 @@
 # Oh My Zsh and Powerlevel10k Installer
 # This script installs Oh My Zsh and Powerlevel10k with default settings
 
+# Re-exec under bash if invoked with sh/dash ($OSTYPE and [[ ]] are bash-only)
+if [ -z "$BASH_VERSION" ]; then
+    exec bash "$0" "$@"
+fi
+
 set -e
 
 echo "Installing Oh My Zsh and Powerlevel10k..."
