@@ -115,9 +115,9 @@ npm install -g typescript@latest
 echo "Installing AWS CDK..."
 npm install -g aws-cdk@latest
 
-# Install LazyVim dependencies
+# Install LazyVim dependencies (lazygit comes from brew in the sub-script — not in Ubuntu 24.04 apt)
 echo "Installing LazyVim dependencies..."
-sudo apt-get install -y git ripgrep fd-find lazygit
+sudo apt-get install -y git ripgrep fd-find
 
 # Install Neovim (latest stable)
 echo "Installing Neovim..."
