@@ -135,6 +135,9 @@ voice.
 
 ## Process
 - Put posts in `hugo/content/posts/`.
+- Don't hard-wrap prose. Write each paragraph as one line and let the IDE's word wrap
+  handle display — Matt edits with soft wrap on. Leave code blocks, front matter, and
+  image/link lines as they are.
 - Body starts headings at `##` — the title is the only H1.
 - Link to related posts where it helps the reader.
 
