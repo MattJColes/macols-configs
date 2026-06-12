@@ -49,8 +49,15 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
     echo "Oh My Zsh is already installed. Skipping..."
 else
     echo "Installing Oh My Zsh..."
-    RUNZSH=no CHSH=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
     echo "✓ Oh My Zsh installed"
+fi
+
+# --unattended forces CHSH=no in the installer, so change the login shell ourselves
+if [ "$(basename "$SHELL")" != "zsh" ]; then
+    echo "Changing default shell to zsh (you may be prompted for your password)..."
+    chsh -s "$(command -v zsh)"
+    echo "✓ Default shell changed to zsh (takes effect on next login)"
 fi
 
 echo ""
