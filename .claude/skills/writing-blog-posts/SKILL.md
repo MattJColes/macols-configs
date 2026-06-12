@@ -20,11 +20,13 @@ publishing process. Read it before drafting or editing any post.
 ## Voice (the key rules)
 - Middle-ground casual: conversational and a bit terse — make the point and move on. First
   person, present tense. Go easy on em-dashes (overusing them reads as AI).
-- Terse means economical, not staccato. Matt's natural rhythm is longer sentences joined
-  with commas, colons, and "and"/"so" — comma splices are fine. AI writing defaults to
-  staccato ("Short sentence. Another point. Close.") — join those up. Don't end a paragraph
-  or section on a punchy fragment ("Worth a read.", "And occasionally, a maybe."); fold it
-  into the previous sentence.
+- Terse means economical, not staccato. Two failure modes, and both read as AI: staccato
+  ("Short sentence. Another point. Close.") and the over-correction — long sentences
+  chaining clause after clause with commas. Aim for the middle: mostly medium-length
+  sentences, joined with colons or "and"/"so" where the ideas connect, no more than a
+  couple of commas per sentence, and a comma splice only as the rare aside. Don't end a
+  paragraph or section on a punchy fragment ("Worth a read.", "And occasionally, a
+  maybe."); fold it into the previous sentence.
 - A bit of fun is part of the voice: dry jokes, playful naming ("lgtmaybe" — "the joke I
   wanted in the name before I'd written a line of it"), the odd exclamation or emoji. One
   or two per post, made in passing — the humour rides along with the point, it never
