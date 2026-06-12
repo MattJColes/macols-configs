@@ -29,6 +29,16 @@ sudo apt-get install -y htop
 echo "Installing unzip..."
 sudo apt-get install -y unzip
 
+# Install git early (needed by the oh-my-zsh/p10k installer)
+echo "Installing git..."
+sudo apt-get install -y git
+
+# Install zsh + Oh My Zsh + Powerlevel10k first so ~/.zshrc exists
+# before the NVM/brew/herdr blocks below append to it
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "Running install_ohmyzsh_p10k.sh..."
+bash "$SCRIPT_DIR/install_ohmyzsh_p10k.sh"
+
 # Install Python 3.14 (via deadsnakes PPA — Ubuntu 24.04 ships with 3.12)
 echo "Installing Python 3.14..."
 sudo apt-get install -y software-properties-common
@@ -191,7 +201,6 @@ rm -rf "$HOME/.config/nvim/.git"
 
 # Install Homebrew + herdr + yazi + lazygit + neovim tooling (sub-script)
 echo "Running install_brew_herdr_yazi_lazygit_nvim.sh..."
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 bash "$SCRIPT_DIR/install_brew_herdr_yazi_lazygit_nvim.sh"
 
 # Launch herdr automatically on SSH login (idempotent)
