@@ -333,8 +333,14 @@ run_bandit_scan() {
         fi
     fi
 
+    # Skip virtualenvs and vendored deps — bandit's built-in exclude covers
+    # .git/.tox/__pycache__ but NOT .venv/venv/node_modules, so third-party
+    # library source under e.g. src/<pkg>/.venv would otherwise produce
+    # un-fixable findings (you can't #nosec code you don't own).
+    local bandit_exclude='*/.venv/*,*/venv/*,*/node_modules/*,*/.git/*,*/.tox/*,*/__pycache__/*,*/build/*,*/dist/*'
+
     local bandit_output
-    bandit_output=$("$bandit_bin" -r "${src_dirs[@]}" -f txt -ll 2>&1) || true
+    bandit_output=$("$bandit_bin" -r "${src_dirs[@]}" --exclude "$bandit_exclude" -f txt -ll 2>&1) || true
 
     if echo "$bandit_output" | grep -qE "Severity: (High|Medium)"; then
         local high_count
