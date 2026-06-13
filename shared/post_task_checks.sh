@@ -2,7 +2,7 @@
 #
 # Shared Post-Task Checks Library
 #
-# Sourced by tool-specific wrappers (ClaudeCode, Kiro, OpenCode).
+# Sourced by tool-specific wrappers (ClaudeCode, OpenCode).
 # NOT directly executable — must be sourced.
 #
 # Expects caller to set:

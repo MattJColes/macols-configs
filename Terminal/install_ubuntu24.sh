@@ -148,12 +148,6 @@ if ! grep -q '/opt/nvim-linux-x86_64/bin' ~/.bashrc; then
     echo 'export PATH="$PATH:/opt/nvim-linux-x86_64/bin"' >> ~/.bashrc
 fi
 
-# Install Kiro CLI
-echo "Installing Kiro CLI..."
-curl -L "https://desktop-release.q.us-east-1.amazonaws.com/latest/amazon-q.deb" -o "/tmp/kiro.deb"
-sudo dpkg -i /tmp/kiro.deb || sudo apt-get install -f -y
-rm /tmp/kiro.deb
-
 # Install Claude Code (latest)
 echo "Installing Claude Code..."
 npm install -g @anthropic-ai/claude-code@latest
@@ -274,5 +268,4 @@ echo "   - python3 --version"
 echo "   - node --version"
 echo "   - aws --version"
 echo "   - claude --version"
-echo "   - q --version"
 echo "   - ollama --version"

@@ -4,7 +4,6 @@
 my-configs/
 ├── Terminal/           # Dev environment setup (Python, Node, AWS, Podman, AI tools)
 ├── ClaudeCode/         # Claude Code agents, skills, hooks & MCPs
-├── Kiro/               # Kiro CLI agents, hooks, steering & MCPs
 ├── OpenCode/           # OpenCode skills, MCPs & LM Studio (GLM4.7-Air)
 └── .github/            # Security scanning & dependabot
 ```
@@ -43,12 +42,6 @@ cd ClaudeCode
 ./install.sh                    # Agents, skills, MCPs and hooks
 ```
 
-**Kiro CLI:**
-```bash
-cd Kiro
-./install.sh                    # Agents, skills, MCPs and hooks
-```
-
 **OpenCode (with LM Studio + GLM4.7-Air):**
 ```bash
 cd OpenCode
@@ -56,7 +49,7 @@ cd OpenCode
 ./configure_lmstudio.sh         # Set up local GLM4.7-Air model
 ```
 
-**[ClaudeCode](ClaudeCode/README.md)** | **[Kiro](Kiro/README.md)** | **[OpenCode](OpenCode/README.md)**
+**[ClaudeCode](ClaudeCode/README.md)** | **[OpenCode](OpenCode/README.md)**
 
 ### 3. Post-Installation
 
@@ -82,7 +75,6 @@ python3 --version && node --version && claude --version
 
 ### AI Coding Assistants
 - **Claude Code** - 21 specialized agents + skills with MCPs
-- **Kiro CLI** - AWS-native AI assistant with 21 agents
 - **OpenCode** - Terminal AI with 21 skills, MCPs & LM Studio for local models (GLM4.7-Air)
 
 Each tool is authored as single-source personas (`personas/<name>/SKILL.md`); the
@@ -119,7 +111,6 @@ Each directory has detailed documentation:
 
 - **[Terminal/](Terminal/README.md)** - Installation scripts, tools, troubleshooting
 - **[ClaudeCode/](ClaudeCode/README.md)** - Agents, skills, hooks, MCPs, workflows
-- **[Kiro/](Kiro/README.md)** - Kiro CLI agents, hooks, steering, MCPs
 - **[OpenCode/](OpenCode/README.md)** - OpenCode with LM Studio & GLM4.7-Air
 
 ---
@@ -160,7 +151,6 @@ source ~/.bashrc  # or source ~/.zshrc
 **MCPs not loading:**
 ```bash
 cat ~/.claude/config.json         # Check Claude config
-cat ~/.kiro/settings/mcp.json     # Check Kiro config
 cat ~/.config/opencode/mcp.json   # Check OpenCode config
 ```
 
