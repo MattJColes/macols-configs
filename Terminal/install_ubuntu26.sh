@@ -7,7 +7,7 @@ fi
 
 set -e
 
-echo "=== Ubuntu 24 Development Environment Setup ==="
+echo "=== Ubuntu 26 Development Environment Setup ==="
 echo ""
 
 # Set non-interactive mode for apt
@@ -39,7 +39,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Running install_ohmyzsh_p10k.sh..."
 bash "$SCRIPT_DIR/install_ohmyzsh_p10k.sh"
 
-# Install Python 3.14 (via deadsnakes PPA — Ubuntu 24.04 ships with 3.12)
+# Install Python 3.14 (via deadsnakes PPA; harmless if Ubuntu 26.04 already ships it)
 echo "Installing Python 3.14..."
 sudo apt-get install -y software-properties-common
 sudo add-apt-repository -y ppa:deadsnakes/ppa
@@ -130,7 +130,7 @@ npm install -g typescript@latest
 echo "Installing AWS CDK..."
 npm install -g aws-cdk@latest
 
-# Install LazyVim dependencies (lazygit comes from brew in the sub-script — not in Ubuntu 24.04 apt)
+# Install LazyVim dependencies (lazygit comes from brew in the sub-script — not in Ubuntu apt)
 echo "Installing LazyVim dependencies..."
 sudo apt-get install -y git ripgrep fd-find
 
@@ -151,6 +151,12 @@ fi
 # Install Claude Code (latest)
 echo "Installing Claude Code..."
 npm install -g @anthropic-ai/claude-code@latest
+
+# Install Codex CLI (latest)
+# The Homebrew package (https://formulae.brew.sh/cask/codex) is a macOS-only
+# cask — Homebrew on Linux can't install casks — so install via npm here.
+echo "Installing Codex CLI..."
+npm install -g @openai/codex@latest
 
 # Install Ollama
 echo "Installing Ollama..."
@@ -268,4 +274,5 @@ echo "   - python3 --version"
 echo "   - node --version"
 echo "   - aws --version"
 echo "   - claude --version"
+echo "   - codex --version"
 echo "   - ollama --version"

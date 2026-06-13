@@ -1,6 +1,6 @@
 # Terminal Development Environment Setup
 
-Automated scripts to set up a complete development environment for macOS and Ubuntu 24.04 with AI coding assistants and modern tooling.
+Automated scripts to set up a complete development environment for macOS and Ubuntu 26 with AI coding assistants and modern tooling.
 
 ## 📦 What Gets Installed
 
@@ -40,6 +40,11 @@ Automated scripts to set up a complete development environment for macOS and Ubu
 - Specialized agents for different development tasks
 - MCP (Model Context Protocol) server support
 
+#### **Codex CLI**
+- OpenAI's terminal coding agent
+- macOS via Homebrew cask (`brew install --cask codex`); Linux via npm (`@openai/codex`)
+- Custom prompts, MCP servers and hooks — see [`../Codex/`](../Codex/README.md)
+
 ### Editor Setup
 
 #### **LazyVim (Neovim Distribution)**
@@ -61,7 +66,7 @@ Automated scripts to set up a complete development environment for macOS and Ubu
 2. Installs all core development tools
 3. Installs Node.js 22 and Python 3.12
 4. Installs Podman for containers
-5. Installs Claude Code
+5. Installs Claude Code and Codex CLI
 6. Sets up LazyVim (backs up existing config)
 
 **Requirements:**
@@ -84,10 +89,10 @@ podman machine start
 
 ---
 
-### Ubuntu 24.04 Installation
+### Ubuntu 26 Installation
 
 ```bash
-./install_ubuntu24.sh
+./install_ubuntu26.sh
 ```
 
 **What it does:**
@@ -95,11 +100,11 @@ podman machine start
 2. Installs Python 3.12, Node.js 22, AWS CLI
 3. Installs Podman for containers
 4. Installs Neovim (latest stable)
-5. Installs Claude Code
+5. Installs Claude Code and Codex CLI
 6. Sets up LazyVim with backups
 
 **Requirements:**
-- Ubuntu 24.04 LTS
+- Ubuntu 26 LTS
 - sudo privileges
 - Internet connection
 
@@ -207,6 +212,7 @@ p10k configure
 | Tool | Best For |
 |------|----------|
 | Claude Code | General development, specialized agents |
+| Codex CLI | OpenAI terminal coding agent, custom prompts |
 
 ### Editor
 
@@ -219,7 +225,7 @@ p10k configure
 ### Installation Scripts
 
 - **`install_macos.sh`** - Complete macOS development environment
-- **`install_ubuntu24.sh`** - Complete Ubuntu 24.04 development environment
+- **`install_ubuntu26.sh`** - Complete Ubuntu 26 development environment
 - **`install_ohmyzsh_p10k.sh`** - Oh My Zsh + Powerlevel10k theme
 - **`install_iterm_colors.sh`** - iTerm2 Ayu Dark color scheme
 
@@ -248,8 +254,8 @@ After installation, configuration files are located at:
 # macOS
 ./install_macos.sh
 
-# Ubuntu 24.04
-./install_ubuntu24.sh
+# Ubuntu 26
+./install_ubuntu26.sh
 
 # Optional: Install Oh My Zsh + Powerlevel10k
 ./install_ohmyzsh_p10k.sh
