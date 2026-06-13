@@ -4,7 +4,7 @@ OpenCode setup with personas (single-source skills that can also generate agents
 
 ## Overview
 
-This folder provides configuration scripts for [OpenCode](https://github.com/opencode-ai/opencode), a terminal-based AI coding assistant. Each persona is authored once as `personas/<name>/SKILL.md`; the skill is the canonical content, and when its frontmatter sets `agent: true` the installer generates an OpenCode agent from the same body. The setup also includes MCP servers, mirroring the configuration used by Claude Code and Kiro CLI for consistency across all three AI assistants.
+This folder provides configuration scripts for [OpenCode](https://github.com/opencode-ai/opencode), a terminal-based AI coding assistant. Each persona is authored once as `personas/<name>/SKILL.md`; the skill is the canonical content, and when its frontmatter sets `agent: true` the installer generates an OpenCode agent from the same body. The setup also includes MCP servers, mirroring the configuration used by Claude Code for consistency across both AI assistants.
 
 ## Quick Start
 
@@ -84,7 +84,7 @@ persona.
 
 ## MCP Servers
 
-The following MCP servers are configured (identical to Claude Code and Kiro):
+The following MCP servers are configured (identical to Claude Code):
 
 | Server | Description | Use Case |
 |--------|-------------|----------|
@@ -165,18 +165,18 @@ lmstudio-status
 | `GLM_MODEL` | `glm-4.7-flash` | Model identifier |
 | `ANTHROPIC_API_KEY` | - | For Claude fallback |
 
-## Comparison: Claude Code vs Kiro vs OpenCode
+## Comparison: Claude Code vs OpenCode
 
-| Feature | Claude Code | Kiro CLI | OpenCode |
-|---------|-------------|----------|----------|
-| Config Location | `~/.claude/` | `~/.kiro/` | `~/.config/opencode/` |
-| MCP Format | `config.json` | `settings/mcp.json` | `mcp.json` |
-| Agents Format | `.md` | `.md` | `.md` |
-| Agents Location | `~/.claude/agents/` | `~/.kiro/agents/` | `~/.config/opencode/agents/` |
-| Skills Format | `SKILL.md` | `SKILL.md` | `SKILL.md` |
-| Skills Location | `~/.claude/skills/` | `~/.kiro/skills/` | `~/.config/opencode/skills/` |
-| Default Model | Claude | Kiro | Configurable |
-| Local Models | No | No | Yes (LM Studio) |
+| Feature | Claude Code | OpenCode |
+|---------|-------------|----------|
+| Config Location | `~/.claude/` | `~/.config/opencode/` |
+| MCP Format | `config.json` | `mcp.json` |
+| Agents Format | `.md` | `.md` |
+| Agents Location | `~/.claude/agents/` | `~/.config/opencode/agents/` |
+| Skills Format | `SKILL.md` | `SKILL.md` |
+| Skills Location | `~/.claude/skills/` | `~/.config/opencode/skills/` |
+| Default Model | Claude | Configurable |
+| Local Models | No | Yes (LM Studio) |
 
 ## Troubleshooting
 
@@ -217,5 +217,4 @@ GLM-4.7-Flash offers:
 ## Related Configurations
 
 - [ClaudeAgents](../ClaudeAgents/) - Claude Code MCP and agent setup
-- [KiroAgents](../KiroAgents/) - Kiro CLI MCP and agent setup
 - [Terminal](../Terminal/) - Development environment setup

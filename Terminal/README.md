@@ -40,12 +40,6 @@ Automated scripts to set up a complete development environment for macOS and Ubu
 - Specialized agents for different development tasks
 - MCP (Model Context Protocol) server support
 
-#### **Kiro CLI**
-- AWS-native AI coding assistant by AWS
-- Deep AWS service integration
-- Code generation and debugging
-- Steering file and agent-based workflows
-
 ### Editor Setup
 
 #### **LazyVim (Neovim Distribution)**
@@ -67,7 +61,7 @@ Automated scripts to set up a complete development environment for macOS and Ubu
 2. Installs all core development tools
 3. Installs Node.js 22 and Python 3.12
 4. Installs Podman for containers
-5. Installs Claude Code and Kiro CLI
+5. Installs Claude Code
 6. Sets up LazyVim (backs up existing config)
 
 **Requirements:**
@@ -101,7 +95,7 @@ podman machine start
 2. Installs Python 3.12, Node.js 22, AWS CLI
 3. Installs Podman for containers
 4. Installs Neovim (latest stable)
-5. Installs Claude Code and Kiro CLI
+5. Installs Claude Code
 6. Sets up LazyVim with backups
 
 **Requirements:**
@@ -125,7 +119,6 @@ python3 --version
 node --version
 aws --version
 claude --version
-kiro --version  # or 'q --version' for backwards compatibility
 ```
 
 ---
@@ -214,7 +207,6 @@ p10k configure
 | Tool | Best For |
 |------|----------|
 | Claude Code | General development, specialized agents |
-| Kiro CLI | AWS services, cloud architecture, AI coding assistant |
 
 ### Editor
 
@@ -246,7 +238,7 @@ After installation, configuration files are located at:
 ~/.config/nvim/              # Neovim/LazyVim configuration
 ~/.aws/                      # AWS CLI configuration
 ~/.claude/                   # Claude Code configuration
-~/.local/bin/                # Local binaries (Kiro CLI, etc.)
+~/.local/bin/                # Local binaries
 ```
 
 ## 🚦 Getting Started
@@ -282,15 +274,7 @@ cd ../ClaudeCode
 ./install.sh  # Installs agents, skills, MCPs and hooks
 ```
 
-### 4. Set Up Kiro CLI Agents
-```bash
-cd ../Kiro
-./install.sh  # Installs agents, skills, MCPs and hooks
-```
-
-**Note**: Kiro CLI stores configuration in `~/.kiro/`. Install agents and MCPs from the `../Kiro/` directory.
-
-### 5. Initialize Podman (if using containers)
+### 4. Initialize Podman (if using containers)
 ```bash
 # macOS
 podman machine init
@@ -300,16 +284,13 @@ podman machine start
 podman run hello-world
 ```
 
-### 6. Start Coding!
+### 5. Start Coding!
 ```bash
 # Open LazyVim
 nvim
 
 # Use Claude Code
 claude
-
-# Use Kiro CLI
-kiro chat
 ```
 
 ## 🔄 Updating Tools
@@ -336,15 +317,6 @@ brew upgrade anthropics/claude/claude
 
 # Ubuntu
 sudo apt update && sudo apt upgrade claude
-```
-
-### Update Kiro CLI
-```bash
-# macOS
-brew upgrade kiro-cli
-
-# Ubuntu - download latest from kiro.dev
-# Or re-run installation script
 ```
 
 ## 🐛 Troubleshooting
@@ -379,7 +351,6 @@ source ~/.bashrc  # or source ~/.zshrc
 ## 📚 Additional Resources
 
 - [Claude Code Docs](https://docs.claude.com/en/docs/claude-code)
-- [Kiro CLI Docs](https://kiro.dev/docs/cli/)
 - [LazyVim Docs](https://www.lazyvim.org/)
 - [Podman Docs](https://podman.io/)
 - [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
@@ -387,7 +358,6 @@ source ~/.bashrc  # or source ~/.zshrc
 ## 🔗 Related Directories
 
 - **`../ClaudeCode/`** - Claude Code agents, skills, hooks and MCPs
-- **`../Kiro/`** - Kiro CLI agents, hooks, steering and MCPs
 
 ## ⚡ Quick Reference
 
@@ -414,11 +384,6 @@ aws dynamodb list-tables
 # Claude Code
 claude chat
 claude code
-
-# Kiro CLI
-kiro chat
-/agent list      # list available agents
-/agent use <agent-name>
 
 # LazyVim
 nvim                    # Start editor
