@@ -110,6 +110,10 @@ uv tool install pip-audit
 echo "Installing Claude Code..."
 curl -fsSL https://claude.ai/install.sh | bash
 
+# Install Codex CLI (https://formulae.brew.sh/cask/codex)
+echo "Installing Codex CLI..."
+brew install --cask codex
+
 # Install LazyVim dependencies
 echo "Installing LazyVim dependencies..."
 brew install neovim ripgrep fd lazygit
@@ -172,6 +176,7 @@ echo "   - python3 --version"
 echo "   - node --version"
 echo "   - aws --version"
 echo "   - claude --version"
+echo "   - codex --version"
 echo "   - flutter --version"
 echo "   - dart --version"
 echo "   - ruff --version"

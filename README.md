@@ -4,6 +4,7 @@
 my-configs/
 ├── Terminal/           # Dev environment setup (Python, Node, AWS, Podman, AI tools)
 ├── ClaudeCode/         # Claude Code agents, skills, hooks & MCPs
+├── Codex/              # Codex CLI prompts, AGENTS.md, hooks & MCPs
 ├── OpenCode/           # OpenCode skills, MCPs & LM Studio (GLM4.7-Air)
 └── .github/            # Security scanning & dependabot
 ```
@@ -16,10 +17,10 @@ cd Terminal
 ./install_macos.sh
 ```
 
-**Ubuntu 24.04:**
+**Ubuntu 26:**
 ```bash
 cd Terminal
-./install_ubuntu24.sh
+./install_ubuntu26.sh
 ```
 
 **Optional - Enhanced Shell:**
@@ -42,6 +43,12 @@ cd ClaudeCode
 ./install.sh                    # Agents, skills, MCPs and hooks
 ```
 
+**Codex CLI:**
+```bash
+cd Codex
+./install.sh                    # Prompts, AGENTS.md, MCPs and hooks
+```
+
 **OpenCode (with LM Studio + GLM4.7-Air):**
 ```bash
 cd OpenCode
@@ -49,7 +56,7 @@ cd OpenCode
 ./configure_lmstudio.sh         # Set up local GLM4.7-Air model
 ```
 
-**[ClaudeCode](ClaudeCode/README.md)** | **[OpenCode](OpenCode/README.md)**
+**[ClaudeCode](ClaudeCode/README.md)** | **[Codex](Codex/README.md)** | **[OpenCode](OpenCode/README.md)**
 
 ### 3. Post-Installation
 
@@ -75,6 +82,7 @@ python3 --version && node --version && claude --version
 
 ### AI Coding Assistants
 - **Claude Code** - 21 specialized agents + skills with MCPs
+- **Codex CLI** - 22 custom prompts (slash commands), AGENTS.md, MCPs & advisory hooks
 - **OpenCode** - Terminal AI with 21 skills, MCPs & LM Studio for local models (GLM4.7-Air)
 
 Each tool is authored as single-source personas (`personas/<name>/SKILL.md`); the
@@ -111,6 +119,7 @@ Each directory has detailed documentation:
 
 - **[Terminal/](Terminal/README.md)** - Installation scripts, tools, troubleshooting
 - **[ClaudeCode/](ClaudeCode/README.md)** - Agents, skills, hooks, MCPs, workflows
+- **[Codex/](Codex/README.md)** - Codex CLI prompts, AGENTS.md, hooks & MCPs
 - **[OpenCode/](OpenCode/README.md)** - OpenCode with LM Studio & GLM4.7-Air
 
 ---
