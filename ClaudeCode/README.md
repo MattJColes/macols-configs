@@ -4,7 +4,7 @@ This directory contains specialized AI agents, skills, hooks, and Model Context 
 
 ## Quick Install
 
-Each persona is authored as a **single source file** — `personas/<name>/SKILL.md`.
+Each persona is authored as a **single source file** — `shared/personas/<name>/SKILL.md`.
 The skill is the canonical content; when its frontmatter sets `agent: true`,
 `install.sh` also **generates** a matching agent from the same body (so the two
 never drift). A single `install.sh` installs skills, generated agents, MCP
@@ -83,14 +83,6 @@ cd macols-configs/ClaudeCode
 
 ```
 ClaudeCode/
-├── personas/            # One folder per persona — 22 skills, 21 generate an agent
-│   ├── architecture-expert/
-│   │   └── SKILL.md     #   single source (agent: true → also generates an agent)
-│   ├── code-reviewer/
-│   │   └── SKILL.md
-│   ├── commit/
-│   │   └── SKILL.md     #   skill-only persona (no `agent:` key)
-│   └── ...
 ├── hooks/               # Testing & security automation
 │   ├── post_code_hook.sh
 │   ├── post_task_hook.sh
@@ -100,11 +92,14 @@ ClaudeCode/
 ├── mcp-config.json      # MCP server configuration
 ├── install.sh           # Unified installer (skills, agents, MCPs, hooks)
 └── README.md
+
+Personas live in ../shared/personas/<name>/SKILL.md (the single shared source —
+22 skills, 21 of which generate an agent). The installer reads them from there.
 ```
 
 ## Agents vs Skills — one source
 
-Each persona is authored once as `personas/<name>/SKILL.md`. That skill is the
+Each persona is authored once as `shared/personas/<name>/SKILL.md`. That skill is the
 **single source of truth**; there are no separate agent files to keep in sync.
 A small block of frontmatter controls what gets installed:
 

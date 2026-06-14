@@ -4,7 +4,7 @@ OpenCode setup with personas (single-source skills that can also generate agents
 
 ## Overview
 
-This folder provides configuration scripts for [OpenCode](https://github.com/opencode-ai/opencode), a terminal-based AI coding assistant. Each persona is authored once as `personas/<name>/SKILL.md`; the skill is the canonical content, and when its frontmatter sets `agent: true` the installer generates an OpenCode agent from the same body. The setup also includes MCP servers, mirroring the configuration used by Claude Code for consistency across both AI assistants.
+This folder provides configuration scripts for [OpenCode](https://github.com/opencode-ai/opencode), a terminal-based AI coding assistant. Each persona is authored once as `shared/personas/<name>/SKILL.md`; the skill is the canonical content, and when its frontmatter sets `agent: true` the installer generates an OpenCode agent from the same body. The setup also includes MCP servers, mirroring the configuration used by Claude Code for consistency across both AI assistants.
 
 ## Quick Start
 
@@ -21,7 +21,7 @@ opencode-glm  # Uses local GLM-4.7-Flash
 
 ## Personas — one source
 
-Each persona is authored once as `personas/<name>/SKILL.md`. That skill is the
+Each persona is authored once as `shared/personas/<name>/SKILL.md`. That skill is the
 **single source of truth**; there are no separate agent files to keep in sync.
 A small block of frontmatter controls what gets installed:
 
@@ -64,6 +64,7 @@ persona.
 | `cdk-expert-python` | ✓ | AWS CDK with Python |
 | `cdk-expert-ts` | ✓ | AWS CDK with TypeScript |
 | `code-reviewer` | ✓ | Code quality, security, and best practices |
+| `commit` |  | Run tests/linters, then create a conventional commit and push |
 | `dart-app-developer` | ✓ | Flutter/Dart app architecture and good Dart practices |
 | `data-scientist` | ✓ | Data analysis, ML models, and visualization |
 | `devops-engineer` | ✓ | CI/CD, Docker, and infrastructure automation |
@@ -153,8 +154,8 @@ lmstudio-status
 | `mcp.json` | `~/.config/opencode/` | MCP server definitions |
 | `opencode.md` | `~/.config/opencode/` | System-level agent configuration |
 | `agents/` | `~/.config/opencode/` | Agent definitions (generated from `agent: true` personas) |
-| `skills/` | `~/.config/opencode/` | Skill definitions (installed from `personas/`) |
-| `personas/` | this folder | Single-source persona definitions (`<name>/SKILL.md`) |
+| `skills/` | `~/.config/opencode/` | Skill definitions (installed from `shared/personas/`) |
+| `personas/` | `../shared/personas/` | Single-source persona definitions (`<name>/SKILL.md`), shared by all tools |
 
 ## Environment Variables
 

@@ -29,6 +29,9 @@ CLAUDE_DIR="$HOME/.claude"
 AGENTS_DIR="$CLAUDE_DIR/agents"
 SKILLS_DIR="$CLAUDE_DIR/skills"
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
+# Personas are the single shared source of truth, consumed by every tool's
+# installer (ClaudeCode/Codex/OpenCode/Pi) from shared/personas.
+PERSONAS_DIR="$SHARED_DIR/personas"
 MCP_CONFIG_FILE="$SCRIPT_DIR/mcp-config.json"
 HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
 TASK_HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_task_hook.sh"
@@ -134,7 +137,7 @@ EOF
 
 list_skills() {
     printf "${BLUE}Available Personas:${NC}\n\n"
-    for persona_dir in "$SCRIPT_DIR/personas"/*; do
+    for persona_dir in "$PERSONAS_DIR"/*; do
         [ -d "$persona_dir" ] || continue
         persona_name=$(basename "$persona_dir")
         [ -f "$persona_dir/SKILL.md" ] || continue
@@ -148,8 +151,8 @@ list_skills() {
 install_agents() {
     target_dir="$1"
 
-    if [ ! -d "$SCRIPT_DIR/personas" ]; then
-        printf "${RED}Error: personas directory not found at %s${NC}\n" "$SCRIPT_DIR/personas"
+    if [ ! -d "$PERSONAS_DIR" ]; then
+        printf "${RED}Error: personas directory not found at %s${NC}\n" "$PERSONAS_DIR"
         return 1
     fi
 
@@ -160,7 +163,7 @@ install_agents() {
     mkdir -p "$target_dir"
 
     printf "${BLUE}Installing agents to: %s${NC}\n" "$target_dir"
-    generate_personas agent "$SCRIPT_DIR/personas" "$target_dir" || return 1
+    generate_personas agent "$PERSONAS_DIR" "$target_dir" || return 1
     printf "${GREEN}✓ Installed %s agents${NC}\n" "$PERSONA_COUNT"
 
     # System-level Claude configuration (user scope only)
@@ -180,7 +183,7 @@ install_skills() {
     mkdir -p "$target_dir"
 
     printf "${BLUE}Installing skills to: %s${NC}\n" "$target_dir"
-    generate_personas skill "$SCRIPT_DIR/personas" "$target_dir" || return 1
+    generate_personas skill "$PERSONAS_DIR" "$target_dir" || return 1
     printf "${GREEN}✓ Installed %s skills${NC}\n" "$PERSONA_COUNT"
 }
 

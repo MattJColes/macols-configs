@@ -20,7 +20,7 @@ identical — only the frontmatter is swapped.
 
 ## Quick Install
 
-Each persona is authored as a **single source file** — `personas/<name>/SKILL.md` —
+Each persona is authored as a **single source file** — `shared/personas/<name>/SKILL.md` —
 the same sources used by the Claude Code and OpenCode installers. `install.sh`
 generates one Codex prompt per persona, writes the system `AGENTS.md`, registers
 MCP servers via the `codex mcp` CLI, and wires lifecycle hooks into
@@ -67,10 +67,6 @@ npm install -g @openai/codex@latest
 
 ```
 Codex/
-├── personas/            # One folder per persona — 22 prompts (shared sources)
-│   ├── architecture-expert/
-│   │   └── SKILL.md
-│   └── ...
 ├── hooks/               # Advisory testing & security hooks
 │   ├── post_code_hook.sh   #   PostToolUse — tests/lint/security on edits
 │   ├── post_task_hook.sh   #   Stop — full validation pass
