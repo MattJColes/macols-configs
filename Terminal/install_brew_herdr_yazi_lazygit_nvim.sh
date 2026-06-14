@@ -317,22 +317,34 @@ for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
         fi
 
         # Auto-launch herdr on interactive SSH logins.
-        # Guards: only for interactive SSH shells, only if herdr is installed,
-        # and skipped while already inside a herdr session to avoid recursion.
-        if ! grep -qF 'HERDR_AUTOLAUNCH' "$rc"; then
-            cat >> "$rc" << 'EOF'
+        #
+        # Always strip any existing HERDR_AUTOLAUNCH block first, then re-add the
+        # current one. This makes the wiring idempotent *and* self-healing: an
+        # earlier version ran `herdr` plainly from inside the rc file (while it
+        # was still being sourced), so the interactive shell's line editor and
+        # herdr fought over the tty and left the terminal in raw mode on exit --
+        # i.e. you could no longer type after sshing in. The corrected block
+        # below uses `exec` so herdr cleanly owns the terminal, and adds a
+        # ~/.no_herdr escape hatch so a broken herdr can never lock you out
+        # (create it non-interactively: `ssh host touch ~/.no_herdr`).
+        if grep -qF 'HERDR_AUTOLAUNCH' "$rc"; then
+            sed -i '/# HERDR_AUTOLAUNCH/,/^fi$/d' "$rc"
+            echo "  Refreshing herdr auto-launch in $rc"
+        fi
+        cat >> "$rc" << 'EOF'
 
-# HERDR_AUTOLAUNCH: drop into herdr on each interactive SSH login
+# HERDR_AUTOLAUNCH: drop into herdr on each interactive SSH login.
+# Guards: interactive SSH shell, herdr installed, not already in a herdr
+# session, and no ~/.no_herdr escape-hatch file. `exec` hands the terminal
+# off cleanly so the shell's line editor doesn't fight herdr for the tty.
 if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" ]] \
-    && [[ -z "${HERDR_SESSION:-}" ]] && command -v herdr &>/dev/null; then
+    && [[ -z "${HERDR_SESSION:-}" ]] && [[ ! -f "$HOME/.no_herdr" ]] \
+    && command -v herdr &>/dev/null; then
     export HERDR_SESSION=1
-    herdr
+    exec herdr
 fi
 EOF
-            echo "  Added herdr auto-launch to $rc"
-        else
-            echo "  herdr auto-launch already in $rc"
-        fi
+        echo "  Added herdr auto-launch to $rc"
     fi
 done
 
