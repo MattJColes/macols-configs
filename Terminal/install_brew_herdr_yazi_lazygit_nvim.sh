@@ -330,6 +330,24 @@ for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
         else
             echo "  EDITOR=nvim already set in $rc"
         fi
+
+        # Auto-launch herdr on interactive SSH logins.
+        # Guards: only for interactive SSH shells, only if herdr is installed,
+        # and skipped while already inside a herdr session to avoid recursion.
+        if ! grep -qF 'HERDR_AUTOLAUNCH' "$rc"; then
+            cat >> "$rc" << 'EOF'
+
+# HERDR_AUTOLAUNCH: drop into herdr on each interactive SSH login
+if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" ]] \
+    && [[ -z "${HERDR_SESSION:-}" ]] && command -v herdr &>/dev/null; then
+    export HERDR_SESSION=1
+    herdr
+fi
+EOF
+            echo "  Added herdr auto-launch to $rc"
+        else
+            echo "  herdr auto-launch already in $rc"
+        fi
     fi
 done
 
