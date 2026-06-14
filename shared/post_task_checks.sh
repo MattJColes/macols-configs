@@ -56,6 +56,27 @@ setup_timeout_cmd() {
     fi
 }
 
+# Gate: has any code been changed in the working tree?
+#
+# Returns 0 (run the checks) when the git working tree contains added/modified/
+# untracked files with a code extension, OR when we can't tell (no git, not a
+# repo) — we never silently suppress checks. Returns 1 (skip) when the tree is
+# clean of code changes, e.g. a Q&A or docs-only turn. This keeps the full
+# test/lint/typecheck battery from running on every turn that didn't touch code.
+code_changed() {
+    command -v git &> /dev/null || return 0
+    git rev-parse --is-inside-work-tree &> /dev/null || return 0
+
+    local changed
+    changed=$(git status --porcelain 2>/dev/null | sed 's/^...//;s/.* -> //')
+    [ -z "$changed" ] && return 1
+
+    if echo "$changed" | grep -qiE '\.(py|ts|tsx|js|jsx|mjs|cjs|dart|go|rs|java|rb|kt|swift|c|cc|cpp|h|hpp|cs|php|scala|sql)$'; then
+        return 0
+    fi
+    return 1
+}
+
 # Detect project type
 detect_project_type() {
     local has_python=false

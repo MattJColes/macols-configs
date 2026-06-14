@@ -19,6 +19,10 @@ SHARED_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/shared"
 
 # Source shared library and run checks
 source "$SHARED_DIR/post_task_checks.sh"
+
+# Change gate: skip the whole battery when the turn didn't touch code.
+code_changed || exit 0
+
 run_post_task_checks || exit 0  # Nothing to check
 
 # If critical issues found, report and exit 1

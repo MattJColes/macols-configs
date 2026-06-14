@@ -22,6 +22,10 @@ cat > /dev/null 2>&1 || true
 
 # Source shared library and run checks.
 source "$SHARED_DIR/post_task_checks.sh"
+
+# Change gate: skip the whole battery when the turn didn't touch code.
+code_changed || exit 0
+
 run_post_task_checks || exit 0  # Nothing to check
 
 if [ ${#CRITICAL_ISSUES[@]} -gt 0 ]; then

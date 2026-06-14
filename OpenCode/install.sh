@@ -66,7 +66,7 @@ for (const name of fs.readdirSync(pdir).sort()) {
     let fm = "---\n";
     if (data.name) fm += "name: " + data.name + "\n";
     if (data.description) fm += "description: " + data.description + "\n";
-    if (data.compatibility) fm += "compatibility: " + data.compatibility + "\n";
+    fm += "compatibility: opencode\n";
     fm += "---\n";
     const dest = path.join(tdir, name);
     fs.mkdirSync(dest, { recursive: true });
@@ -104,6 +104,10 @@ generate_personas() {
     printf "%s\n" "$out" | grep -v '^__COUNT__'
 }
 
+# Personas are the single shared source of truth (shared/personas), consumed by
+# every tool's installer (ClaudeCode/Codex/OpenCode/Pi).
+PERSONAS_DIR="$SHARED_DIR/personas"
+
 # Install targets
 CONFIG_DIR="$HOME/.config/opencode"
 AGENTS_DIR="$CONFIG_DIR/agents"
@@ -137,7 +141,7 @@ EOF
 
 list_skills() {
     printf "${BLUE}Available Personas:${NC}\n\n"
-    for persona_dir in "$SCRIPT_DIR/personas"/*; do
+    for persona_dir in "$PERSONAS_DIR"/*; do
         [ -d "$persona_dir" ] || continue
         persona_name=$(basename "$persona_dir")
         [ -f "$persona_dir/SKILL.md" ] || continue
@@ -151,8 +155,8 @@ list_skills() {
 install_agents() {
     target_dir="$1"
 
-    if [ ! -d "$SCRIPT_DIR/personas" ]; then
-        printf "${RED}Error: personas directory not found at %s${NC}\n" "$SCRIPT_DIR/personas"
+    if [ ! -d "$PERSONAS_DIR" ]; then
+        printf "${RED}Error: personas directory not found at %s${NC}\n" "$PERSONAS_DIR"
         return 1
     fi
 
@@ -163,7 +167,7 @@ install_agents() {
     mkdir -p "$target_dir"
 
     printf "${BLUE}Installing agents to: %s${NC}\n" "$target_dir"
-    generate_personas agent "$SCRIPT_DIR/personas" "$target_dir" || return 1
+    generate_personas agent "$PERSONAS_DIR" "$target_dir" || return 1
     printf "${GREEN}✓ Installed %s agents${NC}\n" "$PERSONA_COUNT"
 
     # System-level OpenCode configuration (user scope only)
@@ -225,7 +229,7 @@ install_skills() {
     mkdir -p "$target_dir"
 
     printf "${BLUE}Installing skills to: %s${NC}\n" "$target_dir"
-    generate_personas skill "$SCRIPT_DIR/personas" "$target_dir" || return 1
+    generate_personas skill "$PERSONAS_DIR" "$target_dir" || return 1
     printf "${GREEN}✓ Installed %s skills${NC}\n" "$PERSONA_COUNT"
 }
 

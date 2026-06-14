@@ -6,8 +6,14 @@ my-configs/
 ├── ClaudeCode/         # Claude Code agents, skills, hooks & MCPs
 ├── Codex/              # Codex CLI prompts, AGENTS.md, hooks & MCPs
 ├── OpenCode/           # OpenCode skills, MCPs & LM Studio (GLM4.7-Air)
+├── Pi/                 # Pi coding agent skills, AGENTS.md & check hooks
+├── shared/             # Single source of truth: personas + check libraries
 └── .github/            # Security scanning & dependabot
 ```
+
+The specialist **personas** live once in `shared/personas/<name>/SKILL.md` and
+every tool's installer generates its own format from that single source — so the
+skills, agents, prompts and Pi skills never drift apart.
 
 ### 1. Set Up Terminal Environment
 
@@ -56,7 +62,13 @@ cd OpenCode
 ./configure_lmstudio.sh         # Set up local GLM4.7-Air model
 ```
 
-**[ClaudeCode](ClaudeCode/README.md)** | **[Codex](Codex/README.md)** | **[OpenCode](OpenCode/README.md)**
+**Pi:**
+```bash
+cd Pi
+./install.sh                    # Installs pi (if missing), skills, AGENTS.md & hooks
+```
+
+**[ClaudeCode](ClaudeCode/README.md)** | **[Codex](Codex/README.md)** | **[OpenCode](OpenCode/README.md)** | **[Pi](Pi/README.md)**
 
 ### 3. Post-Installation
 
@@ -83,10 +95,11 @@ python3 --version && node --version && claude --version
 ### AI Coding Assistants
 - **Claude Code** - 21 specialized agents + skills with MCPs
 - **Codex CLI** - 22 custom prompts (slash commands), AGENTS.md, MCPs & advisory hooks
-- **OpenCode** - Terminal AI with 21 skills, MCPs & LM Studio for local models (GLM4.7-Air)
+- **OpenCode** - Terminal AI with skills, MCPs & LM Studio for local models (GLM4.7-Air)
+- **Pi** - Minimal coding agent: personas as Agent Skills (`/skill:<name>`), AGENTS.md & advisory hooks (no MCP by design)
 
-Each tool is authored as single-source personas (`personas/<name>/SKILL.md`); the
-installer generates that tool's agent from the same skill body.
+Each tool is authored from single-source personas in `shared/personas/<name>/SKILL.md`;
+each installer generates that tool's agents/skills/prompts from the same body.
 
 ### 21 Specialized Agents
 **Development:** python-backend, frontend-engineer-ts, dart-app-developer, cdk-expert-ts, cdk-expert-python, data-scientist

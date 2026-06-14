@@ -1,65 +1,50 @@
 #!/bin/bash
 #
-# Post-Task Hook for Claude Code
+# Post-Task Hook for Claude Code (Stop event)
 #
 # Thin wrapper that sources the shared post-task checks library.
-# Runs on the Stop event for comprehensive validation before Claude stops.
 #
-# BLOCKING:
-# - Output JSON {"decision": "block", "reason": "..."} on stdout to prevent stopping
-# - No decision field = allow Claude to stop normally
+# ADVISORY + CHANGE-GATED:
+# - Skips entirely when the turn didn't touch code (clean working tree of code
+#   files) — no point re-running the whole suite after a Q&A or docs-only turn.
+# - When code did change, runs the checks and REPORTS findings to stderr, but
+#   never blocks the stop. Claude already enforces per-edit via the PostToolUse
+#   hook; a hard Stop block re-runs the full suite and traps on pre-existing
+#   failures in code you never touched. Reporting keeps the signal without the
+#   friction. (Re-enable blocking by emitting {"decision":"block","reason":...}
+#   on stdout if you want the old behaviour back.)
 #
 # Claude Code passes JSON via stdin with session_id, transcript_path, cwd,
 # permission_mode, hook_event_name, stop_hook_active.
 #
-# Install this hook using: ./install_hooks.sh
+# Install this hook using: ./install.sh --hooks-only
 #
 
 set -eo pipefail
 
 SHARED_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/shared"
 
-# Read hook input from stdin (required - Claude Code sends JSON)
-HOOK_INPUT=$(cat)
+# Drain stdin (Claude Code sends JSON; we don't need any field here).
+cat > /dev/null 2>&1 || true
 
-# Parse stop_hook_active to prevent infinite loops
-STOP_HOOK_ACTIVE="false"
-if command -v jq &> /dev/null; then
-    STOP_HOOK_ACTIVE=$(echo "$HOOK_INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null || echo "false")
-else
-    if echo "$HOOK_INPUT" | grep -q '"stop_hook_active"[[:space:]]*:[[:space:]]*true'; then
-        STOP_HOOK_ACTIVE="true"
-    fi
-fi
-
-# Prevent infinite loops: if we already blocked once, allow stop
-if [ "$STOP_HOOK_ACTIVE" = "true" ]; then
-    exit 0
-fi
-
-# Source shared library and run checks
+# Source shared library
 source "$SHARED_DIR/post_task_checks.sh"
+
+# Change gate: skip the whole battery when no code changed this turn.
+code_changed || exit 0
+
 run_post_task_checks || exit 0  # Nothing to check
 
-# If critical issues found, BLOCK stop and feed reason back to Claude
+# Advisory: surface findings to stderr (shown in the transcript), never block.
 if [ ${#CRITICAL_ISSUES[@]} -gt 0 ]; then
-    local_reason="Stop blocked — critical issues found:"
+    echo "Post-task validation found issues (advisory — not blocking):" >&2
     for issue in "${CRITICAL_ISSUES[@]}"; do
-        local_reason="${local_reason}"$'\n'"  - ${issue}"
+        echo "  - $issue" >&2
     done
-    local_reason="${local_reason}"$'\n\n'"Please fix these issues before stopping."
-
-    if command -v jq &> /dev/null; then
-        jq -n --arg reason "$local_reason" '{"decision": "block", "reason": $reason}'
-    else
-        python3 -c "import json,sys; print(json.dumps({'decision':'block','reason':sys.argv[1]}))" "$local_reason"
-    fi
-    exit 0
 fi
 
-# All checks passed — allow stop (no decision field = allow)
 if [ ${#WARNINGS[@]} -gt 0 ]; then
-    echo "Validation complete with notes:" >&2
+    echo "Validation notes:" >&2
     for warning in "${WARNINGS[@]}"; do
         echo "  - $warning" >&2
     done

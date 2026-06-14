@@ -24,6 +24,12 @@ A third hook fires on `PreToolUse` for `Bash`:
 |------|-------------|
 | `pre_deploy_hook.sh` | Detects `cdk deploy` / `cdk destroy` and returns `permissionDecision: "ask"`, pausing to confirm you reviewed `cdk diff` for resource replacements. A renamed Construct ID changes its logical ID and forces delete-then-create — data loss on stateful resources. `cdk diff` / `cdk synth` pass through untouched. |
 
+A fourth hook fires on `Stop` (turn end):
+
+| Hook | What it does |
+|------|-------------|
+| `post_task_hook.sh` | **Advisory + change-gated.** Runs the full battery (tests, lint, type-check, security scans) once a turn ends — but only when the git working tree has changed code files (skips Q&A/docs-only turns via the shared `code_changed` gate), and it **reports** findings to stderr rather than blocking the stop. Per-edit enforcement already happens in the PostToolUse hook above; a hard Stop block re-ran the whole suite every turn and trapped on pre-existing failures in untouched code. To restore blocking, emit `{"decision":"block","reason":...}` on stdout from this script. |
+
 `install.sh --hooks-only` additionally writes hard safety to
 `~/.claude/settings.json` that the model cannot override: `permissions.deny` on
 `Read(~/.aws/**)` and `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`. Bypass ("yolo")
