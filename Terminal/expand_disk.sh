@@ -87,15 +87,19 @@ fi
 
 # Grow the partition that backs $1 (e.g. /dev/sda2, /dev/nvme0n1p2) to fill
 # its disk. Tolerates growpart's "NOCHANGE" (nothing left to grow) exit code.
+# A genuine failure here is a non-fatal warning: the LVM lvextend step below
+# can still reclaim free space already present in the volume group.
 grow_partition() {
     local part="$1" name disk partnum out rc
     name=$(basename "$part")
-    disk="/dev/$(lsblk -no PKNAME "$part" | head -n1)"
-    partnum=$(cat "/sys/class/block/$name/partition" 2>/dev/null || true)
-    if [ -z "$partnum" ]; then
-        echo "  ! Could not determine partition number for $part; skipping growpart" >&2
+    if [ ! -e "/sys/class/block/$name/partition" ]; then
+        echo "  ! $part is not a partition (no sysfs entry); skipping growpart" >&2
         return 0
     fi
+    partnum=$(cat "/sys/class/block/$name/partition")
+    # Derive the parent disk from sysfs — unambiguous for both sdX and nvme
+    # naming (e.g. /sys/class/block/nvme0n1p3 -> .../nvme0n1/nvme0n1p3).
+    disk="/dev/$(basename "$(dirname "$(readlink -f "/sys/class/block/$name")")")"
     echo "  + growpart $disk $partnum"
     if [ "$DRY_RUN" -eq 1 ]; then
         return 0
@@ -103,8 +107,8 @@ grow_partition() {
     out=$(growpart "$disk" "$partnum" 2>&1) && rc=0 || rc=$?
     echo "$out" | sed 's/^/    /'
     if [ "$rc" -ne 0 ] && ! grep -qi 'NOCHANGE' <<<"$out"; then
-        echo "  ! growpart failed (rc=$rc)" >&2
-        return 1
+        echo "  ! growpart could not grow $part (rc=$rc); continuing — lvextend" \
+             "may still reclaim free space already in the volume group." >&2
     fi
 }
 
