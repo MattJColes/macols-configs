@@ -139,6 +139,85 @@ For long-lived infrastructure that outlasts the 90-day maximum lifespan of auth 
 
 ---
 
+## Optional: Create a new admin user with sudo and SSH access
+
+If you do not already have a non-root user to connect as (for example on a fresh cloud image where you only have `root`), create a dedicated admin user before going further. Running mosh/SSH as a normal user with `sudo` is safer than logging in as `root` directly.
+
+Run these commands as `root` (or with `sudo` from an existing admin account).
+
+### Create the user
+
+```bash
+# Replace "youruser" with the username you want.
+# --create-home makes /home/youruser; --shell sets bash as the login shell.
+sudo adduser --gecos "" youruser
+```
+
+`adduser` is the friendly Ubuntu wrapper: it creates the home directory, copies skeleton dotfiles from `/etc/skel`, and interactively prompts you to set a password. The `--gecos ""` flag skips the optional "Full Name / Room Number" questions. If you prefer a fully non-interactive setup, use the lower-level `useradd` instead:
+
+```bash
+sudo useradd --create-home --shell /bin/bash youruser
+sudo passwd youruser        # set the password when prompted
+```
+
+### Grant admin (sudo) privileges
+
+On Ubuntu, members of the `sudo` group get full administrative rights. Add the new user to it:
+
+```bash
+sudo usermod -aG sudo youruser
+```
+
+Verify the membership:
+
+```bash
+groups youruser
+# Expected to include: ... sudo ...
+```
+
+> **Optional — passwordless sudo**: If you want this user to run `sudo` without being prompted for a password (convenient for automation, slightly less secure), drop a sudoers file. Always edit sudoers with `visudo` so syntax errors can't lock you out:
+> ```bash
+> echo 'youruser ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/youruser
+> sudo chmod 0440 /etc/sudoers.d/youruser
+> sudo visudo -c          # validate syntax
+> ```
+
+### Make the user available over SSH
+
+Any user with a valid shell and password (or an authorized key) can already log in over SSH — there is no per-user "enable SSH" switch in OpenSSH by default. To set up key-based access for the new user, create their `.ssh` directory and install a public key:
+
+```bash
+# Run as the new user, or fix ownership afterwards if run as root.
+sudo install -d -m 700 -o youruser -g youruser /home/youruser/.ssh
+sudo install -m 600 -o youruser -g youruser /dev/null /home/youruser/.ssh/authorized_keys
+
+# Append the iPad/Blink public key (paste the full line):
+echo "ssh-ed25519 AAAA... your-key-comment" \
+  | sudo tee -a /home/youruser/.ssh/authorized_keys >/dev/null
+```
+
+If your `sshd_config` restricts logins with an `AllowUsers` or `AllowGroups` directive, you must add the new user (or their group) there too, then reload SSH:
+
+```bash
+# Check whether a restriction exists:
+sudo grep -E '^(AllowUsers|AllowGroups)' /etc/ssh/sshd_config
+
+# If AllowUsers is present, append the new user, e.g.:
+#   AllowUsers existinguser youruser
+sudo systemctl reload ssh
+```
+
+Now confirm you can log in as the new user from your iPad (or any SSH client) before locking down root access:
+
+```bash
+ssh youruser@my-ubuntu-server
+sudo whoami        # should print: root
+```
+
+Once you have verified the new admin user works, proceed with the mosh/SSH setup below and use this username everywhere the guide says `youruser`.
+
+---
+
 ## Step 5: Install and configure mosh and SSH on the server
 
 Mosh uses SSH for its initial handshake (authentication, launching `mosh-server`, exchanging a session key), then switches to a UDP-based protocol for the ongoing session. You need both OpenSSH and mosh installed.
