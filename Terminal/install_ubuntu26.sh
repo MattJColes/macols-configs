@@ -13,6 +13,38 @@ echo ""
 # Set non-interactive mode for apt
 export DEBIAN_FRONTEND=noninteractive
 
+# --- Self-heal: undo any prior hijack of the system python3 ---
+# An earlier version of this script pointed /usr/bin/python3 at 3.14 via
+# update-alternatives. That breaks apt: its cnf-update-db hook runs under
+# /usr/bin/python3 and needs the python3-apt bindings (apt_pkg), which only
+# exist for the distro's stock interpreter. The result is either
+# "ModuleNotFoundError: No module named 'apt_pkg'" or "/usr/lib/cnf-update-db:
+# not found", and every apt command fails. Detect and repair that here so this
+# script can run (and re-run) on a previously-broken machine.
+if update-alternatives --list python3 >/dev/null 2>&1; then
+    echo "Removing python3 update-alternatives override (it breaks apt)..."
+    sudo update-alternatives --remove-all python3 || true
+fi
+# Ensure /usr/bin/python3 exists and can import apt_pkg; if not, restore it to
+# the stock interpreter (the one that ships python3-apt).
+if [ ! -e /usr/bin/python3 ] || ! /usr/bin/python3 -c 'import apt_pkg' >/dev/null 2>&1; then
+    stock_py=""
+    for py in /usr/bin/python3.[0-9] /usr/bin/python3.[0-9][0-9]; do
+        [ -x "$py" ] || continue
+        if "$py" -c 'import apt_pkg' >/dev/null 2>&1; then
+            stock_py="$py"
+            break
+        fi
+    done
+    if [ -n "$stock_py" ]; then
+        echo "Restoring /usr/bin/python3 -> $stock_py (repairs apt)..."
+        sudo ln -sf "$stock_py" /usr/bin/python3
+    else
+        echo "WARNING: could not find a system python3 with apt_pkg bindings;" \
+             "apt may still be broken. Try: sudo apt-get install --reinstall python3-minimal python3-apt" >&2
+    fi
+fi
+
 # Update package list
 echo "Updating package list..."
 sudo apt-get update -y
