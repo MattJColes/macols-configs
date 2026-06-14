@@ -39,13 +39,31 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Running install_ohmyzsh_p10k.sh..."
 bash "$SCRIPT_DIR/install_ohmyzsh_p10k.sh"
 
-# Install Python 3.14 (via deadsnakes PPA; harmless if Ubuntu 26.04 already ships it)
+# Install Python 3.14
+# Works on both Ubuntu 24.04 (needs the deadsnakes PPA) and 26.04 (ships 3.14
+# in the default repos, so the PPA is skipped).
+#
+# IMPORTANT: we deliberately do NOT point /usr/bin/python3 at 3.14. Ubuntu's
+# apt tooling (command-not-found / cnf-update-db) imports the python3-apt C
+# bindings (apt_pkg), which only exist for the distro's stock python3. Re-aiming
+# /usr/bin/python3 at 3.14 breaks every later apt run with:
+#   ModuleNotFoundError: No module named 'apt_pkg'
+# Instead we register `python` (which doesn't exist by default) -> 3.14, leaving
+# the system python3 untouched.
 echo "Installing Python 3.14..."
-sudo apt-get install -y software-properties-common
-sudo add-apt-repository -y ppa:deadsnakes/ppa
-sudo apt-get update -y
+if apt-cache show python3.14 >/dev/null 2>&1; then
+    # Already available in the distro repos (Ubuntu 26.04+)
+    echo "python3.14 available in default repos; skipping deadsnakes PPA."
+else
+    # Ubuntu 24.04 etc. — pull from the deadsnakes PPA
+    echo "Adding deadsnakes PPA for python3.14..."
+    sudo apt-get install -y software-properties-common
+    sudo add-apt-repository -y ppa:deadsnakes/ppa
+    sudo apt-get update -y
+fi
 sudo apt-get install -y python3.14 python3.14-venv python3.14-dev python3-pip
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.14 1
+# Provide a `python` command pointing at 3.14 without touching system python3.
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.14 1
 
 # Install uv
 echo "Installing uv..."
