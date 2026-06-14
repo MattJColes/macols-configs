@@ -15,22 +15,10 @@ echo "=============================="
 if ! command -v brew &>/dev/null; then
     echo "Installing Homebrew..."
 
-    # Install prerequisites on Linux
-    if [[ "$(uname)" == "Linux" ]]; then
-        if command -v apt-get &>/dev/null; then
-            echo "  Installing build dependencies (apt)..."
-            sudo apt-get update -y
-            sudo apt-get install -y build-essential procps curl file git
-        elif command -v dnf &>/dev/null; then
-            echo "  Installing build dependencies (dnf)..."
-            sudo dnf groupinstall -y "Development Tools"
-            sudo dnf install -y procps-ng file git
-        elif command -v yum &>/dev/null; then
-            echo "  Installing build dependencies (yum)..."
-            sudo yum groupinstall -y "Development Tools"
-            sudo yum install -y procps-ng curl file git
-        fi
-    fi
+    # Install build prerequisites (Ubuntu/apt)
+    echo "  Installing build dependencies (apt)..."
+    sudo apt-get update -y
+    sudo apt-get install -y build-essential procps curl file git
 
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 else
@@ -38,9 +26,7 @@ else
 fi
 
 # Ensure brew is on PATH for the rest of the script
-if [[ -f /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+if [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
@@ -52,12 +38,15 @@ echo "=============================="
 echo "Installing neovim, yazi, lazygit, delta, and tmux..."
 brew install neovim yazi lazygit git-delta tmux
 
-# herdr is Amazon-internal — skip on non-Amazon systems
-if brew tap | grep -q amazon 2>/dev/null || brew search herdr 2>/dev/null | grep -q herdr; then
-    echo "Installing herdr..."
-    brew install herdr
+echo "Installing herdr..."
+if brew install herdr; then
+    echo "  herdr installed."
 else
-    echo "  Skipping herdr (not available outside Amazon)."
+    echo "  WARNING: 'brew install herdr' failed — herdr formula not available in the"
+    echo "           configured taps. Add the tap that provides herdr, then re-run:"
+    echo "             brew install herdr"
+    echo "           The auto-launch hook is still installed and will activate once"
+    echo "           herdr is on PATH."
 fi
 
 echo ""
@@ -311,13 +300,9 @@ EDITOR_LINE='export EDITOR="nvim"'
 
 for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
     if [[ -f "$rc" ]]; then
-        if ! grep -qF 'linuxbrew' "$rc" && ! grep -qF '/opt/homebrew' "$rc"; then
+        if ! grep -qF 'linuxbrew' "$rc"; then
             echo "" >> "$rc"
-            if [[ -f /opt/homebrew/bin/brew ]]; then
-                echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$rc"
-            else
-                echo "$BREW_LINE" >> "$rc"
-            fi
+            echo "$BREW_LINE" >> "$rc"
             echo "  Added brew shellenv to $rc"
         else
             echo "  brew shellenv already in $rc"
