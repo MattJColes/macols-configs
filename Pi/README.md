@@ -10,7 +10,7 @@ setups.
 
 ```bash
 cd Pi
-./install.sh                    # installs pi (if missing), skills, AGENTS.md, hooks
+./install.sh                    # installs pi (if missing), packages, skills, AGENTS.md, hooks
 ```
 
 Scope it with flags:
@@ -19,7 +19,9 @@ Scope it with flags:
 ./install.sh --skills-only      # just the /skill:<name> Agent Skills
 ./install.sh --context-only     # just the system AGENTS.md
 ./install.sh --hooks-only       # just the pi-checks extension + scripts
+./install.sh --packages-only    # just the pi packages (pi install <pkg>)
 ./install.sh --no-pi            # configure everything but don't touch the pi binary
+./install.sh --no-packages      # skip installing pi packages
 ./install.sh -p                 # per-project: ./.pi/skills + ./AGENTS.md
 ./install.sh --list             # preview available personas
 ```
@@ -31,6 +33,7 @@ Scope it with flags:
 | Skills   | `~/.pi/agent/skills/<name>/SKILL.md` | Agent Skills standard, invoked as `/skill:<name>` |
 | Context  | `~/.pi/agent/AGENTS.md` | System-level instructions |
 | Hooks    | `~/.pi/agent/extensions/pi-checks.ts` + `~/.pi/agent/hooks/*.sh` | Advisory checks |
+| Packages | installed via `pi install` | [`pi-agent-web-access`](https://pi.dev/packages/pi-agent-web-access): web search, page fetch, YouTube transcripts, GitHub repo browsing |
 
 (`~/.pi/agent` is overridable via `PI_CODING_AGENT_DIR`.)
 
