@@ -48,9 +48,28 @@ EXTENSION_SRC="$SCRIPT_DIR/hooks/pi-checks.ts"
 
 # Pi packages (https://pi.dev/packages) installed via `pi install`. These bundle
 # extensions/skills that give pi extra capabilities.
-#   • pi-agent-web-access — web search, page fetch, YouTube transcripts, GitHub repo
-#     browsing (https://pi.dev/packages/pi-agent-web-access).
-PI_PACKAGES="pi-agent-web-access"
+#   • pi-agent-web-access  — web search, page fetch, YouTube transcripts, GitHub browsing
+#   • @mjasnikovs/pi-task  — multi-step task tracking and coordination
+#   • context-mode         — context management / session continuity
+#   • pi-subagents         — delegate work to specialised subagents (parallel/chain)
+#   • pi-lens              — real-time code feedback (LSP, linters, formatters, types)
+#   • @vigolium/piolium    — multi-phase repository security audit agent
+#   • pi-simplify          — /simplify reviews changed code for clarity & consistency
+#   • gentle-pi            — senior-architect harness (SDD/TDD, subagents, guardrails)
+#   • pi-ask-user          — interactive ask_user tool (split-pane select, multi-select)
+#   • pi-markdown-preview  — preview Markdown/LaTeX/code/diff output in terminal/browser
+#   • pi-btw               — /btw side-question command without polluting the conversation
+PI_PACKAGES="pi-agent-web-access
+@mjasnikovs/pi-task
+context-mode
+pi-subagents
+pi-lens
+@vigolium/piolium
+pi-simplify
+gentle-pi
+pi-ask-user
+pi-markdown-preview
+pi-btw"
 
 # Each persona is a single source file: shared/personas/<name>/SKILL.md. For Pi
 # we emit one Agent Skill per persona — the SAME body, with Agent-Skills
