@@ -46,6 +46,12 @@ HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_code_hook.sh"
 TASK_HOOK_SCRIPT="$SCRIPT_DIR/hooks/post_task_hook.sh"
 EXTENSION_SRC="$SCRIPT_DIR/hooks/pi-checks.ts"
 
+# Pi packages (https://pi.dev/packages) installed via `pi install`. These bundle
+# extensions/skills that give pi extra capabilities.
+#   • pi-agent-web-access — web search, page fetch, YouTube transcripts, GitHub repo
+#     browsing (https://pi.dev/packages/pi-agent-web-access).
+PI_PACKAGES="pi-agent-web-access"
+
 # Each persona is a single source file: shared/personas/<name>/SKILL.md. For Pi
 # we emit one Agent Skill per persona — the SAME body, with Agent-Skills
 # frontmatter (name, description, optional allowed-tools). One source of truth,
@@ -118,8 +124,10 @@ Options:
     --skills-only     Install only Agent Skills (/skill:<name>)
     --context-only    Install only the system-level AGENTS.md
     --hooks-only      Install only the pi-checks extension + hook scripts
+    --packages-only   Install only the pi packages (pi install <pkg>)
     --mcps-only       (pi has no built-in MCP — prints guidance and exits)
     --no-pi           Skip installing/upgrading the pi binary
+    --no-packages     Skip installing pi packages
     -p, --project     Install skills to ./.pi/skills and AGENTS.md to ./AGENTS.md
     --list            List available personas and exit
 EOF
@@ -187,6 +195,23 @@ install_context() {
     printf "${GREEN}✓ Wrote system context to %s${NC}\n" "$target_file"
 }
 
+install_packages() {
+    if ! command -v pi &> /dev/null; then
+        printf "${RED}pi not found — install pi first (drop --no-pi) before installing packages${NC}\n"
+        return 1
+    fi
+
+    printf "${BLUE}Installing pi packages...${NC}\n"
+    for pkg in $PI_PACKAGES; do
+        printf "${BLUE}  → pi install %s${NC}\n" "$pkg"
+        if pi install "$pkg"; then
+            printf "${GREEN}  ✓ %s${NC}\n" "$pkg"
+        else
+            printf "${YELLOW}  ⚠ Failed to install %s (continuing)${NC}\n" "$pkg"
+        fi
+    done
+}
+
 install_mcps() {
     printf "${YELLOW}Pi has no built-in MCP support.${NC}\n"
     cat << EOF
@@ -228,12 +253,13 @@ DO_SKILLS=true
 DO_CONTEXT=true
 DO_HOOKS=true
 DO_PI=true
+DO_PACKAGES=true
 PROJECT_INSTALL=false
 SUBSET=false
 
 set_subset() {
     if [ "$SUBSET" = false ]; then
-        DO_SKILLS=false; DO_CONTEXT=false; DO_HOOKS=false; DO_PI=false
+        DO_SKILLS=false; DO_CONTEXT=false; DO_HOOKS=false; DO_PI=false; DO_PACKAGES=false
         SUBSET=true
     fi
 }
@@ -245,8 +271,10 @@ while [ $# -gt 0 ]; do
         --skills-only)  set_subset; DO_SKILLS=true ;;
         --context-only) set_subset; DO_CONTEXT=true ;;
         --hooks-only)   set_subset; DO_HOOKS=true ;;
+        --packages-only) set_subset; DO_PACKAGES=true ;;
         --mcps-only)    install_mcps; exit 0 ;;
         --no-pi)        DO_PI=false ;;
+        --no-packages)  DO_PACKAGES=false ;;
         -p|--project)   PROJECT_INSTALL=true ;;
         *) printf "${RED}Unknown option: %s${NC}\n" "$1"; usage; exit 1 ;;
     esac
@@ -260,6 +288,7 @@ printf "${CYAN}━━━━━━━━━━━━━━━━━━━━━�
 # Hooks (extensions) and the project skills dir are only honoured for a trusted
 # project; the global install below is the common path.
 if [ "$DO_PI" = true ] && [ "$PROJECT_INSTALL" = false ]; then install_pi; echo ""; fi
+if [ "$DO_PACKAGES" = true ] && [ "$PROJECT_INSTALL" = false ]; then install_packages; echo ""; fi
 if [ "$DO_SKILLS" = true ]; then
     if [ "$PROJECT_INSTALL" = true ]; then install_skills "./.pi/skills"; else install_skills "$SKILLS_DIR"; fi
     echo ""
@@ -277,5 +306,6 @@ echo "Next steps:"
 echo "  • Run 'pi' to start the agent (or '/reload' inside pi to pick up the extension)"
 echo "  • Skills are available as /skill:<name> (e.g. /skill:python-backend)"
 echo "  • The pi-checks extension runs tests/lint/security advisories after edits and turns"
+echo "  • pi-agent-web-access adds web search, page fetch, YouTube transcripts and GitHub browsing"
 echo "  • Pi has no MCP — expose external capabilities as CLI tools + skills instead"
 echo ""
