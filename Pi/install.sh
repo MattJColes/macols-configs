@@ -52,21 +52,18 @@ EXTENSION_SRC="$SCRIPT_DIR/hooks/pi-checks.ts"
 #   • @mjasnikovs/pi-task  — multi-step task tracking and coordination
 #   • context-mode         — context management / session continuity
 #   • pi-subagents         — delegate work to specialised subagents (parallel/chain)
-#   • pi-lens              — real-time code feedback (LSP, linters, formatters, types)
 #   • @vigolium/piolium    — multi-phase repository security audit agent
-#   • pi-simplify          — /simplify reviews changed code for clarity & consistency
-#   • gentle-pi            — senior-architect harness (SDD/TDD, subagents, guardrails)
 #   • pi-ask-user          — interactive ask_user tool (split-pane select, multi-select)
 #   • pi-markdown-preview  — preview Markdown/LaTeX/code/diff output in terminal/browser
 #   • pi-btw               — /btw side-question command without polluting the conversation
+#
+# Deliberately not installed (overlap with our pi-checks hooks / personas):
+#   pi-lens (lint/type feedback), pi-simplify (clarity review), gentle-pi (harness).
 PI_PACKAGES="pi-agent-web-access
 @mjasnikovs/pi-task
 context-mode
 pi-subagents
-pi-lens
 @vigolium/piolium
-pi-simplify
-gentle-pi
 pi-ask-user
 pi-markdown-preview
 pi-btw"

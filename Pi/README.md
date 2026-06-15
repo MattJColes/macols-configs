@@ -45,13 +45,13 @@ Installed via `pi install` (skip with `--no-packages`, or run just these with `-
 | [`@mjasnikovs/pi-task`](https://pi.dev/packages/@mjasnikovs/pi-task) | Multi-step task tracking and coordination |
 | [`context-mode`](https://pi.dev/packages/context-mode) | Context management / session continuity |
 | [`pi-subagents`](https://pi.dev/packages/pi-subagents) | Delegate work to specialised subagents (parallel/chain modes) |
-| [`pi-lens`](https://pi.dev/packages/pi-lens) | Real-time code feedback (LSP, linters, formatters, type-checks) |
 | [`@vigolium/piolium`](https://pi.dev/packages/@vigolium/piolium) | Multi-phase repository security audit agent |
-| [`pi-simplify`](https://pi.dev/packages/pi-simplify) | `/simplify` reviews changed code for clarity & consistency |
-| [`gentle-pi`](https://pi.dev/packages/gentle-pi) | Senior-architect harness (SDD/TDD, subagents, review guardrails) |
 | [`pi-ask-user`](https://pi.dev/packages/pi-ask-user) | Interactive `ask_user` tool (split-pane select, multi-select) |
 | [`pi-markdown-preview`](https://pi.dev/packages/pi-markdown-preview) | Preview Markdown/LaTeX/code/diff output in terminal or browser |
 | [`pi-btw`](https://pi.dev/packages/pi-btw) | `/btw` side-question command without polluting the conversation |
+
+`pi-lens`, `pi-simplify` and `gentle-pi` are deliberately left out — they
+overlap with the `pi-checks` advisory hooks and the persona/AGENTS.md setup.
 
 (`~/.pi/agent` is overridable via `PI_CODING_AGENT_DIR`.)
 
