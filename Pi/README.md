@@ -33,7 +33,25 @@ Scope it with flags:
 | Skills   | `~/.pi/agent/skills/<name>/SKILL.md` | Agent Skills standard, invoked as `/skill:<name>` |
 | Context  | `~/.pi/agent/AGENTS.md` | System-level instructions |
 | Hooks    | `~/.pi/agent/extensions/pi-checks.ts` + `~/.pi/agent/hooks/*.sh` | Advisory checks |
-| Packages | installed via `pi install` | [`pi-agent-web-access`](https://pi.dev/packages/pi-agent-web-access): web search, page fetch, YouTube transcripts, GitHub repo browsing |
+| Packages | installed via `pi install` | See the package list below |
+
+### Packages
+
+Installed via `pi install` (skip with `--no-packages`, or run just these with `--packages-only`):
+
+| Package | What it adds |
+|---------|--------------|
+| [`pi-agent-web-access`](https://pi.dev/packages/pi-agent-web-access) | Web search, page fetch, YouTube transcripts, GitHub repo browsing |
+| [`@mjasnikovs/pi-task`](https://pi.dev/packages/@mjasnikovs/pi-task) | Multi-step task tracking and coordination |
+| [`context-mode`](https://pi.dev/packages/context-mode) | Context management / session continuity |
+| [`pi-subagents`](https://pi.dev/packages/pi-subagents) | Delegate work to specialised subagents (parallel/chain modes) |
+| [`@vigolium/piolium`](https://pi.dev/packages/@vigolium/piolium) | Multi-phase repository security audit agent |
+| [`pi-ask-user`](https://pi.dev/packages/pi-ask-user) | Interactive `ask_user` tool (split-pane select, multi-select) |
+| [`pi-markdown-preview`](https://pi.dev/packages/pi-markdown-preview) | Preview Markdown/LaTeX/code/diff output in terminal or browser |
+| [`pi-btw`](https://pi.dev/packages/pi-btw) | `/btw` side-question command without polluting the conversation |
+
+`pi-lens`, `pi-simplify` and `gentle-pi` are deliberately left out — they
+overlap with the `pi-checks` advisory hooks and the persona/AGENTS.md setup.
 
 (`~/.pi/agent` is overridable via `PI_CODING_AGENT_DIR`.)
 
