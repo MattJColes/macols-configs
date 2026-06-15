@@ -324,9 +324,16 @@ for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
         # was still being sourced), so the interactive shell's line editor and
         # herdr fought over the tty and left the terminal in raw mode on exit --
         # i.e. you could no longer type after sshing in. The corrected block
-        # below uses `exec` so herdr cleanly owns the terminal, and adds a
-        # ~/.no_herdr escape hatch so a broken herdr can never lock you out
-        # (create it non-interactively: `ssh host touch ~/.no_herdr`).
+        # below uses `exec` so herdr cleanly owns the terminal.
+        #
+        # Resilience: before handing over the terminal we confirm herdr's
+        # service is actually healthy (`herdr service status`). If the service
+        # is stopped or hung, we fall through to a normal shell instead of
+        # `exec`-ing into a broken herdr that would leave the tty in raw mode
+        # and lock you out of SSH. The status check is bounded by `timeout`
+        # (or `gtimeout` on macOS) so a wedged daemon can't stall login. Two
+        # escape hatches remain for any other breakage: the ~/.no_herdr file,
+        # and an rc-skipping login (`ssh -t host 'exec /bin/zsh -f'`).
         if grep -qF 'HERDR_AUTOLAUNCH' "$rc"; then
             sed -i '/# HERDR_AUTOLAUNCH/,/^fi$/d' "$rc"
             echo "  Refreshing herdr auto-launch in $rc"
@@ -335,13 +342,31 @@ for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
 
 # HERDR_AUTOLAUNCH: drop into herdr on each interactive SSH login.
 # Guards: interactive SSH shell, herdr installed, not already in a herdr
-# session, and no ~/.no_herdr escape-hatch file. `exec` hands the terminal
-# off cleanly so the shell's line editor doesn't fight herdr for the tty.
+# session, and no ~/.no_herdr escape-hatch file. Only after confirming the
+# herdr service is healthy do we `exec` into it (clean tty ownership); a
+# stopped/hung service falls through to a normal shell so it can't lock you
+# out. The health check is time-bounded so a wedged daemon can't stall login.
 if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" ]] \
     && [[ -z "${HERDR_SESSION:-}" ]] && [[ ! -f "$HOME/.no_herdr" ]] \
     && command -v herdr &>/dev/null; then
-    export HERDR_SESSION=1
-    exec herdr
+    # Bound the health check: prefer GNU `timeout`, then macOS `gtimeout`,
+    # else run unbounded. Written explicitly (not via a command-in-a-var) so
+    # it behaves identically under bash and zsh.
+    if command -v timeout &>/dev/null; then
+        timeout 5 herdr service status >/dev/null 2>&1
+    elif command -v gtimeout &>/dev/null; then
+        gtimeout 5 herdr service status >/dev/null 2>&1
+    else
+        herdr service status >/dev/null 2>&1
+    fi
+    if [[ $? -eq 0 ]]; then
+        export HERDR_SESSION=1
+        exec herdr
+    else
+        echo "herdr: service not healthy -- starting a normal shell instead." >&2
+        echo "       Fix with 'herdr service start' then re-login, or run" >&2
+        echo "       'touch ~/.no_herdr' to disable auto-launch entirely." >&2
+    fi
 fi
 EOF
         echo "  Added herdr auto-launch to $rc"
