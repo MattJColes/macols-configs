@@ -12,7 +12,11 @@
 # Provides:
 #   setup_timeout_cmd   — sets TIMEOUT_CMD for macOS/Linux compatibility
 #   detect_project_type — echoes "has_python:has_node:has_cdk:has_flutter"
-#   run_post_code_checks — orchestrator that runs all relevant checks
+#   run_post_code_checks — fast, file-scoped lint/type-check orchestrator
+#
+# Per-edit checks are intentionally lightweight: only the linter/type-checker
+# for the changed file's language runs here. Tests, security audits and cdk
+# synth run once at turn end via the Stop hook (post_task_checks.sh).
 #
 # Results are collected in ISSUES_FOUND[] and MESSAGES[] arrays.
 # Always returns 0 (non-blocking).
@@ -424,64 +428,31 @@ run_npm_audit() {
     fi
 }
 
-# Main orchestrator — runs checks based on project type and FILE_PATH filtering
+# Main orchestrator — fast, file-scoped lint/type-check only.
+#
+# The per-edit hook stays lightweight: for the single file that changed it runs
+# only the linter / type-checker for that language. The heavy battery (tests,
+# security audits, cdk synth) deliberately does NOT run here — it runs once at
+# turn end via the Stop hook (post_task_checks.sh), instead of after every edit.
 run_post_code_checks() {
     setup_timeout_cmd
 
-    # Skip non-source files
-    if [ -n "$FILE_PATH" ]; then
-        case "$FILE_PATH" in
-            *.py|*.ts|*.js|*.jsx|*.tsx|*.mjs|*.cjs|*.dart)
-                ;;
-            *)
-                return 0
-                ;;
-        esac
-    fi
-
-    local project_info
-    project_info=$(detect_project_type)
-    local has_python has_node has_cdk has_flutter
-    IFS=':' read -r has_python has_node has_cdk has_flutter <<< "$project_info" || true
-
-    local ran_something=false
-
-    if [ "$has_python" = "true" ]; then
-        if [ -z "$FILE_PATH" ] || [[ "$FILE_PATH" == *.py ]]; then
-            run_python_tests || true
-            run_bandit_scan || true
-            run_pip_audit || true
+    # Nothing to scope to / not a source file we lint — skip.
+    case "$FILE_PATH" in
+        *.py)
             run_ruff_check || true
             run_mypy_check || true
-            ran_something=true
-        fi
-    fi
-
-    if [ "$has_node" = "true" ]; then
-        if [ -z "$FILE_PATH" ] || [[ "$FILE_PATH" == *.ts ]] || [[ "$FILE_PATH" == *.js ]] || [[ "$FILE_PATH" == *.tsx ]] || [[ "$FILE_PATH" == *.jsx ]]; then
-            run_node_tests || true
-            run_npm_audit || true
+            ;;
+        *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs)
             run_eslint_check || true
-            ran_something=true
-        fi
-    fi
-
-    if [ "$has_cdk" = "true" ]; then
-        run_cdk_tests || true
-        ran_something=true
-    fi
-
-    if [ "$has_flutter" = "true" ]; then
-        if [ -z "$FILE_PATH" ] || [[ "$FILE_PATH" == *.dart ]]; then
-            run_flutter_tests || true
+            ;;
+        *.dart)
             run_dart_analyze || true
-            ran_something=true
-        fi
-    fi
-
-    if [ "$ran_something" = false ]; then
-        return 0
-    fi
+            ;;
+        *)
+            return 0
+            ;;
+    esac
 
     # Output results
     if [ ${#ISSUES_FOUND[@]} -gt 0 ]; then
