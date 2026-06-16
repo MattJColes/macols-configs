@@ -141,8 +141,13 @@ echo "Adding $USER to docker group..."
 sudo usermod -aG docker "$USER"
 
 # Install QEMU + binfmt for multi-arch Docker builds (linux/arm64, etc.)
+# On Ubuntu 26, "qemu-user-static" is a virtual package with no install
+# candidate, so explicitly select a concrete provider (falling back to the
+# legacy name on older releases).
 echo "Installing QEMU and binfmt support..."
-sudo apt-get install -y qemu-user-static binfmt-support
+if ! sudo apt-get install -y qemu-user-binfmt binfmt-support; then
+    sudo apt-get install -y qemu-user-static binfmt-support
+fi
 
 # Install NVM (fetch latest release tag)
 echo "Installing NVM..."
