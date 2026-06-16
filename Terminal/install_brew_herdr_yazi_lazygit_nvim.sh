@@ -319,21 +319,31 @@ for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
         # Auto-launch herdr on interactive SSH logins.
         #
         # Always strip any existing HERDR_AUTOLAUNCH block first, then re-add the
-        # current one. This makes the wiring idempotent *and* self-healing: an
-        # earlier version ran `herdr` plainly from inside the rc file (while it
-        # was still being sourced), so the interactive shell's line editor and
-        # herdr fought over the tty and left the terminal in raw mode on exit --
-        # i.e. you could no longer type after sshing in. The corrected block
-        # below uses `exec` so herdr cleanly owns the terminal.
+        # current one. This makes the wiring idempotent *and* self-healing.
         #
-        # Resilience: before handing over the terminal we confirm herdr's
-        # service is actually healthy (`herdr service status`). If the service
-        # is stopped or hung, we fall through to a normal shell instead of
-        # `exec`-ing into a broken herdr that would leave the tty in raw mode
-        # and lock you out of SSH. The status check is bounded by `timeout`
-        # (or `gtimeout` on macOS) so a wedged daemon can't stall login. Two
-        # escape hatches remain for any other breakage: the ~/.no_herdr file,
-        # and an rc-skipping login (`ssh -t host 'exec /bin/zsh -f'`).
+        # History of the "can't type after sshing in" lockout this guards against:
+        #   1. An early version ran `herdr` plainly mid-rc, so the line editor and
+        #      herdr fought over the tty and left it in raw mode on exit.
+        #   2. The next version switched to `exec herdr`. That gives herdr clean
+        #      ownership *while it runs*, but `exec` replaces the shell entirely --
+        #      so if herdr crashes, exits, or hands back a terminal still in raw
+        #      mode, there's no shell left to recover and no chance to restore the
+        #      tty. You're locked out with a dead keyboard.
+        #
+        # Current approach: we do NOT exec. We run herdr as a child of the login
+        # shell and *always* restore the terminal afterward (`stty sane`). So when
+        # herdr detaches, exits, or breaks, control returns to a normal shell with
+        # a working keyboard rather than a wedged session. The trade-off vs `exec`
+        # is that detaching/quitting herdr drops you to a shell instead of closing
+        # the SSH connection -- a deliberate choice, since a usable shell is what
+        # lets you fix or disable herdr when something goes wrong.
+        #
+        # Resilience: before launching we still confirm herdr's service is healthy
+        # (`herdr service status`); a stopped/hung service falls through to a
+        # normal shell. The status check is bounded by `timeout` (or `gtimeout` on
+        # macOS) so a wedged daemon can't stall login. Two escape hatches remain
+        # for any other breakage: the ~/.no_herdr file, and an rc-skipping login
+        # (`ssh -t host 'exec /bin/zsh -f'`).
         if grep -qF 'HERDR_AUTOLAUNCH' "$rc"; then
             sed -i '/# HERDR_AUTOLAUNCH/,/^fi$/d' "$rc"
             echo "  Refreshing herdr auto-launch in $rc"
@@ -343,9 +353,15 @@ for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
 # HERDR_AUTOLAUNCH: drop into herdr on each interactive SSH login.
 # Guards: interactive SSH shell, herdr installed, not already in a herdr
 # session, and no ~/.no_herdr escape-hatch file. Only after confirming the
-# herdr service is healthy do we `exec` into it (clean tty ownership); a
-# stopped/hung service falls through to a normal shell so it can't lock you
-# out. The health check is time-bounded so a wedged daemon can't stall login.
+# herdr service is healthy do we launch it; a stopped/hung service falls
+# through to a normal shell so it can't lock you out. The health check is
+# time-bounded so a wedged daemon can't stall login.
+#
+# We intentionally do NOT `exec herdr`. herdr runs as a child of this shell
+# and we ALWAYS `stty sane` afterward, so if herdr crashes, exits, or leaves
+# the terminal in raw mode you land back in a normal shell with a working
+# keyboard instead of a wedged session you can't type into. Detaching/quitting
+# herdr therefore drops you to a shell rather than closing the SSH connection.
 if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" ]] \
     && [[ -z "${HERDR_SESSION:-}" ]] && [[ ! -f "$HOME/.no_herdr" ]] \
     && command -v herdr &>/dev/null; then
@@ -360,8 +376,14 @@ if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" ]] \
         herdr service status >/dev/null 2>&1
     fi
     if [[ $? -eq 0 ]]; then
+        # Mark the session so panes herdr spawns don't recurse into this block.
         export HERDR_SESSION=1
-        exec herdr
+        herdr
+        # herdr has detached/exited (or failed to take the tty). Restore the
+        # line discipline so the fall-through shell is always usable, then clear
+        # the marker so a manual `herdr` relaunch in this shell still works.
+        stty sane 2>/dev/null || true
+        unset HERDR_SESSION
     else
         echo "herdr: service not healthy -- starting a normal shell instead." >&2
         echo "       Fix with 'herdr service start' then re-login, or run" >&2
