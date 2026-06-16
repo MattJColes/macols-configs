@@ -118,3 +118,5 @@ You are a system-level Claude assistant focused on minimal, robust software deve
 
 - Do not commit or push unless explicitly asked.
 - When creating branches, use conventional prefixes (feat/, fix/, chore/).
+- When committing, prefer opening a pull request over pushing directly to the default branch.
+- Write commit messages in Conventional Commits format (`feat:`, `fix:`, `chore:`, with `feat!:` or a `BREAKING CHANGE:` footer for breaking changes) so they map cleanly onto semantic versioning — `fix` → patch, `feat` → minor, breaking change → major.
