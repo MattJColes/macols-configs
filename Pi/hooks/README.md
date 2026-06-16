@@ -10,8 +10,11 @@ the shared check scripts, mirroring Claude Code's PostToolUse + Stop hooks.
 | `agent_end` | `post_task_hook.sh` | when the agent finishes a turn | Claude Code Stop |
 
 Both scripts source the shared libraries in `../../shared/` (`post_code_checks.sh`,
-`post_task_checks.sh`) and run the relevant tests, lint, type-checks and
-security scans for the detected project type (Python, Node, CDK, Flutter).
+`post_task_checks.sh`). The per-edit `tool_result` hook is intentionally light —
+it runs only the linter / type-checker for the changed file's language
+(`ruff`+`mypy`, `eslint`, or `dart analyze`). The heavy battery (tests,
+`bandit`, `pip-audit`, `npm audit`, `cdk synth`) runs once at turn end via the
+`agent_end` hook, not after every edit.
 
 ## Advisory + change-gated
 

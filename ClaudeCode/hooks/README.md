@@ -1,41 +1,39 @@
 # Claude Code Testing & Security Hooks
 
-Post-code hooks for Claude Code that automatically run tests, security scans, and intelligent code review after coding tasks.
+Hooks for Claude Code that lint the file you just edited and run the full
+test/security battery once a turn ends.
 
 ## Features
 
-- **Automatic Test Running**: pytest, jest/mocha, CDK synthesis
+- **Fast per-edit feedback**: lint + type-check the single file that changed
+- **Full validation at turn end**: pytest, jest/mocha, CDK synth, security scans
 - **Security Scanning**: bandit for Python, npm audit for Node.js, pip-audit for Python packages
 - **Project Detection**: Automatically detects project type and runs relevant checks
-- **Agent Code Review**: `type: "agent"` hook spawns a mini LLM agent to review changed files for bugs and security issues beyond what automated tools catch
 
 ## Hook Types
 
-Two hooks fire on every `Edit|Write|NotebookEdit`:
+One hook fires on every `Edit|Write|NotebookEdit`:
 
 | Type | What it does |
 |------|-------------|
-| `command` | Runs shell script: tests, bandit, pip-audit/npm audit |
-| `agent` | Spawns a mini LLM agent to review the edited file for logic bugs and missed security issues |
+| `command` | Fast, **file-scoped** lint / type-check for the changed file only — `ruff`+`mypy` (Python), `eslint` (JS/TS), or `dart analyze` (Dart). No tests or security audits run per-edit; those run once at turn end (Stop hook below) so editing N files doesn't re-run the whole suite N times. |
 
-A third hook fires on `PreToolUse` for `Bash`:
+A second hook fires on `PreToolUse` for `Bash`:
 
 | Hook | What it does |
 |------|-------------|
 | `pre_deploy_hook.sh` | Detects `cdk deploy` / `cdk destroy` and returns `permissionDecision: "ask"`, pausing to confirm you reviewed `cdk diff` for resource replacements. A renamed Construct ID changes its logical ID and forces delete-then-create — data loss on stateful resources. `cdk diff` / `cdk synth` pass through untouched. |
 
-A fourth hook fires on `Stop` (turn end):
+A third hook fires on `Stop` (turn end):
 
 | Hook | What it does |
 |------|-------------|
-| `post_task_hook.sh` | **Advisory + change-gated.** Runs the full battery (tests, lint, type-check, security scans) once a turn ends — but only when the git working tree has changed code files (skips Q&A/docs-only turns via the shared `code_changed` gate), and it **reports** findings to stderr rather than blocking the stop. Per-edit enforcement already happens in the PostToolUse hook above; a hard Stop block re-ran the whole suite every turn and trapped on pre-existing failures in untouched code. To restore blocking, emit `{"decision":"block","reason":...}` on stdout from this script. |
+| `post_task_hook.sh` | **Advisory + change-gated.** This is the one place the full battery runs (tests, lint, type-check, security scans) — once a turn ends, and only when the git working tree has changed code files (skips Q&A/docs-only turns via the shared `code_changed` gate). It **reports** findings to stderr rather than blocking the stop. The PostToolUse hook above only lints the changed file; the heavy suite is deliberately concentrated here so it runs once per turn instead of after every edit. To restore blocking, emit `{"decision":"block","reason":...}` on stdout from this script. |
 
 `install.sh --hooks-only` additionally writes hard safety to
 `~/.claude/settings.json` that the model cannot override: `permissions.deny` on
 `Read(~/.aws/**)` and `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`. Bypass ("yolo")
 permissions mode is left enabled.
-
-> **Note:** `type: "agent"` hooks run a scoped LLM agent with tool access. They are separate from the main Claude session's subagents spawned via the Task tool.
 
 ## Installation
 
@@ -60,11 +58,6 @@ Add to `~/.claude/settings.json`:
           {
             "type": "command",
             "command": "/path/to/ClaudeCode/hooks/post_code_hook.sh"
-          },
-          {
-            "type": "agent",
-            "prompt": "A file was just edited. Check tool_input.file_path — if the file is not a source code file (e.g. it ends in .md, .json, .toml, .yaml, .yml, .txt, .cfg, .ini, .lock), respond with SKIPPED and stop. Otherwise, read the file and briefly review it for: (1) potential bugs or logic errors, (2) security issues that automated scans miss, (3) missing error handling for edge cases. Only flag real issues with specific line references. Be concise and skip style preferences.",
-            "timeout": 60
           }
         ]
       }

@@ -1,9 +1,10 @@
 /**
  * OpenCode Plugin: Post-Code Hook
  *
- * Runs tests and security scans after file write/edit tools execute.
+ * Runs a fast, file-scoped lint / type-check after file write/edit tools execute.
  * Uses the tool.execute.after hook to trigger the post_code_hook.sh script.
- * Uses the session.idle hook to run comprehensive end-of-session validation.
+ * Uses the session.idle hook to run the comprehensive end-of-session battery
+ * (tests, security scans, cdk synth) via post_task_hook.sh.
  *
  * Install using: ./install_hooks.sh
  */

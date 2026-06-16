@@ -5,7 +5,7 @@ Lifecycle hooks for Codex CLI. `../install.sh` writes these into
 
 | Hook | Event | What it does |
 |------|-------|--------------|
-| `post_code_hook.sh` | `PostToolUse` (file edits) | Runs project tests, linters and security scans for the file/project that changed |
+| `post_code_hook.sh` | `PostToolUse` (file edits) | Fast, file-scoped lint / type-check for the changed file only (`ruff`+`mypy`, `eslint`, or `dart analyze`) |
 | `post_task_hook.sh` | `Stop` (turn complete) | Full validation pass — tests, lint, `bandit`, `pip-audit`, `npm audit`, `cdk synth` |
 | `pre_deploy_hook.sh` | `PreToolUse` (shell) | Warns before `cdk deploy` / `cdk destroy` to review `cdk diff` for resource replacement |
 

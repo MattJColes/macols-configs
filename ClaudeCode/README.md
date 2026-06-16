@@ -209,11 +209,15 @@ Testing and security automation hook scripts live in `hooks/`; install them via:
 ./install.sh --hooks-only
 ```
 
-The hook automatically runs after code changes:
-- **pytest** - Python tests
-- **jest/mocha** - JavaScript/TypeScript tests
-- **bandit** - Python security scanning
-- **pip-audit / npm audit** - Package vulnerability checks
+Two tiers run automatically:
+- **Per edit (PostToolUse)** — fast, file-scoped lint / type-check on the file
+  that just changed: `ruff`+`mypy` (Python), `eslint` (JS/TS), or `dart analyze`
+  (Dart). No tests or audits here, so editing many files stays snappy.
+- **Per turn (Stop)** — the full battery once the turn ends and only if code
+  changed: **pytest**, **jest/mocha**, **bandit**, **pip-audit / npm audit**,
+  `cdk synth`. Advisory (reports, never blocks).
+
+See `hooks/README.md` for the full breakdown.
 
 `install.sh --hooks-only` also writes hard, model-independent safety into
 `~/.claude/settings.json` (these are enforced by the harness, not interpreted

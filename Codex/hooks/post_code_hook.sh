@@ -17,8 +17,9 @@ SHARED_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/shared"
 HOOK_INPUT=$(cat || true)
 
 # Best-effort extraction of the edited file path. Codex's edit tools vary in
-# shape across versions, so probe the common locations and fall back to empty
-# (an empty FILE_PATH just means the checks run across the whole project).
+# shape across versions, so probe the common locations. The per-edit hook is
+# file-scoped lint/type-check only; if no path can be resolved it does nothing
+# here and the full battery still runs at turn end via post_task_hook.sh.
 FILE_PATH=""
 if command -v jq &> /dev/null && [ -n "$HOOK_INPUT" ]; then
     FILE_PATH=$(echo "$HOOK_INPUT" | jq -r '
