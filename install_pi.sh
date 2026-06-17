@@ -29,7 +29,6 @@ AGENTS_FILE="$PI_DIR/AGENTS.md"
 #   • @mjasnikovs/pi-task  — multi-step task tracking and coordination
 #   • context-mode         — context management / session continuity
 #   • pi-subagents         — delegate work to specialised subagents (parallel/chain)
-#   • @vigolium/piolium    — multi-phase repository security audit agent
 #   • pi-ask-user          — interactive ask_user tool (split-pane select, multi-select)
 #   • pi-markdown-preview  — preview Markdown/LaTeX/code/diff output in terminal/browser
 #   • pi-btw               — /btw side-question command without polluting the conversation
@@ -37,7 +36,6 @@ PI_PACKAGES="npm:pi-agent-web-access
 npm:@mjasnikovs/pi-task
 npm:context-mode
 npm:pi-subagents
-npm:@vigolium/piolium
 npm:pi-ask-user
 npm:pi-markdown-preview
 npm:pi-btw"

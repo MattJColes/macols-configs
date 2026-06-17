@@ -76,7 +76,7 @@ See **[Terminal/README.md](Terminal/README.md)** for the full toolchain
 
 **Pi is deliberately different:** it has no MCP — external capabilities come from
 CLI tools, Agent Skills and pluggable packages (`pi install <pkg>`, e.g.
-`pi-agent-web-access`, `pi-subagents`, `@vigolium/piolium`).
+`pi-agent-web-access`, `pi-subagents`, `pi-ask-user`).
 
 ## Personas
 
