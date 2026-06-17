@@ -96,8 +96,8 @@ cdk-expert-ts, cdk-expert-python, data-scientist ·
 ## MCP servers
 
 Defined once in `shared/mcp-config.json` and registered into each tool's native
-config: **filesystem**, **puppeteer**, **playwright**, **aws-kb**, **aws-iac**,
-**aws-documentation**, **context7**, **dart**. (Pi excluded by design.)
+config: **filesystem**, **puppeteer**, **playwright**, **context7**, **dart**.
+(Pi excluded by design.)
 
 ## Hooks
 

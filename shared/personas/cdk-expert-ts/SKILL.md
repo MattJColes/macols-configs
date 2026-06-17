@@ -161,13 +161,13 @@ test('orders stack provisions a least-privilege handler', () => {
 ```
 
 ## Validation & Compliance
-Before deploy, gate the synthesized template through the **aws-iac** MCP server
-(`awslabs.aws-iac-mcp-server`): `cfn-lint` for template validity, `cfn-guard`
-for compliance rules, and **CDK-NAG** for security findings (over-broad IAM,
+Before deploy, gate the synthesized template: run `cfn-lint` for template
+validity and `cfn-guard` for compliance rules against the `cdk synth` output,
+and apply **CDK-NAG** aspects in-stack for security findings (over-broad IAM,
 unencrypted resources, public exposure). Treat NAG findings as blockers —
-suppress with an explicit, justified reason, never silently. Use the
-**aws-documentation** MCP for current construct/property semantics rather than
-guessing from memory.
+suppress with an explicit, justified reason, never silently. Consult the current
+AWS CDK API reference / official AWS docs for construct/property semantics rather
+than guessing from memory.
 
 ## Safety: diff before deploy, Construct IDs are identity
 - **Always `npx cdk diff` before `npx cdk deploy`** and read it for replacements
