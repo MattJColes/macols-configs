@@ -406,14 +406,12 @@ existing.hooks = {
     PostToolUse: [{ matcher: "Edit|Write|NotebookEdit", hooks: [{ type: "command", command: env.HOOK_SCRIPT }] }],
     Stop: [{ hooks: [{ type: "command", command: env.TASK_HOOK_SCRIPT }] }]
 };
-// Hard safety the model cannot talk itself out of: deny reads of AWS credentials
-// and scrub secrets from subprocess env. Bypass ("yolo") mode stays available.
+// Hard safety the model cannot talk itself out of: deny reads of AWS
+// credentials. Bypass ("yolo") mode stays available.
 existing.permissions = existing.permissions || {};
 const deny = new Set(existing.permissions.deny || []);
 deny.add("Read(~/.aws/**)"); deny.add("Read(./.aws/**)");
 existing.permissions.deny = [...deny];
-existing.env = existing.env || {};
-existing.env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB = "1";
 delete existing.disableBypassPermissionsMode;
 fs.writeFileSync(env.SETTINGS_FILE, JSON.stringify(existing, null, 2) + "\n");
 '
