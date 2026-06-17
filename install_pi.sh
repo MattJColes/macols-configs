@@ -26,14 +26,12 @@ AGENTS_FILE="$PI_DIR/AGENTS.md"
 # prefix — a bare name (e.g. `pi install pi-btw`) is treated by pi as a local
 # filesystem PATH and fails with "Path does not exist".
 #   • pi-agent-web-access  — web search, page fetch, YouTube transcripts, GitHub browsing
-#   • @mjasnikovs/pi-task  — multi-step task tracking and coordination
 #   • context-mode         — context management / session continuity
 #   • pi-subagents         — delegate work to specialised subagents (parallel/chain)
 #   • pi-ask-user          — interactive ask_user tool (split-pane select, multi-select)
 #   • pi-markdown-preview  — preview Markdown/LaTeX/code/diff output in terminal/browser
 #   • pi-btw               — /btw side-question command without polluting the conversation
 PI_PACKAGES="npm:pi-agent-web-access
-npm:@mjasnikovs/pi-task
 npm:context-mode
 npm:pi-subagents
 npm:pi-ask-user
