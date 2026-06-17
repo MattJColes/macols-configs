@@ -339,7 +339,7 @@ register_mcps_codex() {
         while IFS= read -r a; do args+=("$a"); done < <(jq -r --arg home "$HOME" --arg name "$name" \
             '.mcpServers[$name].args // [] | .[] | gsub("\\$HOME"; $home)' "$MCP_CONFIG_FILE")
         codex mcp remove "$name" >/dev/null 2>&1 || true
-        if codex mcp add "$name" "${env_flags[@]}" -- "$command_bin" "${args[@]}" >/dev/null 2>&1; then
+        if codex mcp add "$name" "${env_flags[@]+"${env_flags[@]}"}" -- "$command_bin" "${args[@]+"${args[@]}"}" >/dev/null 2>&1; then
             printf "  ${GREEN}✓ registered${NC}\n"
         else
             printf "  ${RED}✗ failed to register${NC}\n"
