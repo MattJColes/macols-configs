@@ -43,7 +43,7 @@ Automated scripts to set up a complete development environment for macOS and Ubu
 #### **Codex CLI**
 - OpenAI's terminal coding agent
 - macOS via Homebrew cask (`brew install --cask codex`); Linux via npm (`@openai/codex`)
-- Custom prompts, MCP servers and hooks — see [`../Codex/`](../Codex/README.md)
+- Custom prompts, MCP servers and hooks — run [`../install_codex.sh`](../install_codex.sh) (see the top-level [README](../README.md))
 
 ### Editor Setup
 
@@ -361,9 +361,11 @@ source ~/.bashrc  # or source ~/.zshrc
 - [Podman Docs](https://podman.io/)
 - [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
 
-## 🔗 Related Directories
+## 🔗 Related
 
-- **`../ClaudeCode/`** - Claude Code agents, skills, hooks and MCPs
+- **[`../install.sh`](../install.sh)** and the per-tool `../install_<tool>.sh` —
+  agents, skills, prompts, steering, MCPs and hooks for Claude Code, Codex,
+  OpenCode and Pi (single sources of truth under `../shared/`).
 
 ## ⚡ Quick Reference
 

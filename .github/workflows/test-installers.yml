@@ -1,0 +1,84 @@
+name: Test installers
+
+# Runs each self-contained install_<tool>.sh on a clean Ubuntu runner, then
+# verifies the tool is configured correctly and that files landed in the
+# expected locations. Ubuntu-only: the installers take the Linux (npm/curl)
+# path here; the macOS/Homebrew path is exercised manually.
+#
+# Binary `--version` / live `mcp list` are SOFT checks in verify_install.sh
+# (network/auth dependent). The HARD checks assert file locations and the
+# persisted config (agents/skills/prompts, steering, hooks, MCP wiring).
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "install*.sh"
+      - "lib/**"
+      - "shared/**"
+      - "tests/**"
+      - ".github/workflows/test-installers.yml"
+  pull_request:
+    paths:
+      - "install*.sh"
+      - "lib/**"
+      - "shared/**"
+      - "tests/**"
+      - ".github/workflows/test-installers.yml"
+  workflow_dispatch:
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run shellcheck
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y shellcheck
+          shellcheck -S warning -x install.sh install_*.sh lib/common.sh tests/verify_install.sh shared/hooks/*.sh
+
+  install:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: [claudecode, codex, opencode, pi]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Ensure jq + PATH for CLI installers
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y jq
+          # Common locations the upstream CLI installers drop their binaries.
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
+
+      - name: Run install_${{ matrix.tool }}.sh
+        run: |
+          chmod +x install_${{ matrix.tool }}.sh lib/common.sh tests/verify_install.sh
+          ./install_${{ matrix.tool }}.sh
+
+      - name: Verify ${{ matrix.tool }} configuration
+        run: ./tests/verify_install.sh ${{ matrix.tool }}
+
+  # Optional smoke test that drives a real one-shot agent task. Disabled by
+  # default because it needs API keys. To enable, provide the relevant secret
+  # and flip `if: false` to a condition on the secret.
+  #
+  # smoke-test:
+  #   needs: install
+  #   if: false
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Drive a one-shot task
+  #       env:
+  #         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  #       run: |
+  #         ./install_claudecode.sh
+  #         echo "Create a file hello.txt containing hi" | claude --print
+  #         test -f hello.txt

@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# Pre-Deploy Hook for Claude Code (PreToolUse on Bash)
+# Shared pre-deploy hook (PreToolUse on Bash) — used by Claude Code and Codex.
 #
 # Guards `cdk deploy` / `cdk destroy`. The biggest CDK-specific danger is a
 # Construct ID rename that looks like a harmless refactor but forces resource
 # replacement/destruction. This hook pauses such commands and asks the user to
 # confirm they reviewed `cdk diff` for replacements before proceeding.
 #
-# Hard safety belongs in hooks, not CLAUDE.md — CLAUDE.md rules are
+# Hard safety belongs in hooks, not the steering file — steering rules are
 # model-interpreted and degrade as context grows.
 #
 # PreToolUse protocol: emit JSON on stdout with hookSpecificOutput.
@@ -15,9 +15,8 @@
 #   permissionDecision "allow" -> proceed without prompting
 # Anything else (or no output) falls through to normal permission handling.
 #
-# Claude Code passes JSON via stdin with tool_name and tool_input.command.
+# The tool passes JSON via stdin with tool_name and tool_input.command.
 #
-
 set -eo pipefail
 
 HOOK_INPUT=$(cat)
