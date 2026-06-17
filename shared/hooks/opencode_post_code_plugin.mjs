@@ -1,12 +1,13 @@
 /**
  * OpenCode Plugin: Post-Code Hook
  *
- * Runs a fast, file-scoped lint / type-check after file write/edit tools execute.
- * Uses the tool.execute.after hook to trigger the post_code_hook.sh script.
- * Uses the session.idle hook to run the comprehensive end-of-session battery
- * (tests, security scans, cdk synth) via post_task_hook.sh.
+ * Runs a fast, file-scoped lint / type-check after file write/edit tools execute
+ * (tool.execute.after -> post_code_hook.sh), and the comprehensive end-of-session
+ * battery (tests, security scans, cdk synth) when the session goes idle
+ * (session.idle -> post_task_hook.sh).
  *
- * Install using: ./install_hooks.sh
+ * Installed to ~/.config/opencode/plugins/ by install_opencode.sh, which
+ * substitutes the two __*_PATH__ placeholders with the repo's shared/hooks paths.
  */
 
 // Debounce to avoid running on every single tool call in rapid succession
@@ -17,7 +18,7 @@ const CODE_DEBOUNCE_MS = 5000;
 let lastIdleRunTime = 0;
 const IDLE_DEBOUNCE_MS = 60000; // 1 minute between idle checks
 
-// Hook script paths (replaced by install_hooks.sh via sed)
+// Hook script paths (replaced by install_opencode.sh via sed)
 const HOOK_SCRIPT = "__HOOK_SCRIPT_PATH__";
 const TASK_HOOK_SCRIPT = "__TASK_HOOK_SCRIPT_PATH__";
 

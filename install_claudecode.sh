@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+#
+# Self-contained installer for Claude Code.
+#
+# Ensures Homebrew + the `claude` CLI, then installs agents, skills, the
+# system CLAUDE.md, MCP servers and hooks — all generated from the single
+# sources of truth under shared/. With no options it installs everything.
+#
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
+CLAUDE_DIR="$HOME/.claude"
+AGENTS_DIR="$CLAUDE_DIR/agents"
+SKILLS_DIR="$CLAUDE_DIR/skills"
+CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
+SETTINGS_FILE="$CLAUDE_DIR/settings.json"
+
+usage() {
+    cat << EOF
+Usage: $0 [OPTIONS]
+
+Installs (and, unless told otherwise, the Claude Code CLI itself) agents,
+skills, the system CLAUDE.md, MCP servers and hooks from shared/.
+
+Options:
+    -h, --help        Show this help message
+    --agents-only     Install only agents (and system CLAUDE.md)
+    --skills-only     Install only skills
+    --mcps-only       Install only MCP servers
+    --hooks-only      Install only hooks
+    --no-cli          Skip installing Homebrew / the claude CLI
+    -p, --project     Install agents & skills to ./.claude (implies --no-cli)
+    --list            List available personas and exit
+EOF
+}
+
+install_agents() {
+    local target="$1"
+    [ -d "$PERSONAS_DIR" ] || { printf "${RED}personas dir not found: %s${NC}\n" "$PERSONAS_DIR"; return 1; }
+    [ -d "$target" ] && { printf "${YELLOW}Clearing existing agents in: %s${NC}\n" "$target"; rm -rf "$target"; }
+    mkdir -p "$target"
+    printf "${BLUE}Installing agents to: %s${NC}\n" "$target"
+    generate_personas claudecode agent "$target" || return 1
+    printf "${GREEN}✓ Installed %s agents${NC}\n" "$PERSONA_COUNT"
+    if [ "$target" = "$AGENTS_DIR" ]; then assemble_steering claudecode "$CLAUDE_MD"; fi
+}
+
+install_skills() {
+    local target="$1"
+    [ -d "$target" ] && { printf "${YELLOW}Clearing existing skills in: %s${NC}\n" "$target"; rm -rf "$target"; }
+    mkdir -p "$target"
+    printf "${BLUE}Installing skills to: %s${NC}\n" "$target"
+    generate_personas claudecode skill "$target" || return 1
+    printf "${GREEN}✓ Installed %s skills${NC}\n" "$PERSONA_COUNT"
+}
+
+DO_AGENTS=true; DO_SKILLS=true; DO_MCPS=true; DO_HOOKS=true
+DO_CLI=true; PROJECT_INSTALL=false; SUBSET=false
+set_subset() { if [ "$SUBSET" = false ]; then DO_AGENTS=false; DO_SKILLS=false; DO_MCPS=false; DO_HOOKS=false; SUBSET=true; fi; }
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --list) list_personas claudecode; exit 0 ;;
+        --agents-only) set_subset; DO_AGENTS=true ;;
+        --skills-only) set_subset; DO_SKILLS=true ;;
+        --mcps-only)   set_subset; DO_MCPS=true ;;
+        --hooks-only)  set_subset; DO_HOOKS=true ;;
+        --no-cli)      DO_CLI=false ;;
+        -p|--project)  PROJECT_INSTALL=true; DO_CLI=false ;;
+        *) printf "${RED}Unknown option: %s${NC}\n" "$1"; usage; exit 1 ;;
+    esac
+    shift
+done
+
+banner "Claude Code Installer"
+
+if [ "$DO_CLI" = true ]; then ensure_brew; ensure_cli claudecode; echo ""; fi
+if [ "$DO_AGENTS" = true ]; then
+    if [ "$PROJECT_INSTALL" = true ]; then install_agents "./.claude/agents"; else install_agents "$AGENTS_DIR"; fi; echo ""
+fi
+if [ "$DO_SKILLS" = true ]; then
+    if [ "$PROJECT_INSTALL" = true ]; then install_skills "./.claude/skills"; else install_skills "$SKILLS_DIR"; fi; echo ""
+fi
+if [ "$DO_MCPS" = true ] && [ "$PROJECT_INSTALL" = false ]; then register_mcps_claude || printf "${YELLOW}⚠ MCP registration skipped/failed${NC}\n"; echo ""; fi
+if [ "$DO_HOOKS" = true ] && [ "$PROJECT_INSTALL" = false ]; then write_claude_hooks "$SETTINGS_FILE"; echo ""; fi
+
+done_banner
+echo "Next steps:"
+echo "  • Restart Claude Code to load the new configuration"
+echo "  • Agents run automatically or via 'Use the <agent> agent ...'"
+echo "  • Skills are available as slash commands (e.g. /python-backend)"
+[ "$DO_MCPS" = true ] && echo "  • Configure AWS credentials (~/.aws/credentials) for the aws-* MCPs"
+echo ""

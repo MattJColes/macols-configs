@@ -106,13 +106,12 @@ uv tool install mypy
 uv tool install bandit
 uv tool install pip-audit
 
-# Install Claude Code
-echo "Installing Claude Code..."
-curl -fsSL https://claude.ai/install.sh | bash
-
-# Install Codex CLI (https://formulae.brew.sh/cask/codex)
-echo "Installing Codex CLI..."
-brew install --cask codex
+# Install the agentic coding CLIs and their configuration. Each CLI binary and
+# its agents/skills/prompts, steering, MCPs and hooks come from the per-tool
+# installers, driven by the single sources of truth under ../shared.
+echo "Installing agentic coding CLIs and configs..."
+CONFIGS_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+"$CONFIGS_ROOT/install.sh"
 
 # Install LazyVim dependencies
 echo "Installing LazyVim dependencies..."

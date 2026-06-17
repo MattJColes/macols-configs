@@ -1,179 +1,141 @@
+# macols-configs
+
+One source of truth for four agentic coding CLIs — **Claude Code**, **Codex**,
+**OpenCode** and **Pi** — plus the terminal/dev-environment setup. Personas,
+steering, MCP servers and check hooks are authored once under `shared/` and each
+tool's installer renders them into that tool's native format, so nothing drifts.
+
 ## Structure
 
 ```
-my-configs/
-├── Terminal/           # Dev environment setup (Python, Node, AWS, Podman, AI tools)
-├── ClaudeCode/         # Claude Code agents, skills, hooks & MCPs
-├── Codex/              # Codex CLI prompts, AGENTS.md, hooks & MCPs
-├── OpenCode/           # OpenCode skills, MCPs & LM Studio (GLM4.7-Air)
-├── Pi/                 # Pi coding agent skills, AGENTS.md & check hooks
-├── shared/             # Single source of truth: personas + check libraries
-└── .github/            # Security scanning & dependabot
+macols-configs/
+├── install.sh              # orchestrator: env (optional) + all four tools
+├── install_claudecode.sh   # self-contained per-tool installers
+├── install_codex.sh        #   (ensure brew + CLI, then install configs)
+├── install_opencode.sh
+├── install_pi.sh
+├── lib/
+│   └── common.sh           # shared install functions used by all installers
+├── shared/                 # ── single sources of truth ──
+│   ├── personas/<name>/SKILL.md   # specialist personas (agents/skills/prompts)
+│   ├── steering/base.md + tools/  # system steering, tokenised per tool
+│   ├── mcp-config.json            # MCP server definitions
+│   ├── hooks/                     # post-code / post-task / pre-deploy + plugins
+│   ├── post_code_checks.sh        # shared check libraries
+│   ├── post_task_checks.sh
+│   └── ensure_node.sh
+├── Terminal/               # macOS / Ubuntu dev-environment setup
+├── tests/verify_install.sh # post-install location + introspection checks
+└── .github/workflows/      # installer tests, security scanning, dependabot
 ```
 
-The specialist **personas** live once in `shared/personas/<name>/SKILL.md` and
-every tool's installer generates its own format from that single source — so the
-skills, agents, prompts and Pi skills never drift apart.
+There are no per-tool directories: every difference between the tools lives in a
+small per-tool file under `shared/` (e.g. `shared/steering/tools/codex.json`) and
+in the matching `install_<tool>.sh`.
 
-### 1. Set Up Terminal Environment
+## Install
 
-**macOS:**
-```bash
-cd Terminal
-./install_macos.sh
-```
-
-**Ubuntu 26:**
-```bash
-cd Terminal
-./install_ubuntu26.sh
-```
-
-**Optional - Enhanced Shell:**
-```bash
-./install_ohmyzsh_p10k.sh
-```
-
-**[Terminal Setup Details](Terminal/README.md)**
-
-### 2. Configure AI Agents
-
-Each tool has a single `install.sh` that installs agents, skills, MCP servers
-and hooks. Run it with no arguments to install everything, or scope it with
-`--agents-only`, `--skills-only`, `--mcps-only`, `--hooks-only` (and `--list`
-to preview available skills, `-p`/`--project` for a per-project install).
-
-**Claude Code:**
-```bash
-cd ClaudeCode
-./install.sh                    # Agents, skills, MCPs and hooks
-```
-
-**Codex CLI:**
-```bash
-cd Codex
-./install.sh                    # Prompts, AGENTS.md, MCPs and hooks
-```
-
-**OpenCode (with LM Studio + GLM4.7-Air):**
-```bash
-cd OpenCode
-./install.sh                    # Agents, skills, MCPs and hooks
-./configure_lmstudio.sh         # Set up local GLM4.7-Air model
-```
-
-**Pi:**
-```bash
-cd Pi
-./install.sh                    # Installs pi (if missing), skills, AGENTS.md & hooks
-```
-
-**[ClaudeCode](ClaudeCode/README.md)** | **[Codex](Codex/README.md)** | **[OpenCode](OpenCode/README.md)** | **[Pi](Pi/README.md)**
-
-### 3. Post-Installation
+Each `install_<tool>.sh` is self-contained — it ensures Homebrew (macOS) and the
+CLI binary, then installs that tool's agents/skills/prompts, steering, MCPs and
+hooks. Run one, several, or all:
 
 ```bash
-# Configure AWS
-aws configure
-
-# Initialize Podman (macOS only)
-podman machine init && podman machine start
-
-# Verify
-python3 --version && node --version && claude --version
+./install.sh                  # all four tools (binaries + configs)
+./install.sh claudecode pi    # just Claude Code and Pi
+./install.sh --env            # run the Terminal dev-environment setup first
+./install_codex.sh            # one tool directly
 ```
 
----
+Useful flags (per installer; run `--help` for the full list):
 
-### Development Tools
-- **Python 3.12** with uv package manager
-- **Node.js 22** with TypeScript and AWS CDK
-- **Podman** - Rootless containers (Docker-compatible)
-- **AWS CLI** - Cloud service management
-- **LazyVim** - Modern Neovim with LSP
+- `--agents-only` / `--skills-only` / `--prompts-only` / `--mcps-only` / `--hooks-only`
+- `--no-cli` — skip the Homebrew/CLI bootstrap, install configs only
+- `-p`, `--project` — install into the current project instead of user scope
+- `--list` — preview the available personas
 
-### AI Coding Assistants
-- **Claude Code** - 21 specialized agents + skills with MCPs
-- **Codex CLI** - 22 custom prompts (slash commands), AGENTS.md, MCPs & advisory hooks
-- **OpenCode** - Terminal AI with skills, MCPs & LM Studio for local models (GLM4.7-Air)
-- **Pi** - Minimal coding agent: personas as Agent Skills (`/skill:<name>`), AGENTS.md & advisory hooks (no MCP by design)
+### Dev environment
 
-Each tool is authored from single-source personas in `shared/personas/<name>/SKILL.md`;
-each installer generates that tool's agents/skills/prompts from the same body.
+```bash
+./install.sh --env            # picks the right Terminal script for your OS
+# or directly:
+cd Terminal && ./install_macos.sh        # macOS
+cd Terminal && ./install_ubuntu26.sh     # Ubuntu 26 / WSL2
+```
 
-### 21 Specialized Agents
-**Development:** python-backend, frontend-engineer-ts, dart-app-developer, cdk-expert-ts, cdk-expert-python, data-scientist
-**Testing:** test-coordinator, python-test-engineer, typescript-test-engineer
-**DevOps:** devops-engineer, linux-specialist, code-reviewer
-**Architecture:** architecture-expert, ui-ux-designer
-**Security:** security-specialist
-**Management:** documentation-engineer, product-manager, project-coordinator
+See **[Terminal/README.md](Terminal/README.md)** for the full toolchain
+(Python 3.x + uv, Node 22 + TypeScript/CDK, Podman, AWS CLI, LazyVim, etc.).
+
+## What gets installed, and where
+
+| Tool | Personas as | Steering | MCP | Hooks |
+|------|-------------|----------|-----|-------|
+| Claude Code | agents `~/.claude/agents/`, skills `~/.claude/skills/` | `~/.claude/CLAUDE.md` | `claude mcp add-json` → `~/.claude.json` | `~/.claude/settings.json` |
+| Codex | prompts `~/.codex/prompts/` | `~/.codex/AGENTS.md` | `codex mcp add` → `~/.codex/config.toml` | `~/.codex/hooks.json` |
+| OpenCode | agents `~/.config/opencode/agents/`, skills `…/skills/` | `~/.config/opencode/AGENTS.md` | `mcp` key in `~/.config/opencode/opencode.json` | plugin in `…/plugins/` |
+| Pi | Agent Skills `~/.pi/agent/skills/` (`/skill:<name>`) | `~/.pi/agent/AGENTS.md` | none by design | `pi-checks` extension |
+
+**Pi is deliberately different:** it has no MCP — external capabilities come from
+CLI tools, Agent Skills and pluggable packages (`pi install <pkg>`, e.g.
+`pi-agent-web-access`, `pi-subagents`, `@vigolium/piolium`).
+
+## Personas
+
+Each persona is one file: `shared/personas/<name>/SKILL.md`. Its frontmatter
+(`agent: true`, `model:`, `allowed-tools:`) drives how each installer renders it.
+Add or edit a persona once and every tool picks it up on the next install.
+
+**Development:** python-backend, frontend-engineer-ts, dart-app-developer,
+cdk-expert-ts, cdk-expert-python, data-scientist ·
+**Testing:** test-coordinator, python-test-engineer, typescript-test-engineer ·
+**DevOps/Review:** devops-engineer, linux-specialist, code-reviewer ·
+**Architecture/Design:** architecture-expert, ui-ux-designer ·
+**Security:** security-specialist ·
+**Management:** documentation-engineer, product-manager, project-coordinator ·
 **Writing:** writing-blog-posts, writing-documents, writing-style
 
-### Core MCP Servers
-- **filesystem** - File operations
-- **puppeteer** & **playwright** - Browser automation
-- **context7** - Real-time, up-to-date library documentation
-- **aws-kb** & **dynamodb** - AWS service interactions
-- **github** & **gitlab** - Optional: repository operations (require access tokens)
+## MCP servers
 
----
+Defined once in `shared/mcp-config.json` and registered into each tool's native
+config: **filesystem**, **puppeteer**, **playwright**, **aws-kb**, **aws-iac**,
+**aws-documentation**, **context7**, **dart**. (Pi excluded by design.)
 
-- **Auto-testing** - Agents run tests after code changes and attempt fixes
-- **Commit suggestions** - Professional commit messages auto-generated
-- **Audit logging** - GDPR/SOC2 compliant user action tracking (Python)
-- **Podman first** - Secure rootless containers throughout
+## Hooks
 
----
+Thin wrappers in `shared/hooks/` source the shared check libraries and run
+advisory (never blocking) checks:
 
-## Documentation
+- **post-code** (per edit) — fast, file-scoped lint/type-check
+- **post-task** (turn end) — full test/security battery, only when code changed
+- **pre-deploy** (Claude/Codex) — confirms `cdk diff` before `cdk deploy`/`destroy`
 
-Each directory has detailed documentation:
+## Testing
 
-- **[Terminal/](Terminal/README.md)** - Installation scripts, tools, troubleshooting
-- **[ClaudeCode/](ClaudeCode/README.md)** - Agents, skills, hooks, MCPs, workflows
-- **[Codex/](Codex/README.md)** - Codex CLI prompts, AGENTS.md, hooks & MCPs
-- **[OpenCode/](OpenCode/README.md)** - OpenCode with LM Studio & GLM4.7-Air
-
----
-
-## Example Workflow
+`tests/verify_install.sh <tool>` asserts each tool's files landed in the expected
+locations and that the CLI reports a configured state (non-auth introspection).
+The **Test installers** GitHub Actions workflow runs `shellcheck` and, on Ubuntu,
+installs each tool and runs the verifier across a `claudecode/codex/opencode/pi`
+matrix.
 
 ```bash
-# Start Claude Code
-claude chat
-
-# Example: Build a feature with test-first development
-You: "Add user authentication with Cognito"
-
-# What happens:
-# 1. test-coordinator plans testing strategy
-# 2. python-test-engineer writes tests (fail initially)
-# 3. python-backend implements code
-# 4. Tests auto-run, errors auto-fixed (max 3 attempts)
-# 5. code-reviewer checks security
-# 6. Commit message suggested
-# 7. Audit logging included automatically
+./tests/verify_install.sh claudecode
 ```
 
----
+## Post-installation
+
+```bash
+aws configure                                   # AWS credentials for aws-* MCPs
+podman machine init && podman machine start     # containers (macOS)
+claude --version && codex --version             # sanity check
+```
 
 ## Troubleshooting
 
-**Podman not working (macOS):**
 ```bash
-podman machine rm && podman machine init && podman machine start
-```
+# MCPs not loading
+claude mcp list                                 # Claude
+codex mcp list                                  # Codex
+jq .mcp ~/.config/opencode/opencode.json        # OpenCode (mcp key, not mcp.json)
 
-**PATH not updated:**
-```bash
-source ~/.bashrc  # or source ~/.zshrc
+# PATH not updated
+source ~/.zshrc   # or ~/.bashrc
 ```
-
-**MCPs not loading:**
-```bash
-cat ~/.claude/config.json         # Check Claude config
-cat ~/.config/opencode/mcp.json   # Check OpenCode config
-```
-
-More help in each directory's README.

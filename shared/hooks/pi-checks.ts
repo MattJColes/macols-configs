@@ -1,8 +1,8 @@
 // pi-checks — wires the shared post-code / post-task check scripts into pi.
 //
 // Pi has no settings.json hook array (hooks are extensions), so this small
-// extension subscribes to the two events that mirror Claude Code's
-// PostToolUse + Stop hooks:
+// extension subscribes to the two events that mirror the PostToolUse + Stop
+// hooks the other CLIs use:
 //
 //   tool_result  (write/edit tools)  -> hooks/post_code_hook.sh <file>
 //   agent_end    (turn finished)     -> hooks/post_task_hook.sh
@@ -10,7 +10,8 @@
 // Both scripts are advisory: they print findings, never block. Findings are
 // surfaced back into the session via pi.sendMessage.
 //
-// HOOKS_DIR is substituted with the absolute installed path by Pi/install.sh.
+// HOOKS_DIR is substituted with the repo's shared/hooks path by install_pi.sh
+// (the scripts are referenced in place, not copied).
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 

@@ -203,15 +203,12 @@ if ! grep -q '/opt/nvim-linux-x86_64/bin' ~/.bashrc; then
     echo 'export PATH="$PATH:/opt/nvim-linux-x86_64/bin"' >> ~/.bashrc
 fi
 
-# Install Claude Code (latest)
-echo "Installing Claude Code..."
-npm install -g @anthropic-ai/claude-code@latest
-
-# Install Codex CLI (latest)
-# The Homebrew package (https://formulae.brew.sh/cask/codex) is a macOS-only
-# cask — Homebrew on Linux can't install casks — so install via npm here.
-echo "Installing Codex CLI..."
-npm install -g @openai/codex@latest
+# Install the agentic coding CLIs and their configuration. Each CLI binary and
+# its agents/skills/prompts, steering, MCPs and hooks come from the per-tool
+# installers, driven by the single sources of truth under ../shared.
+echo "Installing agentic coding CLIs and configs..."
+CONFIGS_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+"$CONFIGS_ROOT/install.sh"
 
 # Install Ollama
 echo "Installing Ollama..."
