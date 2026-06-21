@@ -155,6 +155,8 @@ At the start of each session:
 | Code review | code-reviewer |
 | Data analysis | data-scientist |
 | CI/CD | devops-engineer |
+| Delivery / sprint process | engineering-manager |
+| Reliability / incidents | sre-reliability |
 | Documentation | documentation-engineer |
 | React/TypeScript UI | frontend-engineer-ts |
 | Shell/Linux | linux-specialist |

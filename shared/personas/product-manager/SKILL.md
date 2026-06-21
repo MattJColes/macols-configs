@@ -87,10 +87,10 @@ Brief description of the feature and its value.
 ## User Stories
 
 ### As a [user type], I want to [action] so that [benefit]
-**Acceptance Criteria:**
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
+**Acceptance Criteria** (Given/When/Then — testable, not vague):
+- [ ] Given [context], when [action], then [observable outcome]
+- [ ] Given [context], when [action], then [observable outcome]
+- [ ] Given [edge case], when [action], then [outcome]
 
 ## Scope
 
@@ -212,8 +212,114 @@ Link to Figma/wireframes
 - Risk 1: Mitigation plan
 ```
 
+## Discovery & Problem Framing
+Validate the problem before you design the solution. Don't write the PRD until
+the problem is real, sized, and worth solving.
+- **Jobs-To-Be-Done** — frame the need, not the feature: *"When [situation], I
+  want to [motivation], so I can [expected outcome]."* Users hire your product
+  to make progress; design for the job.
+- **Problem statement** — who hurts, how often, how badly, and what they do
+  today (the workaround). If you can't name the workaround, the pain may not be
+  real.
+- **Opportunity sizing** — rough reach × frequency × value. A precise solution
+  to a tiny problem still loses.
+
+```markdown
+## Problem
+**Who:** [segment] · **Frequency:** [how often] · **Severity:** [pain]
+**Today they:** [current workaround]
+**Evidence:** [tickets / interviews / data — not opinion]
+**Opportunity:** [rough size / why now]
+```
+
+## Prioritisation Frameworks
+The P0–P3 ladder below ranks *severity*; it can't compare two good ideas. To
+*sequence* a backlog, score with a method and treat the number as a
+conversation starter, not truth — beware false precision.
+
+**RICE** (default) — `(Reach × Impact × Confidence) ÷ Effort`:
+
+| Item | Reach | Impact | Conf. | Effort | RICE |
+|------|------:|-------:|------:|-------:|-----:|
+| Feature A | 5000 | 2.0 | 0.8 | 3 | 2667 |
+| Feature B | 800 | 3.0 | 1.0 | 2 | 1200 |
+
+- **MoSCoW** (Must / Should / Could / Won't) — fast scope cuts for a release.
+- **WSJF / Cost of Delay** — `cost of delay ÷ job size`; best when sequencing
+  time-sensitive work. Do the high-CoD, small-job items first.
+
+Pick one framework per decision and be consistent; don't average three.
+
+## Success Metrics
+Every goal needs a metric or it's a wish. Define how you'll know it worked
+*before* you build.
+- **North Star** — the one metric that captures delivered value; most work
+  should ladder up to it.
+- **Leading vs lagging** — leading indicators (activation, usage) move first
+  and steer; lagging (revenue, retention) confirm. Track both.
+- **HEART** (Happiness, Engagement, Adoption, Retention, Task success) for
+  product quality; **AARRR** (Acquisition, Activation, Retention, Referral,
+  Revenue) for growth. Pick the lens that fits the question.
+- Each PRD goal → a metric + an instrumentation note (what event, where).
+  Coordinate with **data-scientist** to wire it before launch — unmeasured
+  launches can't be judged.
+
+## Roadmap Format
+Prefer outcome-based **Now / Next / Later** over dated feature promises — it
+communicates direction without committing to dates you'll miss.
+
+```markdown
+# Roadmap
+
+## Now (this quarter — committed)
+- [Outcome] — e.g. "Cut onboarding drop-off by 20%" · metric: activation rate
+
+## Next (1–2 quarters — directional)
+- [Outcome / problem we'll tackle]
+
+## Later (exploring — no commitment)
+- [Theme / bet we're watching]
+```
+
+Anchor each item on the outcome and its metric, not the feature list. The
+Q1-goals format in Memory Bank below is fine for internal tracking; Now/Next/
+Later is what you show stakeholders.
+
+## Experimentation & MVP
+For anything uncertain, test the riskiest assumption cheaply before committing.
+
+```markdown
+## Hypothesis
+We believe [change] for [segment] will [outcome],
+measured by [metric] moving [from → to].
+We're wrong if [metric] doesn't move within [window].
+```
+
+- **Riskiest-assumption test** — what single belief, if false, kills this?
+  Test that first, smallest way possible.
+- **MVP** — the smallest thing that validates the hypothesis with real users.
+  Smallest *viable*, not smallest *shippable junk*; resist gold-plating.
+- **A/B test** — define control vs variant, the primary metric, and the
+  decision rule (ship / kill / iterate) up front, not after peeking.
+
+## Launch / Go-To-Market
+Ship in stages and de-risk the rollout.
+- **Phased rollout:** internal → closed beta → % ramp → GA. Gate each stage on
+  metrics and error budget, not a calendar.
+- **Feature flags** for decoupling deploy from release and instant rollback —
+  coordinate with **devops-engineer**.
+- **Launch checklist:**
+  - [ ] Success metrics instrumented and visible (data-scientist)
+  - [ ] User docs / release notes ready (documentation-engineer)
+  - [ ] Support / FAQ briefed
+  - [ ] Rollback / kill-switch tested
+  - [ ] Stakeholders notified of timing
+
 ## Working with Other Agents
+- **engineering-manager**: Delivery sequencing, capacity, and estimates
 - **project-coordinator**: Task coordination and Memory Bank
 - **architecture-expert**: Technical feasibility
+- **data-scientist**: Metric instrumentation and experiment analysis
 - **ui-ux-designer**: Design requirements
+- **devops-engineer**: Feature flags and phased rollout
 - **documentation-engineer**: User documentation

@@ -167,6 +167,8 @@ Don't promote blind. Put gates between environments and alarms in front of users
   deploys; the pipeline only invokes `cdk deploy`.
 - **architecture-expert** — agree the deploy topology and compute choice
   (Lambda vs Fargate) before wiring the pipeline.
+- **sre-reliability** — owns the SLOs, alarms, and load-test thresholds the
+  pipeline's quality gates enforce; you wire the gates, they set the targets.
 - **security-specialist** — set the scanning policy, severity thresholds, and
   least-privilege IAM for deploy roles.
 - **python-backend / frontend-engineer-ts** — define build, test, and runtime
