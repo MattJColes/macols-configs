@@ -87,10 +87,10 @@ Add or edit a persona once and every tool picks it up on the next install.
 **Development:** python-backend, frontend-engineer-ts, dart-app-developer,
 cdk-expert-ts, cdk-expert-python, data-scientist ·
 **Testing:** test-coordinator, python-test-engineer, typescript-test-engineer ·
-**DevOps/Review:** devops-engineer, linux-specialist, code-reviewer ·
+**DevOps/Reliability:** devops-engineer, sre-reliability, linux-specialist, code-reviewer ·
 **Architecture/Design:** architecture-expert, ui-ux-designer ·
 **Security:** security-specialist ·
-**Management:** documentation-engineer, product-manager, project-coordinator ·
+**Management:** documentation-engineer, product-manager, project-coordinator, engineering-manager ·
 **Writing:** writing-blog-posts, writing-documents, writing-style
 
 ## MCP servers
