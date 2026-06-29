@@ -224,9 +224,11 @@ run_dart_analyze() {
 # bandit's checks and adds source→sink injection tracking the others can't do.
 #
 # Turn-end only (never per-edit): engine + rule loading costs a few seconds,
-# too slow after every file write. --metrics=off avoids a telemetry network
-# call. Only ERROR-severity findings count as critical, to keep the signal
-# tight. Vendored/build dirs are excluded so we don't flag code we don't own.
+# too slow after every file write. Scoped to this turn's changed files (full
+# repo when git is unavailable) so the per-turn cost tracks the size of the
+# edit, not the repo. --metrics=off avoids a telemetry network call. Only
+# ERROR-severity findings count as critical, to keep the signal tight.
+# Vendored/build dirs are excluded so we don't flag code we don't own.
 #
 # Rulesets are scoped to the detected languages (fetched from the registry once,
 # then cached under ~/.semgrep):
@@ -251,12 +253,35 @@ run_semgrep_scan() {
     [ "$has_python" = "true" ] && configs+=(--config p/python)
     [ "$has_node" = "true" ] && configs+=(--config p/javascript --config p/typescript)
 
+    # Scope the scan to this turn's changed files (whole repo when git is
+    # unavailable). This is the dominant turn-end cost — a full-repo scan runs
+    # the engine over every file each turn. As an advisory per-turn gate, scoping
+    # to changed files is the right trade: we lose semgrep's cross-file taint
+    # tracking on untouched code, which CI's full-repo scan still covers.
+    local changed
+    changed=$(changed_code_files)
+    local -a scan_targets=()
+    if [ -n "$changed" ]; then
+        local f
+        while IFS= read -r f; do [ -n "$f" ] && scan_targets+=("$f"); done <<< "$changed"
+        if [ ${#scan_targets[@]} -eq 0 ]; then
+            add_warning "Semgrep SAST scan: no changed files"
+            return 0
+        fi
+    else
+        scan_targets=(".")
+    fi
+
+    local -a semgrep_cmd=(
+        ${TIMEOUT_CMD:+"$TIMEOUT_CMD" "$MAX_TEST_TIME"}
+        semgrep scan "${configs[@]}"
+        --quiet --metrics=off --timeout 30 --severity ERROR --json
+        --exclude .venv --exclude venv --exclude node_modules
+        --exclude dist --exclude build
+        "${scan_targets[@]}"
+    )
     local semgrep_output
-    local semgrep_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }semgrep scan \
-        ${configs[*]} --quiet --metrics=off --timeout 30 --severity ERROR --json \
-        --exclude .venv --exclude venv --exclude node_modules \
-        --exclude dist --exclude build ."
-    semgrep_output=$(eval "$semgrep_cmd" 2>/dev/null) || true
+    semgrep_output=$("${semgrep_cmd[@]}" 2>/dev/null) || true
 
     local finding_count detail
     if command -v jq &> /dev/null; then
@@ -565,6 +590,12 @@ run_post_task_checks() {
     if [ ${#checks[@]} -eq 0 ]; then
         return 1
     fi
+
+    # Warm the shared discovery caches in the parent so every fanned-out subshell
+    # inherits them, instead of each independently re-walking the tree / re-running
+    # git status. (_PROJECT_TYPE_CACHE is already warm from detect_project_type above.)
+    find_python_projects >/dev/null
+    changed_code_files >/dev/null
 
     # Fan the checks out concurrently, each writing to its own temp files.
     local tmpdir
