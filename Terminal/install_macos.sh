@@ -50,6 +50,10 @@ brew install gh
 echo "Installing Podman..."
 brew install podman
 
+# Install modern CLI tools (structural search, JSON/config parsing)
+echo "Installing modern CLI tools (ast-grep, jq, dasel)..."
+brew install ast-grep jq dasel
+
 # Install NVM (fetch latest release tag)
 echo "Installing NVM..."
 # Ensure .zshrc exists so the NVM installer can append to it
@@ -105,6 +109,7 @@ uv tool install ruff
 uv tool install mypy
 uv tool install pip-audit
 uv tool install semgrep
+uv tool install commitizen
 
 # Install the agentic coding CLIs and their configuration. Each CLI binary and
 # its agents/skills/prompts, steering, MCPs and hooks come from the per-tool

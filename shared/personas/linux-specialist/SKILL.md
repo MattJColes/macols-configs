@@ -241,6 +241,14 @@ Host prod-*
 - Use `readonly` for constants
 - Handle signals with `trap`
 
+## Querying structured data
+Prefer a real parser over `grep`/`awk` when the input is structured:
+- **jq** — JSON: `curl -s api | jq '.items[].id'`
+- **dasel** — JSON / YAML / TOML / XML / CSV with one syntax:
+  `dasel select -f config.toml '.server.port'`, or convert formats with
+  `dasel put`/`read`/`write`. Use it to read or edit `pyproject.toml`,
+  `config.toml`, `package.json` uniformly in scripts.
+
 ## Working with Other Agents
 - **devops-engineer**: CI/CD scripts
 - **python-backend**: Deployment scripts

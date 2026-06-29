@@ -113,6 +113,7 @@ uv tool install ruff
 uv tool install mypy
 uv tool install pip-audit
 uv tool install semgrep
+uv tool install commitizen
 
 # Install AWS CLI
 echo "Installing AWS CLI..."

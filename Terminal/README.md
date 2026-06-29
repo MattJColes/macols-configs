@@ -32,6 +32,10 @@ Automated scripts to set up a complete development environment for macOS and Ubu
 - `git` - Version control
 - `ripgrep` - Fast grep alternative
 - `fd` - Fast find alternative
+- `ast-grep` - Structural (AST-based) code search and rewrite
+- `jq` - JSON query and transform
+- `dasel` - Query/convert JSON, YAML, TOML, XML and CSV
+- `commitizen` - Conventional Commits prompts and versioning (`cz`)
 
 ### AI Coding Assistants
 

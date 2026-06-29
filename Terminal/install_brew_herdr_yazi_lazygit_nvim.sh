@@ -38,6 +38,9 @@ echo "=============================="
 echo "Installing neovim, yazi, lazygit, delta, and tmux..."
 brew install neovim yazi lazygit git-delta tmux
 
+echo "Installing modern CLI tools (ast-grep, jq, dasel)..."
+brew install ast-grep jq dasel
+
 echo "Installing herdr..."
 if brew install herdr; then
     echo "  herdr installed."
