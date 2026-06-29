@@ -103,8 +103,8 @@ echo "Installing Python dev tools..."
 uv tool install pytest
 uv tool install ruff
 uv tool install mypy
-uv tool install bandit
 uv tool install pip-audit
+uv tool install semgrep
 
 # Install the agentic coding CLIs and their configuration. Each CLI binary and
 # its agents/skills/prompts, steering, MCPs and hooks come from the per-tool

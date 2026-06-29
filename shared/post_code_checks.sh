@@ -242,47 +242,6 @@ run_dart_analyze() {
     fi
 }
 
-# Run bandit security scan
-run_bandit_scan() {
-    if ! command -v bandit &> /dev/null; then
-        return 0
-    fi
-
-    local -a src_dirs=()
-    for dir in src app lib lambda functions; do
-        if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs+=("$dir")
-        fi
-    done
-
-    if [ ${#src_dirs[@]} -eq 0 ]; then
-        if find . -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs=(".")
-        else
-            return 0
-        fi
-    fi
-
-    local bandit_output
-    bandit_output=$(bandit -r "${src_dirs[@]}" -f txt -ll 2>&1) || true
-
-    if echo "$bandit_output" | grep -qE "Severity: (High|Medium)"; then
-        local high_count
-        high_count=$(echo "$bandit_output" | grep -c "Severity: High" || true)
-        local medium_count
-        medium_count=$(echo "$bandit_output" | grep -c "Severity: Medium" || true)
-
-        if [ "$high_count" -gt 0 ]; then
-            add_issue "Bandit: $high_count HIGH severity issues"
-        fi
-        if [ "$medium_count" -gt 0 ]; then
-            add_message "Bandit: $medium_count MEDIUM severity issues"
-        fi
-    else
-        add_message "Bandit security scan: PASSED"
-    fi
-}
-
 # Run pip-audit
 run_pip_audit() {
     if ! command -v pip-audit &> /dev/null; then
@@ -417,10 +376,18 @@ run_npm_audit() {
     if audit_output=$(npm audit --json 2>&1); then
         add_message "npm audit: no vulnerabilities"
     else
-        local high_count
-        high_count=$(echo "$audit_output" | grep -o '"high":[0-9]*' | cut -d: -f2 || true)
-        local critical_count
-        critical_count=$(echo "$audit_output" | grep -o '"critical":[0-9]*' | cut -d: -f2 || true)
+        local high_count critical_count
+        if command -v jq &> /dev/null; then
+            # Read the authoritative summary counts; tolerate malformed JSON.
+            high_count=$(echo "$audit_output" | jq -r '.metadata.vulnerabilities.high // 0' 2>/dev/null || echo 0)
+            critical_count=$(echo "$audit_output" | jq -r '.metadata.vulnerabilities.critical // 0' 2>/dev/null || echo 0)
+        else
+            # Fallback: scan the metadata summary object only, not per-advisory.
+            local summary
+            summary=$(echo "$audit_output" | grep -o '"vulnerabilities":{[^}]*}' | tail -1 || true)
+            high_count=$(echo "$summary" | grep -o '"high":[0-9]*' | cut -d: -f2 || true)
+            critical_count=$(echo "$summary" | grep -o '"critical":[0-9]*' | cut -d: -f2 || true)
+        fi
 
         if [ "${critical_count:-0}" -gt 0 ] || [ "${high_count:-0}" -gt 0 ]; then
             add_issue "npm audit: critical/high vulnerabilities found"

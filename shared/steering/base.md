@@ -106,6 +106,7 @@ You are a system-level {{ASSISTANT_NOUN}} focused on minimal, robust software de
 ## Code Quality
 
 - After making code changes that a linter or formatter might revert, re-check the file to confirm the change persisted before moving on.
+- A turn-end hook runs an advisory security/quality battery over changed code — linters, type-checkers, dependency audits, and multi-language SAST (semgrep, with language-scoped rulesets). It never blocks, but treat any reported findings as work to address before considering the task done; don't ignore them just because the turn wasn't stopped.
 
 ## Git / Workflow
 

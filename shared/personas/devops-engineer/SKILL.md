@@ -44,7 +44,7 @@ jobs:
       - run: uv sync --frozen
       - run: uv run ruff check .           # lint — fail fast
       - run: uv run pytest --cov=src       # test
-      - run: uv run bandit -r src          # SAST
+      - run: semgrep scan --config p/python --error   # SAST
 ```
 
 For JS/TS, swap in the package manager the lockfile dictates (npm/yarn/pnpm/bun)
@@ -92,7 +92,7 @@ the merge, not a quarterly audit.
 |---------|------|-------|
 | Dependency updates | **Dependabot** | repo config, auto-PRs |
 | Secret detection | **GitHub secret scanning** + gitleaks | push + PR |
-| SAST (code) | **semgrep**, **bandit** (Python) | `check` job |
+| SAST (code) | **semgrep** (multi-language; `p/python`, `p/javascript`, `p/typescript`) | `check` job |
 | Container CVEs | **Trivy** | after build, before push |
 | Dependency audit | `uv pip audit` / `npm audit` / `pip-audit` | `check` job |
 
