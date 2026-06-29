@@ -387,7 +387,7 @@ LGTMAYBE_HOOK="$HOOKS_DIR/lgtmaybe_review_hook.sh"
 
 check_hook_sources() {
     local f
-    for f in "$SHARED_DIR/post_code_checks.sh" "$SHARED_DIR/post_task_checks.sh" "$@"; do
+    for f in "$SHARED_DIR/checks_common.sh" "$SHARED_DIR/post_code_checks.sh" "$SHARED_DIR/post_task_checks.sh" "$@"; do
         [ -f "$f" ] || { printf "${RED}Required file not found: %s${NC}\n" "$f"; return 1; }
     done
     chmod +x "$@" 2>/dev/null || true

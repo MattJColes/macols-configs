@@ -21,8 +21,9 @@ macols-configs/
 │   ├── steering/base.md + tools/  # system steering, tokenised per tool
 │   ├── mcp-config.json            # MCP server definitions
 │   ├── hooks/                     # post-code / post-task / pre-deploy + plugins
-│   ├── post_code_checks.sh        # shared check libraries
-│   ├── post_task_checks.sh
+│   ├── checks_common.sh          # shared check helpers (discovery, gate, timeout)
+│   ├── post_code_checks.sh        # per-edit lint/type-check battery
+│   ├── post_task_checks.sh        # turn-end battery (runs checks in parallel)
 │   └── ensure_node.sh
 ├── Terminal/               # macOS / Ubuntu dev-environment setup
 ├── tests/verify_install.sh # post-install location + introspection checks
