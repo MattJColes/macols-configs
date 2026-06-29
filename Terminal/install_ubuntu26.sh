@@ -100,6 +100,20 @@ sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.14 1
 # Install uv
 echo "Installing uv..."
 curl -LsSf https://astral.sh/uv/install.sh | sh
+# Add uv to PATH for this session
+export PATH="$HOME/.local/bin:$PATH"
+
+# Install Python dev tools
+# Cross-platform Python packages (wheels on macOS + manylinux), installed the
+# same way as on macOS so the shared post-code/post-task hooks find them. These
+# back the lint/type-check/security battery in shared/post_*_checks.sh.
+echo "Installing Python dev tools..."
+uv tool install pytest
+uv tool install ruff
+uv tool install mypy
+uv tool install bandit
+uv tool install pip-audit
+uv tool install semgrep
 
 # Install AWS CLI
 echo "Installing AWS CLI..."

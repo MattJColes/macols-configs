@@ -417,10 +417,18 @@ run_npm_audit() {
     if audit_output=$(npm audit --json 2>&1); then
         add_message "npm audit: no vulnerabilities"
     else
-        local high_count
-        high_count=$(echo "$audit_output" | grep -o '"high":[0-9]*' | cut -d: -f2 || true)
-        local critical_count
-        critical_count=$(echo "$audit_output" | grep -o '"critical":[0-9]*' | cut -d: -f2 || true)
+        local high_count critical_count
+        if command -v jq &> /dev/null; then
+            # Read the authoritative summary counts; tolerate malformed JSON.
+            high_count=$(echo "$audit_output" | jq -r '.metadata.vulnerabilities.high // 0' 2>/dev/null || echo 0)
+            critical_count=$(echo "$audit_output" | jq -r '.metadata.vulnerabilities.critical // 0' 2>/dev/null || echo 0)
+        else
+            # Fallback: scan the metadata summary object only, not per-advisory.
+            local summary
+            summary=$(echo "$audit_output" | grep -o '"vulnerabilities":{[^}]*}' | tail -1 || true)
+            high_count=$(echo "$summary" | grep -o '"high":[0-9]*' | cut -d: -f2 || true)
+            critical_count=$(echo "$summary" | grep -o '"critical":[0-9]*' | cut -d: -f2 || true)
+        fi
 
         if [ "${critical_count:-0}" -gt 0 ] || [ "${high_count:-0}" -gt 0 ]; then
             add_issue "npm audit: critical/high vulnerabilities found"

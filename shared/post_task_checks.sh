@@ -380,6 +380,49 @@ run_bandit_scan() {
     fi
 }
 
+# Run semgrep SAST scan — multi-language static analysis (Python, JS/TS, Go, …).
+#
+# Complements run_bandit_scan (Python-only) by covering the languages bandit
+# can't. Turn-end only (never per-edit): semgrep's engine + rule loading costs a
+# few seconds, too slow to run after every file write.
+#
+# --metrics=off avoids a telemetry network call on every run; --config auto
+# fetches community rules from the registry (cached after the first run). Only
+# ERROR-severity findings are treated as critical to keep the signal tight — the
+# same posture as bandit's -ll floor. Vendored/build dirs are excluded so we
+# don't flag code the project doesn't own.
+#
+# We read --json so the count is exact and version-independent (semgrep's
+# human-readable summary wording changes between releases). jq is the repo's
+# standard JSON tool; a grep fallback keeps the check working without it.
+run_semgrep_scan() {
+    command -v semgrep &> /dev/null || return 0
+
+    local semgrep_output
+    local semgrep_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }semgrep scan \
+        --config auto --quiet --metrics=off --timeout 30 --severity ERROR --json \
+        --exclude .venv --exclude venv --exclude node_modules \
+        --exclude dist --exclude build ."
+    semgrep_output=$(eval "$semgrep_cmd" 2>/dev/null) || true
+
+    local finding_count detail
+    if command -v jq &> /dev/null; then
+        finding_count=$(echo "$semgrep_output" | jq -r '.results | length' 2>/dev/null || echo 0)
+        detail=$(echo "$semgrep_output" | jq -r '.results[] | "  \(.path):\(.start.line) \(.check_id)"' 2>/dev/null | head -15 || true)
+    else
+        finding_count=$(echo "$semgrep_output" | grep -oc '"check_id"' || true)
+        detail=""
+    fi
+    finding_count="${finding_count:-0}"
+
+    if [ "$finding_count" -gt 0 ]; then
+        add_critical_issue "Semgrep: $finding_count ERROR-severity SAST finding(s)"
+        [ -n "$detail" ] && add_critical_issue "Semgrep findings:\n$detail"
+    else
+        add_warning "Semgrep SAST scan: PASSED"
+    fi
+}
+
 # Run pip-audit
 run_pip_audit() {
     if ! command -v pip-audit &> /dev/null; then
@@ -531,10 +574,18 @@ run_npm_audit() {
     if audit_output=$(npm audit --json 2>&1); then
         add_warning "npm audit: no vulnerabilities"
     else
-        local high_count
-        high_count=$(echo "$audit_output" | grep -o '"high":[0-9]*' | cut -d: -f2 || true)
-        local critical_count
-        critical_count=$(echo "$audit_output" | grep -o '"critical":[0-9]*' | cut -d: -f2 || true)
+        local high_count critical_count
+        if command -v jq &> /dev/null; then
+            # Read the authoritative summary counts; tolerate malformed JSON.
+            high_count=$(echo "$audit_output" | jq -r '.metadata.vulnerabilities.high // 0' 2>/dev/null || echo 0)
+            critical_count=$(echo "$audit_output" | jq -r '.metadata.vulnerabilities.critical // 0' 2>/dev/null || echo 0)
+        else
+            # Fallback: scan the metadata summary object only, not per-advisory.
+            local summary
+            summary=$(echo "$audit_output" | grep -o '"vulnerabilities":{[^}]*}' | tail -1 || true)
+            high_count=$(echo "$summary" | grep -o '"high":[0-9]*' | cut -d: -f2 || true)
+            critical_count=$(echo "$summary" | grep -o '"critical":[0-9]*' | cut -d: -f2 || true)
+        fi
 
         if [ "${critical_count:-0}" -gt 0 ] || [ "${high_count:-0}" -gt 0 ]; then
             add_critical_issue "npm audit: critical/high vulnerabilities found in Node.js dependencies"
@@ -577,6 +628,14 @@ run_post_task_checks() {
     if [ "$has_flutter" = "true" ]; then
         run_flutter_tests || true
         run_dart_analyze || true
+        ran_something=true
+    fi
+
+    # Semgrep is multi-language, so run it once over the whole project rather
+    # than per-language. It covers the SAST gap for JS/TS/Go/etc. that the
+    # language-specific tools above don't.
+    if [ "$has_python" = "true" ] || [ "$has_node" = "true" ] || [ "$has_cdk" = "true" ]; then
+        run_semgrep_scan || true
         ran_something=true
     fi
 
