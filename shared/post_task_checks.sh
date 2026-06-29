@@ -467,7 +467,7 @@ run_mypy_check() {
         # Find target directories for mypy
         local target=""
         if [ -f "pyproject.toml" ] && grep -q '\[tool\.mypy\]' pyproject.toml 2>/dev/null; then
-            # Use targets from bandit config or scan for source dirs
+            # Scan the common source dirs for Python packages to type-check
             for dir in app src lib lambda functions stacks config custom_constructs; do
                 if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
                     target="$target $dir"
