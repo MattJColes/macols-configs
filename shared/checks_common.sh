@@ -34,6 +34,7 @@ if [ -f "$_CHECKS_COMMON_DIR/ensure_node.sh" ]; then
 fi
 
 # macOS compatibility: use gtimeout (brew install coreutils) or fall back.
+# shellcheck disable=SC2034  # TIMEOUT_CMD is consumed by the battery files that source this
 setup_timeout_cmd() {
     if command -v gtimeout &> /dev/null; then
         TIMEOUT_CMD="gtimeout"
@@ -63,6 +64,42 @@ code_changed() {
         return 0
     fi
     return 1
+}
+
+# Echo the absolute paths of changed (added/modified/untracked) code files, one
+# per line — memoized for the life of the process.
+#
+# Lets the turn-end battery scope its linters to just the files this turn
+# touched instead of re-linting the whole repo. Returns an EMPTY list when git
+# is unavailable / not a repo, which callers treat as "fall back to a full scan"
+# (we never silently lint nothing). Note: empty is ambiguous with "a repo whose
+# only changes are non-code files", but the turn-end battery only runs after
+# code_changed() already returned true, so in practice a reachable empty result
+# means git is unavailable.
+changed_code_files() {
+    if [ -n "${_CHANGED_FILES_CACHE+x}" ]; then
+        printf '%s' "$_CHANGED_FILES_CACHE"
+        return 0
+    fi
+
+    local files=""
+    if command -v git &> /dev/null && git rev-parse --is-inside-work-tree &> /dev/null; then
+        local root f
+        root=$(git rev-parse --show-toplevel 2>/dev/null)
+        while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            # Skip paths that no longer exist (deletions, the old side of a
+            # rename) so linters aren't handed missing files.
+            [ -f "$root/$f" ] || continue
+            case "$f" in
+                *.py|*.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|*.dart|*.go|*.rs|*.java|*.rb|*.kt|*.swift|*.c|*.cc|*.cpp|*.h|*.hpp|*.cs|*.php|*.scala|*.sql)
+                    files+="$root/$f"$'\n' ;;
+            esac
+        done < <(git status --porcelain 2>/dev/null | sed 's/^...//;s/.* -> //')
+    fi
+
+    _CHANGED_FILES_CACHE="$files"
+    printf '%s' "$_CHANGED_FILES_CACHE"
 }
 
 # Detect project type — memoized for the life of the process.

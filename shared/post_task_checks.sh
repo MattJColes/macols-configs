@@ -9,8 +9,12 @@
 #   MAX_TEST_TIME (optional, default 300) — timeout in seconds
 #
 # Provides:
-#   run_post_task_checks — orchestrator that runs all checks (no file filtering)
+#   run_post_task_checks — orchestrator that runs the project's checks in parallel
 #   code_changed         — turn-end change gate (re-exported from checks_common.sh)
+#
+# Tests, audits and semgrep run over the whole project; the linters (ruff, mypy,
+# eslint) are scoped to the files this turn changed (via changed_code_files),
+# falling back to a full scan when git is unavailable.
 #
 # Shared environment/discovery helpers (setup_timeout_cmd, detect_project_type,
 # find_venv_bin, find_python_projects, code_changed, …) live in checks_common.sh,
@@ -142,16 +146,17 @@ run_cdk_tests() {
         return 0
     fi
 
-    local synth_output
+    # Discard output (keeps cdk's chatter out of the parallel result stream);
+    # PASS/FAIL is taken from the exit status.
     if [ -f "app.py" ]; then
-        if synth_output=$(cdk synth --quiet 2>&1); then
+        if cdk synth --quiet > /dev/null 2>&1; then
             add_warning "CDK synth: PASSED"
         else
             add_critical_issue "CDK synth: FAILED"
             return 1
         fi
     elif grep -q "typescript" package.json 2>/dev/null; then
-        if synth_output=$(npm run build 2>&1 && cdk synth --quiet 2>&1); then
+        if npm run build > /dev/null 2>&1 && cdk synth --quiet > /dev/null 2>&1; then
             add_warning "CDK synth: PASSED"
         else
             add_critical_issue "CDK synth: FAILED"
@@ -291,7 +296,7 @@ run_pip_audit() {
     fi
 }
 
-# Run ruff linter — monorepo-aware
+# Run ruff linter — monorepo-aware, scoped to this turn's changed files.
 run_ruff_check() {
     local ruff_bin
     ruff_bin=$(find_venv_bin ruff)
@@ -303,14 +308,36 @@ run_ruff_check() {
     local -a projects
     read -ra projects <<< "$(find_python_projects)"
 
+    local changed
+    changed=$(changed_code_files)
+
     for project_dir in "${projects[@]}"; do
         local label="$project_dir"
         [ "$project_dir" = "." ] && label="root"
 
-        cd "$root_dir/$project_dir" || continue
+        local proj_abs
+        proj_abs=$(cd "$root_dir/$project_dir" 2>/dev/null && pwd) || continue
+        cd "$proj_abs" || continue
+
+        # Scope to changed .py files under this project; skip the project when
+        # none changed. Fall back to a full project scan when git gave us
+        # nothing (not a repo).
+        local -a targets=()
+        if [ -n "$changed" ]; then
+            local f
+            while IFS= read -r f; do
+                case "$f" in "$proj_abs"/*.py) targets+=("$f") ;; esac
+            done <<< "$changed"
+            if [ ${#targets[@]} -eq 0 ]; then
+                cd "$root_dir" || return
+                continue
+            fi
+        else
+            targets=(".")
+        fi
 
         local ruff_output
-        if ruff_output=$("$ruff_bin" check . 2>&1); then
+        if ruff_output=$("$ruff_bin" check "${targets[@]}" 2>&1); then
             add_warning "Ruff ($label): PASSED"
         else
             local error_count
@@ -327,7 +354,8 @@ run_ruff_check() {
     done
 }
 
-# Run mypy type checker — monorepo-aware, uses each sub-project's config
+# Run mypy type checker — monorepo-aware, uses each sub-project's config,
+# scoped to this turn's changed files.
 run_mypy_check() {
     local mypy_bin
     mypy_bin=$(find_venv_bin mypy)
@@ -339,30 +367,49 @@ run_mypy_check() {
     local -a projects
     read -ra projects <<< "$(find_python_projects)"
 
+    local changed
+    changed=$(changed_code_files)
+
     for project_dir in "${projects[@]}"; do
         local label="$project_dir"
         [ "$project_dir" = "." ] && label="root"
 
-        cd "$root_dir/$project_dir" || continue
+        local proj_abs
+        proj_abs=$(cd "$root_dir/$project_dir" 2>/dev/null && pwd) || continue
+        cd "$proj_abs" || continue
 
-        # Find target directories for mypy
-        local target=""
-        if [ -f "pyproject.toml" ] && grep -q '\[tool\.mypy\]' pyproject.toml 2>/dev/null; then
-            # Scan the common source dirs for Python packages to type-check
-            for dir in app src lib lambda functions stacks config custom_constructs; do
-                if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-                    target="$target $dir"
-                fi
-            done
-        fi
-
-        if [ -z "$target" ]; then
+        # Only type-check projects that opt in via [tool.mypy].
+        if ! { [ -f "pyproject.toml" ] && grep -q '\[tool\.mypy\]' pyproject.toml 2>/dev/null; }; then
             cd "$root_dir" || return
             continue
         fi
 
+        # Scope to changed .py files; skip the project when none changed. Fall
+        # back to scanning the common source dirs when git gave us nothing.
+        local -a targets=()
+        if [ -n "$changed" ]; then
+            local f
+            while IFS= read -r f; do
+                case "$f" in "$proj_abs"/*.py) targets+=("$f") ;; esac
+            done <<< "$changed"
+            if [ ${#targets[@]} -eq 0 ]; then
+                cd "$root_dir" || return
+                continue
+            fi
+        else
+            for dir in app src lib lambda functions stacks config custom_constructs; do
+                if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
+                    targets+=("$dir")
+                fi
+            done
+            if [ ${#targets[@]} -eq 0 ]; then
+                cd "$root_dir" || return
+                continue
+            fi
+        fi
+
         local mypy_output
-        local mypy_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }$mypy_bin --no-error-summary $target"
+        local mypy_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }$mypy_bin --no-error-summary ${targets[*]}"
         if mypy_output=$(eval "$mypy_cmd" 2>&1); then
             add_warning "Mypy ($label): PASSED"
         else
@@ -385,7 +432,8 @@ run_mypy_check() {
     done
 }
 
-# Run ESLint — whole repo. Prefers a project-local eslint binary over `npx`.
+# Run ESLint — scoped to this turn's changed JS/TS files (whole repo when git is
+# unavailable). Prefers a project-local eslint binary over `npx`.
 run_eslint_check() {
     local eslint_bin
     if [ -x "node_modules/.bin/eslint" ]; then
@@ -398,8 +446,22 @@ run_eslint_check() {
         return 0
     fi
 
+    local -a targets=()
+    local changed
+    changed=$(changed_code_files)
+    if [ -n "$changed" ]; then
+        local f
+        while IFS= read -r f; do
+            case "$f" in *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs) targets+=("$f") ;; esac
+        done <<< "$changed"
+        # No changed JS/TS files this turn — nothing to lint.
+        [ ${#targets[@]} -eq 0 ] && return 0
+    else
+        targets=(".")
+    fi
+
     local eslint_output
-    local eslint_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD 60 }$eslint_bin --no-warn-on-unmatched-pattern ."
+    local eslint_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD 60 }$eslint_bin --no-warn-on-unmatched-pattern ${targets[*]}"
     if eslint_output=$(eval "$eslint_cmd" 2>&1); then
         add_warning "ESLint: PASSED"
     else
