@@ -331,66 +331,25 @@ run_dart_analyze() {
     fi
 }
 
-# Run bandit security scan
-run_bandit_scan() {
-    local bandit_bin
-    bandit_bin=$(find_venv_bin bandit)
-    if [ -z "$bandit_bin" ]; then
-        return 0
-    fi
-
-    local -a src_dirs=()
-    for dir in src app lib lambda functions; do
-        if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs+=("$dir")
-        fi
-    done
-
-    if [ ${#src_dirs[@]} -eq 0 ]; then
-        if find . -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs=(".")
-        else
-            return 0
-        fi
-    fi
-
-    # Skip virtualenvs and vendored deps — bandit's built-in exclude covers
-    # .git/.tox/__pycache__ but NOT .venv/venv/node_modules, so third-party
-    # library source under e.g. src/<pkg>/.venv would otherwise produce
-    # un-fixable findings (you can't #nosec code you don't own).
-    local bandit_exclude='*/.venv/*,*/venv/*,*/node_modules/*,*/.git/*,*/.tox/*,*/__pycache__/*,*/build/*,*/dist/*'
-
-    local bandit_output
-    bandit_output=$("$bandit_bin" -r "${src_dirs[@]}" --exclude "$bandit_exclude" -f txt -ll 2>&1) || true
-
-    if echo "$bandit_output" | grep -qE "Severity: (High|Medium)"; then
-        local high_count
-        high_count=$(echo "$bandit_output" | grep -c "Severity: High" || true)
-        local medium_count
-        medium_count=$(echo "$bandit_output" | grep -c "Severity: Medium" || true)
-
-        if [ "$high_count" -gt 0 ]; then
-            add_critical_issue "Bandit: $high_count HIGH severity security issues found"
-        fi
-        if [ "$medium_count" -gt 0 ]; then
-            add_warning "Bandit: $medium_count MEDIUM severity security issues found"
-        fi
-    else
-        add_warning "Bandit security scan: PASSED"
-    fi
-}
-
-# Run semgrep SAST scan — multi-language static analysis (Python, JS/TS, Go, …).
+# Run semgrep SAST scan — the project's single static-analysis security tool.
 #
-# Complements run_bandit_scan (Python-only) by covering the languages bandit
-# can't. Turn-end only (never per-edit): semgrep's engine + rule loading costs a
-# few seconds, too slow to run after every file write.
+# Multi-language (Python, JS/TS, Go, …) and taint/dataflow-aware, so it
+# supersedes bandit (Python-only, no dataflow): semgrep's p/python pack ports
+# bandit's checks and adds source→sink injection tracking the others can't do.
 #
-# --metrics=off avoids a telemetry network call on every run; --config auto
-# fetches community rules from the registry (cached after the first run). Only
-# ERROR-severity findings are treated as critical to keep the signal tight — the
-# same posture as bandit's -ll floor. Vendored/build dirs are excluded so we
-# don't flag code the project doesn't own.
+# Turn-end only (never per-edit): engine + rule loading costs a few seconds,
+# too slow after every file write. --metrics=off avoids a telemetry network
+# call. Only ERROR-severity findings count as critical, to keep the signal
+# tight. Vendored/build dirs are excluded so we don't flag code we don't own.
+#
+# Rulesets are scoped to the detected languages (fetched from the registry once,
+# then cached under ~/.semgrep):
+#   p/secrets     — hardcoded credentials, all languages
+#   p/python      — Python security + correctness (supersedes bandit)
+#   p/javascript  — JS security/correctness
+#   p/typescript  — TS-specific checks
+# Dart/Flutter has no semgrep ruleset; `dart analyze` (run_dart_analyze) covers
+# that language, so semgrep is simply skipped for Flutter-only projects.
 #
 # We read --json so the count is exact and version-independent (semgrep's
 # human-readable summary wording changes between releases). jq is the repo's
@@ -398,9 +357,17 @@ run_bandit_scan() {
 run_semgrep_scan() {
     command -v semgrep &> /dev/null || return 0
 
+    local project_info has_python has_node has_cdk has_flutter
+    project_info=$(detect_project_type)
+    IFS=':' read -r has_python has_node has_cdk has_flutter <<< "$project_info" || true
+
+    local -a configs=(--config p/secrets)
+    [ "$has_python" = "true" ] && configs+=(--config p/python)
+    [ "$has_node" = "true" ] && configs+=(--config p/javascript --config p/typescript)
+
     local semgrep_output
     local semgrep_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }semgrep scan \
-        --config auto --quiet --metrics=off --timeout 30 --severity ERROR --json \
+        ${configs[*]} --quiet --metrics=off --timeout 30 --severity ERROR --json \
         --exclude .venv --exclude venv --exclude node_modules \
         --exclude dist --exclude build ."
     semgrep_output=$(eval "$semgrep_cmd" 2>/dev/null) || true
@@ -606,7 +573,6 @@ run_post_task_checks() {
 
     if [ "$has_python" = "true" ]; then
         run_python_tests || true
-        run_bandit_scan || true
         run_pip_audit || true
         run_ruff_check || true
         run_mypy_check || true

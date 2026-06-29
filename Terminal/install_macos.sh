@@ -103,7 +103,6 @@ echo "Installing Python dev tools..."
 uv tool install pytest
 uv tool install ruff
 uv tool install mypy
-uv tool install bandit
 uv tool install pip-audit
 uv tool install semgrep
 

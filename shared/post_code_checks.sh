@@ -242,47 +242,6 @@ run_dart_analyze() {
     fi
 }
 
-# Run bandit security scan
-run_bandit_scan() {
-    if ! command -v bandit &> /dev/null; then
-        return 0
-    fi
-
-    local -a src_dirs=()
-    for dir in src app lib lambda functions; do
-        if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs+=("$dir")
-        fi
-    done
-
-    if [ ${#src_dirs[@]} -eq 0 ]; then
-        if find . -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-            src_dirs=(".")
-        else
-            return 0
-        fi
-    fi
-
-    local bandit_output
-    bandit_output=$(bandit -r "${src_dirs[@]}" -f txt -ll 2>&1) || true
-
-    if echo "$bandit_output" | grep -qE "Severity: (High|Medium)"; then
-        local high_count
-        high_count=$(echo "$bandit_output" | grep -c "Severity: High" || true)
-        local medium_count
-        medium_count=$(echo "$bandit_output" | grep -c "Severity: Medium" || true)
-
-        if [ "$high_count" -gt 0 ]; then
-            add_issue "Bandit: $high_count HIGH severity issues"
-        fi
-        if [ "$medium_count" -gt 0 ]; then
-            add_message "Bandit: $medium_count MEDIUM severity issues"
-        fi
-    else
-        add_message "Bandit security scan: PASSED"
-    fi
-}
-
 # Run pip-audit
 run_pip_audit() {
     if ! command -v pip-audit &> /dev/null; then
