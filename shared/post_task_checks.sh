@@ -9,12 +9,22 @@
 #   MAX_TEST_TIME (optional, default 300) — timeout in seconds
 #
 # Provides:
-#   setup_timeout_cmd    — sets TIMEOUT_CMD for macOS/Linux compatibility
-#   detect_project_type  — echoes "has_python:has_node:has_cdk:has_flutter"
-#   run_post_task_checks — orchestrator that runs all checks (no file filtering)
+#   run_post_task_checks — orchestrator that runs the project's checks in parallel
+#   code_changed         — turn-end change gate (re-exported from checks_common.sh)
 #
-# Results are collected in CRITICAL_ISSUES[] and WARNINGS[] arrays.
-# Caller decides how to report/block based on these arrays.
+# Tests, audits and semgrep run over the whole project; the linters (ruff, mypy,
+# eslint) are scoped to the files this turn changed (via changed_code_files),
+# falling back to a full scan when git is unavailable.
+#
+# Shared environment/discovery helpers (setup_timeout_cmd, detect_project_type,
+# find_venv_bin, find_python_projects, code_changed, …) live in checks_common.sh,
+# sourced below.
+#
+# The independent checks selected for a project are run CONCURRENTLY: each runs
+# in its own subshell, writes its findings to per-job temp files (NUL-delimited,
+# since findings can contain embedded newlines), and the orchestrator slurps them
+# back into CRITICAL_ISSUES[]/WARNINGS[] after all jobs finish. Caller decides how
+# to report/block based on these arrays.
 #
 
 # Guard against direct execution
@@ -23,12 +33,10 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     exit 1
 fi
 
-# Ensure Node.js is in PATH (sources NVM/fnm if needed)
+# Shared helpers (also sources ensure_node.sh).
 SHARED_DIR_SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=ensure_node.sh
-if [ -f "$SHARED_DIR_SELF/ensure_node.sh" ]; then
-    source "$SHARED_DIR_SELF/ensure_node.sh"
-fi
+# shellcheck source=checks_common.sh
+source "$SHARED_DIR_SELF/checks_common.sh"
 
 # Defaults
 MAX_TEST_TIME="${MAX_TEST_TIME:-300}"
@@ -43,130 +51,6 @@ add_warning() {
 
 add_critical_issue() {
     CRITICAL_ISSUES+=("$1")
-}
-
-# macOS compatibility: use gtimeout (brew install coreutils) or fall back
-setup_timeout_cmd() {
-    if command -v gtimeout &> /dev/null; then
-        TIMEOUT_CMD="gtimeout"
-    elif command -v timeout &> /dev/null; then
-        TIMEOUT_CMD="timeout"
-    else
-        TIMEOUT_CMD=""
-    fi
-}
-
-# Gate: has any code been changed in the working tree?
-#
-# Returns 0 (run the checks) when the git working tree contains added/modified/
-# untracked files with a code extension, OR when we can't tell (no git, not a
-# repo) — we never silently suppress checks. Returns 1 (skip) when the tree is
-# clean of code changes, e.g. a Q&A or docs-only turn. This keeps the full
-# test/lint/typecheck battery from running on every turn that didn't touch code.
-code_changed() {
-    command -v git &> /dev/null || return 0
-    git rev-parse --is-inside-work-tree &> /dev/null || return 0
-
-    local changed
-    changed=$(git status --porcelain 2>/dev/null | sed 's/^...//;s/.* -> //')
-    [ -z "$changed" ] && return 1
-
-    if echo "$changed" | grep -qiE '\.(py|ts|tsx|js|jsx|mjs|cjs|dart|go|rs|java|rb|kt|swift|c|cc|cpp|h|hpp|cs|php|scala|sql)$'; then
-        return 0
-    fi
-    return 1
-}
-
-# Detect project type
-detect_project_type() {
-    local has_python=false
-    local has_node=false
-    local has_cdk=false
-    local has_flutter=false
-
-    if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -f "setup.py" ]; then
-        has_python=true
-    fi
-    # Also detect monorepo sub-projects with their own pyproject.toml
-    if [ "$has_python" = "false" ]; then
-        if find . -maxdepth 3 -name "pyproject.toml" -not -path "*/.venv/*" -not -path "*/node_modules/*" 2>/dev/null | grep -q .; then
-            has_python=true
-        fi
-    fi
-
-    if [ -f "package.json" ]; then
-        has_node=true
-    fi
-
-    if [ -f "cdk.json" ]; then
-        has_cdk=true
-    fi
-
-    if [ -f "pubspec.yaml" ]; then
-        has_flutter=true
-    fi
-
-    echo "${has_python}:${has_node}:${has_cdk}:${has_flutter}"
-}
-
-# Find a tool binary from a virtualenv, walking up to repo root.
-# Usage: find_venv_bin <tool_name>  e.g. find_venv_bin pytest
-find_venv_bin() {
-    local tool="$1"
-    # Check cwd first
-    for venv_dir in .venv venv env; do
-        if [ -f "$venv_dir/bin/$tool" ]; then
-            echo "$(pwd)/$venv_dir/bin/$tool"
-            return 0
-        fi
-    done
-    # Walk up to repo root looking for a shared venv
-    local search_dir="$PWD"
-    while [ "$search_dir" != "/" ]; do
-        for venv_dir in .venv venv env; do
-            if [ -f "$search_dir/$venv_dir/bin/$tool" ]; then
-                echo "$search_dir/$venv_dir/bin/$tool"
-                return 0
-            fi
-        done
-        search_dir="$(dirname "$search_dir")"
-    done
-    # Fall back to PATH
-    if command -v "$tool" &> /dev/null; then
-        echo "$tool"
-        return 0
-    fi
-    echo ""
-}
-
-# Convenience alias for backward compat
-find_python_pytest() {
-    find_venv_bin pytest
-}
-
-# Discover Python sub-projects. Returns directories containing pyproject.toml
-# that also have a test/ or tests/ directory (i.e. testable sub-projects).
-# Falls back to "." if no sub-projects found but root has test files.
-find_python_projects() {
-    local -a projects=()
-
-    # Find sub-projects by pyproject.toml that have test directories
-    while IFS= read -r toml; do
-        local dir
-        dir="$(dirname "$toml")"
-        # Skip root-level pyproject.toml (handled as fallback)
-        [ "$dir" = "." ] && continue
-        if [ -d "$dir/test" ] || [ -d "$dir/tests" ]; then
-            projects+=("$dir")
-        fi
-    done < <(find . -maxdepth 4 -name "pyproject.toml" -not -path "*/.venv/*" -not -path "*/node_modules/*" 2>/dev/null | sort)
-
-    # If no sub-projects found, fall back to root
-    if [ ${#projects[@]} -eq 0 ]; then
-        projects=(".")
-    fi
-
-    echo "${projects[@]}"
 }
 
 # Run Python tests — monorepo-aware: runs pytest from each sub-project directory
@@ -262,15 +146,17 @@ run_cdk_tests() {
         return 0
     fi
 
+    # Discard output (keeps cdk's chatter out of the parallel result stream);
+    # PASS/FAIL is taken from the exit status.
     if [ -f "app.py" ]; then
-        if cdk synth --quiet 2>&1; then
+        if cdk synth --quiet > /dev/null 2>&1; then
             add_warning "CDK synth: PASSED"
         else
             add_critical_issue "CDK synth: FAILED"
             return 1
         fi
     elif grep -q "typescript" package.json 2>/dev/null; then
-        if npm run build 2>&1 && cdk synth --quiet 2>&1; then
+        if npm run build > /dev/null 2>&1 && cdk synth --quiet > /dev/null 2>&1; then
             add_warning "CDK synth: PASSED"
         else
             add_critical_issue "CDK synth: FAILED"
@@ -410,7 +296,7 @@ run_pip_audit() {
     fi
 }
 
-# Run ruff linter — monorepo-aware
+# Run ruff linter — monorepo-aware, scoped to this turn's changed files.
 run_ruff_check() {
     local ruff_bin
     ruff_bin=$(find_venv_bin ruff)
@@ -422,14 +308,36 @@ run_ruff_check() {
     local -a projects
     read -ra projects <<< "$(find_python_projects)"
 
+    local changed
+    changed=$(changed_code_files)
+
     for project_dir in "${projects[@]}"; do
         local label="$project_dir"
         [ "$project_dir" = "." ] && label="root"
 
-        cd "$root_dir/$project_dir" || continue
+        local proj_abs
+        proj_abs=$(cd "$root_dir/$project_dir" 2>/dev/null && pwd) || continue
+        cd "$proj_abs" || continue
+
+        # Scope to changed .py files under this project; skip the project when
+        # none changed. Fall back to a full project scan when git gave us
+        # nothing (not a repo).
+        local -a targets=()
+        if [ -n "$changed" ]; then
+            local f
+            while IFS= read -r f; do
+                case "$f" in "$proj_abs"/*.py) targets+=("$f") ;; esac
+            done <<< "$changed"
+            if [ ${#targets[@]} -eq 0 ]; then
+                cd "$root_dir" || return
+                continue
+            fi
+        else
+            targets=(".")
+        fi
 
         local ruff_output
-        if ruff_output=$("$ruff_bin" check . 2>&1); then
+        if ruff_output=$("$ruff_bin" check "${targets[@]}" 2>&1); then
             add_warning "Ruff ($label): PASSED"
         else
             local error_count
@@ -446,7 +354,8 @@ run_ruff_check() {
     done
 }
 
-# Run mypy type checker — monorepo-aware, uses each sub-project's config
+# Run mypy type checker — monorepo-aware, uses each sub-project's config,
+# scoped to this turn's changed files.
 run_mypy_check() {
     local mypy_bin
     mypy_bin=$(find_venv_bin mypy)
@@ -458,30 +367,49 @@ run_mypy_check() {
     local -a projects
     read -ra projects <<< "$(find_python_projects)"
 
+    local changed
+    changed=$(changed_code_files)
+
     for project_dir in "${projects[@]}"; do
         local label="$project_dir"
         [ "$project_dir" = "." ] && label="root"
 
-        cd "$root_dir/$project_dir" || continue
+        local proj_abs
+        proj_abs=$(cd "$root_dir/$project_dir" 2>/dev/null && pwd) || continue
+        cd "$proj_abs" || continue
 
-        # Find target directories for mypy
-        local target=""
-        if [ -f "pyproject.toml" ] && grep -q '\[tool\.mypy\]' pyproject.toml 2>/dev/null; then
-            # Scan the common source dirs for Python packages to type-check
-            for dir in app src lib lambda functions stacks config custom_constructs; do
-                if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
-                    target="$target $dir"
-                fi
-            done
-        fi
-
-        if [ -z "$target" ]; then
+        # Only type-check projects that opt in via [tool.mypy].
+        if ! { [ -f "pyproject.toml" ] && grep -q '\[tool\.mypy\]' pyproject.toml 2>/dev/null; }; then
             cd "$root_dir" || return
             continue
         fi
 
+        # Scope to changed .py files; skip the project when none changed. Fall
+        # back to scanning the common source dirs when git gave us nothing.
+        local -a targets=()
+        if [ -n "$changed" ]; then
+            local f
+            while IFS= read -r f; do
+                case "$f" in "$proj_abs"/*.py) targets+=("$f") ;; esac
+            done <<< "$changed"
+            if [ ${#targets[@]} -eq 0 ]; then
+                cd "$root_dir" || return
+                continue
+            fi
+        else
+            for dir in app src lib lambda functions stacks config custom_constructs; do
+                if [ -d "$dir" ] && find "$dir" -maxdepth 3 -name "*.py" -type f 2>/dev/null | grep -q .; then
+                    targets+=("$dir")
+                fi
+            done
+            if [ ${#targets[@]} -eq 0 ]; then
+                cd "$root_dir" || return
+                continue
+            fi
+        fi
+
         local mypy_output
-        local mypy_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }$mypy_bin --no-error-summary $target"
+        local mypy_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD $MAX_TEST_TIME }$mypy_bin --no-error-summary ${targets[*]}"
         if mypy_output=$(eval "$mypy_cmd" 2>&1); then
             add_warning "Mypy ($label): PASSED"
         else
@@ -504,14 +432,36 @@ run_mypy_check() {
     done
 }
 
-# Run ESLint
+# Run ESLint — scoped to this turn's changed JS/TS files (whole repo when git is
+# unavailable). Prefers a project-local eslint binary over `npx`.
 run_eslint_check() {
-    if ! command -v npx &> /dev/null; then
+    local eslint_bin
+    if [ -x "node_modules/.bin/eslint" ]; then
+        eslint_bin="node_modules/.bin/eslint"
+    elif command -v eslint &> /dev/null; then
+        eslint_bin="eslint"
+    elif command -v npx &> /dev/null; then
+        eslint_bin="npx eslint"
+    else
         return 0
     fi
 
+    local -a targets=()
+    local changed
+    changed=$(changed_code_files)
+    if [ -n "$changed" ]; then
+        local f
+        while IFS= read -r f; do
+            case "$f" in *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs) targets+=("$f") ;; esac
+        done <<< "$changed"
+        # No changed JS/TS files this turn — nothing to lint.
+        [ ${#targets[@]} -eq 0 ] && return 0
+    else
+        targets=(".")
+    fi
+
     local eslint_output
-    local eslint_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD 60 }npx eslint --no-warn-on-unmatched-pattern ."
+    local eslint_cmd="${TIMEOUT_CMD:+$TIMEOUT_CMD 60 }$eslint_bin --no-warn-on-unmatched-pattern ${targets[*]}"
     if eslint_output=$(eval "$eslint_cmd" 2>&1); then
         add_warning "ESLint: PASSED"
     else
@@ -560,7 +510,27 @@ run_npm_audit() {
     fi
 }
 
-# Main orchestrator — runs ALL checks without file filtering
+# Run a single check function in isolation and persist its findings.
+#
+# Used as a background job by run_post_task_checks. Runs in a subshell (the
+# caller backgrounds it with &), so it resets the result arrays to capture only
+# this check's findings, then writes them NUL-delimited to per-job temp files.
+# NUL-delimiting is required because individual findings can contain embedded
+# newlines (e.g. captured test output).
+_run_check_job() {
+    local fn="$1" out="$2"
+    CRITICAL_ISSUES=()
+    WARNINGS=()
+    "$fn" || true
+    if [ ${#CRITICAL_ISSUES[@]} -gt 0 ]; then
+        printf '%s\0' "${CRITICAL_ISSUES[@]}" > "$out.crit"
+    fi
+    if [ ${#WARNINGS[@]} -gt 0 ]; then
+        printf '%s\0' "${WARNINGS[@]}" > "$out.warn"
+    fi
+}
+
+# Main orchestrator — runs ALL checks for the detected project type, concurrently.
 run_post_task_checks() {
     setup_timeout_cmd
 
@@ -569,46 +539,55 @@ run_post_task_checks() {
     local has_python has_node has_cdk has_flutter
     IFS=':' read -r has_python has_node has_cdk has_flutter <<< "$project_info" || true
 
-    local ran_something=false
-
+    # Select the checks to run based on project type. Each is independent and
+    # only appends to the result arrays, so they can run in parallel.
+    local -a checks=()
     if [ "$has_python" = "true" ]; then
-        run_python_tests || true
-        run_pip_audit || true
-        run_ruff_check || true
-        run_mypy_check || true
-        ran_something=true
+        checks+=(run_python_tests run_pip_audit run_ruff_check run_mypy_check)
     fi
-
     if [ "$has_node" = "true" ]; then
-        run_node_tests || true
-        run_npm_audit || true
-        run_eslint_check || true
-        ran_something=true
+        checks+=(run_node_tests run_npm_audit run_eslint_check)
     fi
-
     if [ "$has_cdk" = "true" ]; then
-        run_cdk_tests || true
-        ran_something=true
+        checks+=(run_cdk_tests)
     fi
-
     if [ "$has_flutter" = "true" ]; then
-        run_flutter_tests || true
-        run_dart_analyze || true
-        ran_something=true
+        checks+=(run_flutter_tests run_dart_analyze)
     fi
-
     # Semgrep is multi-language, so run it once over the whole project rather
     # than per-language. It covers the SAST gap for JS/TS/Go/etc. that the
     # language-specific tools above don't.
     if [ "$has_python" = "true" ] || [ "$has_node" = "true" ] || [ "$has_cdk" = "true" ]; then
-        run_semgrep_scan || true
-        ran_something=true
+        checks+=(run_semgrep_scan)
     fi
 
-    # Return 1 if nothing ran (caller can check)
-    if [ "$ran_something" = false ]; then
+    # Nothing applicable — let the caller know.
+    if [ ${#checks[@]} -eq 0 ]; then
         return 1
     fi
 
+    # Fan the checks out concurrently, each writing to its own temp files.
+    local tmpdir
+    tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/post_task.XXXXXX") || return 1
+
+    local i=0
+    for check in "${checks[@]}"; do
+        _run_check_job "$check" "$tmpdir/$i" &
+        i=$((i + 1))
+    done
+    wait
+
+    # Slurp results back in stable (check-list) order.
+    local j item
+    for ((j = 0; j < i; j++)); do
+        if [ -f "$tmpdir/$j.crit" ]; then
+            while IFS= read -r -d '' item; do CRITICAL_ISSUES+=("$item"); done < "$tmpdir/$j.crit"
+        fi
+        if [ -f "$tmpdir/$j.warn" ]; then
+            while IFS= read -r -d '' item; do WARNINGS+=("$item"); done < "$tmpdir/$j.warn"
+        fi
+    done
+
+    rm -rf "$tmpdir"
     return 0
 }

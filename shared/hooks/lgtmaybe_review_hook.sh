@@ -41,8 +41,10 @@ if [ ! -t 0 ]; then
 fi
 
 # Reuse the shared change gate: skip unless code changed in the cwd repo.
-# shellcheck source=../post_task_checks.sh
-source "$SHARED_DIR/post_task_checks.sh"
+# Source only the small common helpers (not the full turn-end battery) — we just
+# need code_changed here.
+# shellcheck source=../checks_common.sh
+source "$SHARED_DIR/checks_common.sh"
 code_changed || exit 0
 
 MODEL="${LGTMAYBE_HOOK_MODEL:-bedrock/us.anthropic.claude-opus-4-6}"
