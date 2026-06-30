@@ -35,6 +35,7 @@ verify_claudecode() {
     pass "agents in ~/.claude/agents/*.md"        "count_gt0 '$d/agents' '*.md' 1"
     pass "skills in ~/.claude/skills/*/SKILL.md"  "count_gt0 '$d/skills' 'SKILL.md' 3"
     pass "~/.claude/CLAUDE.md is System-Level Claude" "grep -q 'System-Level Claude' '$d/CLAUDE.md'"
+    pass "~/.claude/bin/claude-launch is executable" "[ -x '$d/bin/claude-launch' ]"
     if has_jq; then
         pass "settings.json has PostToolUse hook"  "jq -e '.hooks.PostToolUse[0].hooks[0].command' '$d/settings.json' >/dev/null"
         pass "~/.claude.json has filesystem MCP"    "jq -e '.mcpServers.filesystem' '$HOME/.claude.json' >/dev/null 2>&1"
