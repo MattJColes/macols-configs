@@ -423,6 +423,17 @@ fs.writeFileSync(env.SETTINGS_FILE, JSON.stringify(existing, null, 2) + "\n");
     printf "${GREEN}✓ Hooks, permissions and safety settings written to %s${NC}\n" "$1"
 }
 
+# install_claude_launcher <claude_dir> — install the root-safe launcher that lets
+# --dangerously-skip-permissions work by dropping from root to a non-root user
+# instead of running the agent as root (which Claude Code refuses).
+install_claude_launcher() {
+    local dir="$1/bin" src="$REPO_ROOT/bin/claude-launch.sh"
+    [ -f "$src" ] || { printf "${RED}launcher source not found: %s${NC}\n" "$src"; return 1; }
+    mkdir -p "$dir"
+    install -m 0755 "$src" "$dir/claude-launch"
+    printf "${GREEN}✓ Installed root-safe launcher to %s/claude-launch${NC}\n" "$dir"
+}
+
 # write_codex_hooks <hooks_json>
 write_codex_hooks() {
     require_node || return 1

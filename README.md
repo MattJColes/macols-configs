@@ -66,6 +66,26 @@ cd Terminal && ./install_ubuntu26.sh     # Ubuntu 26 / WSL2
 See **[Terminal/README.md](Terminal/README.md)** for the full toolchain
 (Python 3.x + uv, Node 22 + TypeScript/CDK, Podman, AWS CLI, LazyVim, etc.).
 
+### Running with `--dangerously-skip-permissions`
+
+Claude Code refuses bypass-permissions mode under root/sudo (the flag silently
+drops back to the default mode), which bites in containers and install scripts
+that run as root. The Claude Code installer drops a launcher at
+`~/.claude/bin/claude-launch` that handles this the documented way:
+
+```bash
+~/.claude/bin/claude-launch            # or: alias cc=~/.claude/bin/claude-launch
+```
+
+- **Non-root** → runs `claude --dangerously-skip-permissions` directly.
+- **Root** → drops to a non-root user (`$CLAUDE_USER`, else `$SUDO_USER`, else the
+  owner of `$HOME`) and runs Claude as them. For this to work Claude must be
+  installed for that user (or system-wide), not just for root.
+
+If you genuinely intend to run as root inside a sandbox, the documented escape
+hatch is `IS_SANDBOX=1 claude --dangerously-skip-permissions` — but a non-root
+user is preferred.
+
 ## What gets installed, and where
 
 | Tool | Personas as | Steering | MCP | Hooks |

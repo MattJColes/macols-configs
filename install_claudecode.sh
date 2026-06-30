@@ -78,7 +78,7 @@ done
 
 banner "Claude Code Installer"
 
-if [ "$DO_CLI" = true ]; then ensure_brew; ensure_cli claudecode; echo ""; fi
+if [ "$DO_CLI" = true ]; then ensure_brew; ensure_cli claudecode; install_claude_launcher "$CLAUDE_DIR"; echo ""; fi
 if [ "$DO_AGENTS" = true ]; then
     if [ "$PROJECT_INSTALL" = true ]; then install_agents "./.claude/agents"; else install_agents "$AGENTS_DIR"; fi; echo ""
 fi
@@ -91,6 +91,8 @@ if [ "$DO_HOOKS" = true ] && [ "$PROJECT_INSTALL" = false ]; then write_claude_h
 done_banner
 echo "Next steps:"
 echo "  • Restart Claude Code to load the new configuration"
+[ "$DO_CLI" = true ] && echo "  • Use '$CLAUDE_DIR/bin/claude-launch' to run with --dangerously-skip-permissions"
+[ "$DO_CLI" = true ] && echo "    (drops root → non-root automatically; alias it, e.g. alias cc=$CLAUDE_DIR/bin/claude-launch)"
 echo "  • Agents run automatically or via 'Use the <agent> agent ...'"
 echo "  • Skills are available as slash commands (e.g. /python-backend)"
 [ "$DO_MCPS" = true ] && echo "  • Configure AWS credentials (~/.aws/credentials) for the aws-* MCPs"
