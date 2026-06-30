@@ -219,9 +219,9 @@ run_dart_analyze() {
 
 # Run semgrep SAST scan — the project's single static-analysis security tool.
 #
-# Multi-language (Python, JS/TS, Go, …) and taint/dataflow-aware, so it
-# supersedes bandit (Python-only, no dataflow): semgrep's p/python pack ports
-# bandit's checks and adds source→sink injection tracking the others can't do.
+# Multi-language (Python, JS/TS, Go, …) and taint/dataflow-aware: semgrep's
+# p/python pack covers Python security checks and adds source→sink injection
+# tracking that single-language linters can't do.
 #
 # Turn-end only (never per-edit): engine + rule loading costs a few seconds,
 # too slow after every file write. Scoped to this turn's changed files (full
@@ -233,7 +233,7 @@ run_dart_analyze() {
 # Rulesets are scoped to the detected languages (fetched from the registry once,
 # then cached under ~/.semgrep):
 #   p/secrets     — hardcoded credentials, all languages
-#   p/python      — Python security + correctness (supersedes bandit)
+#   p/python      — Python security + correctness
 #   p/javascript  — JS security/correctness
 #   p/typescript  — TS-specific checks
 # Dart/Flutter has no semgrep ruleset; `dart analyze` (run_dart_analyze) covers
