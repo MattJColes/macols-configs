@@ -348,7 +348,10 @@ for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
         # for any other breakage: the ~/.no_herdr file, and an rc-skipping login
         # (`ssh -t host 'exec /bin/zsh -f'`).
         if grep -qF 'HERDR_AUTOLAUNCH' "$rc"; then
-            sed -i '/# HERDR_AUTOLAUNCH/,/^fi$/d' "$rc"
+            # Avoid `sed -i`: GNU sed and BSD/macOS sed disagree on whether it
+            # takes a backup-suffix argument, so the in-place form is not
+            # portable. Filter to a temp file and move it back instead.
+            sed '/# HERDR_AUTOLAUNCH/,/^fi$/d' "$rc" > "$rc.tmp" && mv "$rc.tmp" "$rc"
             echo "  Refreshing herdr auto-launch in $rc"
         fi
         cat >> "$rc" << 'EOF'
