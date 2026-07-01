@@ -277,6 +277,15 @@ for rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
     fi
 done
 
+# Advertise 24-bit colour support to terminal apps. Set in both shells' rc
+# files so it applies whether the login shell is zsh or bash.
+for rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
+    if [ -f "$rc" ] && ! grep -q 'COLORTERM' "$rc" 2>/dev/null; then
+        echo 'export COLORTERM=truecolor' >> "$rc"
+        echo "Added COLORTERM=truecolor to $rc"
+    fi
+done
+
 # Install Homebrew + herdr + yazi + lazygit + neovim tooling (sub-script).
 # The sub-script also installs the herdr SSH auto-launch hook into ~/.bashrc
 # and ~/.zshrc (single HERDR_AUTOLAUNCH block), so no extra wiring is needed here.
