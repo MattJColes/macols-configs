@@ -16,11 +16,13 @@ macols-configs/
 ├── install_pi.sh
 ├── lib/
 │   └── common.sh           # shared install functions used by all installers
+├── bin/
+│   └── claude-launch.sh    # root-safe launcher for --dangerously-skip-permissions
 ├── shared/                 # ── single sources of truth ──
 │   ├── personas/<name>/SKILL.md   # specialist personas (agents/skills/prompts)
 │   ├── steering/base.md + tools/  # system steering, tokenised per tool
 │   ├── mcp-config.json            # MCP server definitions
-│   ├── hooks/                     # post-code / post-task / pre-deploy + plugins
+│   ├── hooks/                     # post-code / post-task / pre-deploy / lgtmaybe + plugins
 │   ├── checks_common.sh          # shared check helpers (discovery, gate, timeout)
 │   ├── post_code_checks.sh        # per-edit lint/type-check battery
 │   ├── post_task_checks.sh        # turn-end battery (runs checks in parallel)
@@ -112,7 +114,8 @@ cdk-expert-ts, cdk-expert-python, data-scientist ·
 **Architecture/Design:** architecture-expert, ui-ux-designer ·
 **Security:** security-specialist ·
 **Management:** documentation-engineer, product-manager, project-coordinator, engineering-manager ·
-**Writing:** writing-blog-posts, writing-documents, writing-style
+**Writing:** writing-blog-posts, writing-documents, writing-style ·
+**Workflow:** commit (run checks, conventional commit and push), ponytail (minimal/YAGNI mode)
 
 ## MCP servers
 
@@ -126,8 +129,9 @@ Thin wrappers in `shared/hooks/` source the shared check libraries and run
 advisory (never blocking) checks:
 
 - **post-code** (per edit) — fast, file-scoped lint/type-check
-- **post-task** (turn end) — full test/security battery, only when code changed
+- **post-task** (turn end) — full test/security battery (linters, audits, semgrep), only when code changed
 - **pre-deploy** (Claude/Codex) — confirms `cdk diff` before `cdk deploy`/`destroy`
+- **lgtmaybe** (Claude Code Stop only) — advisory LLM review of uncommitted changes via [lgtmaybe](https://github.com/MattJColes/lgtmaybe); runs after post-task when code changed. Requires `uv tool install 'lgtmaybe[bedrock]'` and ambient AWS creds with `bedrock:InvokeModel*`. Disable with `LGTMAYBE_HOOK_ENABLED=false`.
 
 ## Testing
 
@@ -146,6 +150,7 @@ matrix.
 ```bash
 aws configure                                   # AWS credentials for aws-* MCPs
 podman machine init && podman machine start     # containers (macOS)
+uv tool install 'lgtmaybe[bedrock]'             # optional: Claude Code turn-end LLM review hook
 claude --version && codex --version             # sanity check
 ```
 
